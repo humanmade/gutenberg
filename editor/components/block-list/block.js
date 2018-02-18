@@ -764,11 +764,11 @@ BlockListBlock.childContextTypes = {
 
 export default compose(
 	connect( mapStateToProps, mapDispatchToProps ),
-	withContext( 'editor' )( ( settings ) => {
+	withContext( 'editor' )( ( settings, props ) => {
 		const { templateLock } = settings;
 
 		return {
-			isLocked: !! templateLock,
+			isLocked: props.isLocked || !! templateLock,
 		};
 	} ),
 	withFilters( 'editor.BlockListBlock' ),

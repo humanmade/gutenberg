@@ -23,6 +23,7 @@ import ImagePlaceholder from '../../image-placeholder';
 import BlockControls from '../../block-controls';
 import BlockAlignmentToolbar from '../../block-alignment-toolbar';
 import InspectorControls from '../../inspector-controls';
+import InnerBlocks from '../../inner-blocks';
 
 const validAlignments = [ 'left', 'center', 'right', 'wide', 'full' ];
 
@@ -206,6 +207,7 @@ export const settings = {
 						inlineToolbar
 					/>
 				) : null }
+				<InnerBlocks />
 			</section>,
 		];
 	},
@@ -229,6 +231,7 @@ export const settings = {
 		return (
 			<section className={ classes } style={ style }>
 				<h2>{ title }</h2>
+				<InnerBlocks.Content />
 			</section>
 		);
 	},

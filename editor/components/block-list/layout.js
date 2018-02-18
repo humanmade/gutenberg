@@ -200,6 +200,7 @@ class BlockListLayout extends Component {
 			showContextualToolbar,
 			layout,
 			isGroupedByLayout,
+			isLocked,
 			rootUID,
 			renderBlockMenu,
 		} = this.props;
@@ -229,13 +230,14 @@ class BlockListLayout extends Component {
 						isFirst={ blockIndex === 0 }
 						isLast={ blockIndex === blockUIDs.length - 1 }
 						renderBlockMenu={ renderBlockMenu }
+						isLocked={ isLocked }
 					/>
 				) ) }
-				<DefaultBlockAppender
+				{ ! isLocked && <DefaultBlockAppender
 					rootUID={ rootUID }
 					lastBlockUID={ last( blockUIDs ) }
 					layout={ defaultLayout }
-				/>
+				/> }
 			</BlockSelectionClearer>
 		);
 	}

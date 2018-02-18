@@ -4,7 +4,7 @@
 import { withContext } from '@wordpress/components';
 
 function InnerBlocks( { BlockList, layouts } ) {
-	return <BlockList layouts={ layouts } />;
+	return <BlockList layouts={ layouts } isLocked={ true } />;
 }
 
 InnerBlocks = withContext( 'BlockList' )()( InnerBlocks );
