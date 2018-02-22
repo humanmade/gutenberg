@@ -6,7 +6,8 @@ import { isEmpty } from 'lodash';
 /**
  * WordPress dependencies
  */
-import { IconButton, PanelBody, RangeControl, ToggleControl, Toolbar } from '@wordpress/components';
+import { IconButton, PanelBody, RangeControl, ToggleControl, Toolbar, withContext } from '@wordpress/components';
+import { withSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import classnames from 'classnames';
 
@@ -67,6 +68,10 @@ export const settings = {
 		},
 	},
 
+	supports: {
+		managedNesting: true,
+	},
+
 	transforms: {
 		from: [
 			{
@@ -95,122 +100,139 @@ export const settings = {
 		}
 	},
 
-	edit( { attributes, setAttributes, isSelected, className } ) {
-		const { url, title, align, contentAlign, id, hasParallax, dimRatio } = attributes;
-		const updateAlignment = ( nextAlign ) => setAttributes( { align: nextAlign } );
-		const onSelectImage = ( media ) => setAttributes( { url: media.url, id: media.id } );
-		const toggleParallax = () => setAttributes( { hasParallax: ! hasParallax } );
-		const setDimRatio = ( ratio ) => setAttributes( { dimRatio: ratio } );
+	edit:
+	withSelect( ( select, ownProps ) => ( {
+		hasButton: !! select( 'core/editor' ).getBlocks( ownProps.id ).length,
+	} ) )(
+		( { attributes, hasButton, setAttributes, isSelected, className, onReplace } ) => {
+			const { url, title, align, contentAlign, id, hasParallax, dimRatio } = attributes;
+			const updateAlignment = ( nextAlign ) => setAttributes( { align: nextAlign } );
+			const onSelectImage = ( media ) => setAttributes( { url: media.url, id: media.id } );
+			const toggleParallax = () => setAttributes( { hasParallax: ! hasParallax } );
+			const toggleButton = () => onReplace(
+				createBlock(
+					'core/cover-image',
+					attributes,
+					hasButton ? [] : [ createBlock( 'core/button' ) ]
+				)
+			);
 
-		const style = url ?
-			{ backgroundImage: `url(${ url })` } :
-			undefined;
-		const classes = classnames(
-			className,
-			contentAlign !== 'center' && `has-${ contentAlign }-content`,
-			dimRatioToClass( dimRatio ),
-			{
-				'has-background-dim': dimRatio !== 0,
-				'has-parallax': hasParallax,
-			}
-		);
+			const setDimRatio = ( ratio ) => setAttributes( { dimRatio: ratio } );
 
-		const alignmentToolbar	= (
-			<AlignmentToolbar
-				value={ contentAlign }
-				onChange={ ( nextAlign ) => {
-					setAttributes( { contentAlign: nextAlign } );
-				} }
-			/>
-		);
-		const controls = isSelected && [
-			<BlockControls key="controls">
-				<BlockAlignmentToolbar
-					value={ align }
-					onChange={ updateAlignment }
+			const style = url ?
+				{ backgroundImage: `url(${ url })` } :
+				undefined;
+			const classes = classnames(
+				className,
+				contentAlign !== 'center' && `has-${ contentAlign }-content`,
+				dimRatioToClass( dimRatio ),
+				{
+					'has-background-dim': dimRatio !== 0,
+					'has-parallax': hasParallax,
+				}
+			);
+
+			const alignmentToolbar	= (
+				<AlignmentToolbar
+					value={ contentAlign }
+					onChange={ ( nextAlign ) => {
+						setAttributes( { contentAlign: nextAlign } );
+					} }
 				/>
-
-				{ alignmentToolbar }
-				<Toolbar>
-					<MediaUpload
-						onSelect={ onSelectImage }
-						type="image"
-						value={ id }
-						render={ ( { open } ) => (
-							<IconButton
-								className="components-toolbar__control"
-								label={ __( 'Edit image' ) }
-								icon="edit"
-								onClick={ open }
-							/>
-						) }
+			);
+			const controls = isSelected && [
+				<BlockControls key="controls">
+					<BlockAlignmentToolbar
+						value={ align }
+						onChange={ updateAlignment }
 					/>
-				</Toolbar>
-			</BlockControls>,
-			<InspectorControls key="inspector">
-				<h2>{ __( 'Cover Image Settings' ) }</h2>
-				<ToggleControl
-					label={ __( 'Fixed Background' ) }
-					checked={ !! hasParallax }
-					onChange={ toggleParallax }
-				/>
-				<RangeControl
-					label={ __( 'Background Dimness' ) }
-					value={ dimRatio }
-					onChange={ setDimRatio }
-					min={ 0 }
-					max={ 100 }
-					step={ 10 }
-				/>
-				<PanelBody title={ __( 'Text Alignment' ) }>
+
 					{ alignmentToolbar }
-				</PanelBody>
-			</InspectorControls>,
-		];
-
-		if ( ! url ) {
-			const hasTitle = ! isEmpty( title );
-			const icon = hasTitle ? undefined : 'format-image';
-			const label = hasTitle ? (
-				<RichText
-					tagName="h2"
-					value={ title }
-					onChange={ ( value ) => setAttributes( { title: value } ) }
-					isSelected={ isSelected }
-					inlineToolbar
-				/>
-			) : __( 'Cover Image' );
-
-			return [
-				controls,
-				<ImagePlaceholder key="cover-image-placeholder"
-					{ ...{ className, icon, label, onSelectImage } }
-				/>,
+					<Toolbar>
+						<MediaUpload
+							onSelect={ onSelectImage }
+							type="image"
+							value={ id }
+							render={ ( { open } ) => (
+								<IconButton
+									className="components-toolbar__control"
+									label={ __( 'Edit image' ) }
+									icon="edit"
+									onClick={ open }
+								/>
+							) }
+						/>
+					</Toolbar>
+				</BlockControls>,
+				<InspectorControls key="inspector">
+					<h2>{ __( 'Cover Image Settings' ) }</h2>
+					<ToggleControl
+						label={ __( 'Has button' ) }
+						checked={ !! hasButton }
+						onChange={ toggleButton }
+					/>
+					<ToggleControl
+						label={ __( 'Fixed Background' ) }
+						checked={ !! hasParallax }
+						onChange={ toggleParallax }
+					/>
+					<RangeControl
+						label={ __( 'Background Dimness' ) }
+						value={ dimRatio }
+						onChange={ setDimRatio }
+						min={ 0 }
+						max={ 100 }
+						step={ 10 }
+					/>
+					<PanelBody title={ __( 'Text Alignment' ) }>
+						{ alignmentToolbar }
+					</PanelBody>
+				</InspectorControls>,
 			];
-		}
 
-		return [
-			controls,
-			<section
-				key="preview"
-				data-url={ url }
-				style={ style }
-				className={ classes }
-			>
-				{ title || isSelected ? (
+			if ( ! url ) {
+				const hasTitle = ! isEmpty( title );
+				const icon = hasTitle ? undefined : 'format-image';
+				const label = hasTitle ? (
 					<RichText
 						tagName="h2"
-						placeholder={ __( 'Write title…' ) }
 						value={ title }
 						onChange={ ( value ) => setAttributes( { title: value } ) }
 						isSelected={ isSelected }
 						inlineToolbar
 					/>
-				) : null }
-				<InnerBlocks />
-			</section>,
-		];
-	},
+				) : __( 'Cover Image' );
+
+				return [
+					controls,
+					<ImagePlaceholder key="cover-image-placeholder"
+						{ ...{ className, icon, label, onSelectImage } }
+					/>,
+				];
+			}
+
+			return [
+				controls,
+				<section
+					key="preview"
+					data-url={ url }
+					style={ style }
+					className={ classes }
+				>
+					{ title || isSelected ? (
+						<RichText
+							tagName="h2"
+							placeholder={ __( 'Write title…' ) }
+							value={ title }
+							onChange={ ( value ) => setAttributes( { title: value } ) }
+							isSelected={ isSelected }
+							inlineToolbar
+						/>
+					) : null }
+					<InnerBlocks />
+				</section>,
+			];
+		} ),
 
 	save( { attributes, className } ) {
 		const { url, title, hasParallax, dimRatio, align, contentAlign } = attributes;
