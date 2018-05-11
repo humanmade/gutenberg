@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:9-stretch
+      - image: circleci/node:10-stretch
 
     branches:
       only:
@@ -20,7 +20,6 @@ jobs:
           key: npm
 
       # Build steps:
-      - run: npm install -g npm
       - run: npm install
       - run: npm run build
 
