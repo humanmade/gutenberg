@@ -20,6 +20,7 @@ jobs:
           key: npm
 
       # Build steps:
+      - run: npm install -g npm
       - run: npm install
       - run: npm run build
 
