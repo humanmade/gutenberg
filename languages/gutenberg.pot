@@ -3,33 +3,33 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "X-Generator: babel-plugin-makepot\n"
 
-#: blocks/api/categories.js:12
+#: blocks/store/reducer.js:16
 msgid "Common Blocks"
 msgstr ""
 
-#: blocks/api/categories.js:13
+#: blocks/store/reducer.js:17
 msgid "Formatting"
 msgstr ""
 
-#: blocks/api/categories.js:14
+#: blocks/store/reducer.js:18
 msgid "Layout Elements"
 msgstr ""
 
-#: blocks/api/categories.js:15
+#: blocks/store/reducer.js:19
 msgid "Widgets"
 msgstr ""
 
-#: blocks/api/categories.js:16
+#: blocks/store/reducer.js:20
 #: editor/components/inserter/menu.js:307
 msgid "Embeds"
 msgstr ""
 
-#: blocks/api/categories.js:17
+#: blocks/store/reducer.js:21
 msgid "Shared Blocks"
 msgstr ""
 
 #: components/autocomplete/index.js:317
-#: components/form-token-field/index.js:214
+#: components/form-token-field/index.js:211
 #: editor/components/url-input/index.js:88
 msgid "%d result found, use up and down arrow keys to navigate."
 msgid_plural "%d results found, use up and down arrow keys to navigate."
@@ -37,7 +37,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: components/autocomplete/index.js:323
-#: components/form-token-field/index.js:220
+#: components/form-token-field/index.js:217
 #: editor/components/inserter/menu.js:87
 #: editor/components/url-input/index.js:94
 msgid "No results."
@@ -87,7 +87,7 @@ msgstr ""
 
 #: components/font-size-picker/index.js:41
 #: components/range-control/index.js:63
-#: core-blocks/image/edit.js:290
+#: core-blocks/image/edit.js:291
 msgid "Reset"
 msgstr ""
 
@@ -95,23 +95,23 @@ msgstr ""
 msgid "Custom Size"
 msgstr ""
 
-#: components/form-token-field/index.js:511
+#: components/form-token-field/index.js:508
 msgid "Add item."
 msgstr ""
 
-#: components/form-token-field/index.js:567
+#: components/form-token-field/index.js:565
 msgid "Separate with commas"
 msgstr ""
 
-#: components/form-token-field/index.js:588
+#: components/form-token-field/index.js:586
 msgid "Item added."
 msgstr ""
 
-#: components/form-token-field/index.js:589
+#: components/form-token-field/index.js:587
 msgid "Item removed."
 msgstr ""
 
-#: components/form-token-field/index.js:590
+#: components/form-token-field/index.js:588
 msgid "Remove item"
 msgstr ""
 
@@ -164,8 +164,16 @@ msgstr ""
 msgid "Number of items"
 msgstr ""
 
-#: components/server-side-render/index.js:61
-msgid "Loading..."
+#: components/server-side-render/index.js:56
+msgid "Unknown error"
+msgstr ""
+
+#: components/server-side-render/index.js:84
+msgid "Error loading block: %s"
+msgstr ""
+
+#: components/server-side-render/index.js:88
+msgid "No results found."
 msgstr ""
 
 #: core-blocks/audio/edit.js:112
@@ -175,7 +183,7 @@ msgstr ""
 #: core-blocks/audio/edit.js:123
 #: core-blocks/embed/index.js:268
 #: core-blocks/gallery/gallery-image.js:133
-#: core-blocks/image/edit.js:375
+#: core-blocks/image/edit.js:376
 #: core-blocks/video/index.js:180
 msgid "Write caption…"
 msgstr ""
@@ -201,13 +209,13 @@ msgstr ""
 
 #: core-blocks/audio/edit.js:89
 #: core-blocks/video/index.js:154
-#: editor/components/image-placeholder/index.js:53
+#: editor/components/image-placeholder/index.js:54
 msgid "Upload"
 msgstr ""
 
 #: core-blocks/audio/edit.js:97
 #: core-blocks/video/index.js:162
-#: editor/components/image-placeholder/index.js:62
+#: editor/components/image-placeholder/index.js:63
 msgid "Media Library"
 msgstr ""
 
@@ -225,7 +233,7 @@ msgstr ""
 
 #: core-blocks/block/edit-panel/index.js:73
 #: editor/components/post-permalink/index.js:104
-#: editor/components/rich-text/format-toolbar/index.js:245
+#: editor/components/rich-text/format-toolbar/index.js:250
 msgid "Edit"
 msgstr ""
 
@@ -260,7 +268,7 @@ msgid "Text Color"
 msgstr ""
 
 #: core-blocks/button/edit.js:152
-#: editor/components/rich-text/format-toolbar/index.js:216
+#: editor/components/rich-text/format-toolbar/index.js:221
 msgid "Apply"
 msgstr ""
 
@@ -349,7 +357,7 @@ msgid "Columns"
 msgstr ""
 
 #: core-blocks/cover-image/index.js:141
-#: core-blocks/image/edit.js:188
+#: core-blocks/image/edit.js:189
 msgid "Edit image"
 msgstr ""
 
@@ -478,7 +486,7 @@ msgid "Edit Gallery"
 msgstr ""
 
 #: core-blocks/gallery/edit.js:205
-#: core-blocks/gallery/index.js:77
+#: core-blocks/gallery/index.js:74
 #: editor/components/post-format/index.js:22
 msgid "Gallery"
 msgstr ""
@@ -515,31 +523,35 @@ msgstr ""
 msgid "Remove Image"
 msgstr ""
 
-#: core-blocks/gallery/index.js:78
+#: core-blocks/gallery/index.js:75
 msgid "Display multiple images in an elegantly organized tiled layout."
 msgstr ""
 
-#: core-blocks/gallery/index.js:81
+#: core-blocks/gallery/index.js:78
 msgid "images"
 msgstr ""
 
-#: core-blocks/gallery/index.js:81
+#: core-blocks/gallery/index.js:78
 msgid "photos"
 msgstr ""
 
-#: core-blocks/heading/edit.js:46
+#: core-blocks/heading/edit.js:40
 msgid "Heading Settings"
 msgstr ""
 
-#: core-blocks/heading/edit.js:47
+#: core-blocks/heading/edit.js:41
 msgid "Level"
 msgstr ""
 
-#: core-blocks/heading/edit.js:51
+#: core-blocks/heading/edit.js:45
 msgid "Heading %s"
 msgstr ""
 
-#: core-blocks/heading/edit.js:79
+#: core-blocks/heading/edit.js:51
+msgid "Text Alignment"
+msgstr ""
+
+#: core-blocks/heading/edit.js:80
 msgid "Write heading…"
 msgstr ""
 
@@ -576,51 +588,51 @@ msgstr ""
 msgid "Preview"
 msgstr ""
 
-#: core-blocks/image/edit.js:208
-#: core-blocks/image/index.js:84
+#: core-blocks/image/edit.js:209
+#: core-blocks/image/index.js:89
 #: editor/components/post-format/index.js:24
 msgid "Image"
 msgstr ""
 
-#: core-blocks/image/edit.js:225
+#: core-blocks/image/edit.js:226
 msgid "Image Settings"
 msgstr ""
 
-#: core-blocks/image/edit.js:227
+#: core-blocks/image/edit.js:228
 msgid "Textual Alternative"
 msgstr ""
 
-#: core-blocks/image/edit.js:230
+#: core-blocks/image/edit.js:231
 msgid ""
 "Describe the purpose of the image. Leave empty if the image is not a key "
 "part of the content."
 msgstr ""
 
-#: core-blocks/image/edit.js:234
+#: core-blocks/image/edit.js:235
 msgid "Source Type"
 msgstr ""
 
-#: core-blocks/image/edit.js:245
+#: core-blocks/image/edit.js:246
 msgid "Image Dimensions"
 msgstr ""
 
-#: core-blocks/image/edit.js:251
+#: core-blocks/image/edit.js:252
 msgid "Width"
 msgstr ""
 
-#: core-blocks/image/edit.js:259
+#: core-blocks/image/edit.js:260
 msgid "Height"
 msgstr ""
 
-#: core-blocks/image/edit.js:266
+#: core-blocks/image/edit.js:267
 msgid "Image Size"
 msgstr ""
 
-#: core-blocks/image/index.js:86
+#: core-blocks/image/index.js:91
 msgid "They're worth 1,000 words! Insert a single image."
 msgstr ""
 
-#: core-blocks/image/index.js:92
+#: core-blocks/image/index.js:97
 msgid "photo"
 msgstr ""
 
@@ -745,19 +757,19 @@ msgstr ""
 msgid "Drop Cap"
 msgstr ""
 
-#: core-blocks/paragraph/index.js:247
+#: core-blocks/paragraph/index.js:253
 msgid "Add text or type / to add content"
 msgstr ""
 
-#: core-blocks/paragraph/index.js:299
+#: core-blocks/paragraph/index.js:305
 msgid "Paragraph"
 msgstr ""
 
-#: core-blocks/paragraph/index.js:301
+#: core-blocks/paragraph/index.js:307
 msgid "Add some basic text."
 msgstr ""
 
-#: core-blocks/paragraph/index.js:307
+#: core-blocks/paragraph/index.js:313
 msgid "text"
 msgstr ""
 
@@ -859,7 +871,7 @@ msgid "Height for the spacer element in pixels."
 msgstr ""
 
 #: core-blocks/subhead/index.js:22
-msgid "Subhead"
+msgid "Subheading"
 msgstr ""
 
 #: core-blocks/subhead/index.js:24
@@ -867,14 +879,22 @@ msgid "What's a subhead? Smaller than a headline, bigger than basic text."
 msgstr ""
 
 #: core-blocks/subhead/index.js:91
-msgid "Write subhead…"
+msgid "Write subheading…"
 msgstr ""
 
-#: core-blocks/table/index.js:56
+#: core-blocks/table/index.js:129
+msgid "Table Settings"
+msgstr ""
+
+#: core-blocks/table/index.js:131
+msgid "Fixed width table cells"
+msgstr ""
+
+#: core-blocks/table/index.js:63
 msgid "Table"
 msgstr ""
 
-#: core-blocks/table/index.js:57
+#: core-blocks/table/index.js:64
 msgid "Insert a table -- perfect for sharing charts and data."
 msgstr ""
 
@@ -960,7 +980,7 @@ msgid "Embed an video file and a simple video player."
 msgstr ""
 
 #: edit-post/components/header/fixed-toolbar-toggle/index.js:17
-#: edit-post/components/header/index.js:57
+#: edit-post/components/header/index.js:56
 msgid "Settings"
 msgstr ""
 
@@ -972,7 +992,7 @@ msgstr ""
 msgid "Editor Toolbar"
 msgstr ""
 
-#: edit-post/components/header/index.js:35
+#: edit-post/components/header/index.js:36
 msgid "Editor toolbar"
 msgstr ""
 
@@ -1021,12 +1041,20 @@ msgstr ""
 msgid "Page Attributes"
 msgstr ""
 
-#: edit-post/components/sidebar/plugin-sidebar/index.js:23
+#: edit-post/components/sidebar/plugin-sidebar/index.js:52
 msgid "Editor plugins"
 msgstr ""
 
-#: edit-post/components/sidebar/plugin-sidebar/index.js:26
+#: edit-post/components/sidebar/plugin-sidebar/index.js:55
 msgid "Close plugin"
+msgstr ""
+
+#: edit-post/components/sidebar/plugin-sidebar/index.js:61
+msgid "Unpin from toolbar"
+msgstr ""
+
+#: edit-post/components/sidebar/plugin-sidebar/index.js:61
+msgid "Pin to toolbar"
 msgstr ""
 
 #: edit-post/components/sidebar/post-excerpt/index.js:18
@@ -1034,7 +1062,7 @@ msgid "Excerpt"
 msgstr ""
 
 #: edit-post/components/sidebar/post-schedule/index.js:17
-#: editor/components/post-publish-button/label.js:45
+#: editor/components/post-publish-button/label.js:36
 msgid "Publish"
 msgstr ""
 
@@ -1363,11 +1391,11 @@ msgstr ""
 msgid "The editor has encountered an unexpected error."
 msgstr ""
 
-#: editor/components/image-placeholder/index.js:38
+#: editor/components/image-placeholder/index.js:39
 msgid "Drag images here or add from media library"
 msgstr ""
 
-#: editor/components/image-placeholder/index.js:39
+#: editor/components/image-placeholder/index.js:40
 msgid "Drag image here or add from media library"
 msgstr ""
 
@@ -1463,7 +1491,7 @@ msgid "Aside"
 msgstr ""
 
 #: editor/components/post-format/index.js:23
-#: editor/components/rich-text/format-toolbar/index.js:177
+#: editor/components/rich-text/format-toolbar/index.js:182
 msgid "Link"
 msgstr ""
 
@@ -1525,39 +1553,39 @@ msgstr ""
 msgid "Allow Pingbacks & Trackbacks"
 msgstr ""
 
-#: editor/components/post-publish-button/label.js:30
+#: editor/components/post-publish-button/label.js:21
 msgid "Publishing…"
 msgstr ""
 
-#: editor/components/post-publish-button/label.js:32
+#: editor/components/post-publish-button/label.js:23
 msgid "Updating…"
 msgstr ""
 
-#: editor/components/post-publish-button/label.js:34
+#: editor/components/post-publish-button/label.js:25
 msgid "Scheduling…"
 msgstr ""
 
-#: editor/components/post-publish-button/label.js:38
+#: editor/components/post-publish-button/label.js:29
 msgid "Submit for Review"
 msgstr ""
 
-#: editor/components/post-publish-button/label.js:40
+#: editor/components/post-publish-button/label.js:31
 msgid "Update"
 msgstr ""
 
-#: editor/components/post-publish-button/label.js:42
+#: editor/components/post-publish-button/label.js:33
 msgid "Schedule"
 msgstr ""
 
-#: editor/components/post-publish-panel/index.js:77
+#: editor/components/post-publish-panel/index.js:75
 msgid "Scheduled"
 msgstr ""
 
-#: editor/components/post-publish-panel/index.js:77
+#: editor/components/post-publish-panel/index.js:75
 msgid "Published"
 msgstr ""
 
-#: editor/components/post-publish-panel/index.js:83
+#: editor/components/post-publish-panel/index.js:81
 msgid "Close Publish Panel"
 msgstr ""
 
@@ -1599,11 +1627,11 @@ msgstr ""
 msgid "Publish: "
 msgstr ""
 
-#: editor/components/post-publish-panel/toggle.js:54
+#: editor/components/post-publish-panel/toggle.js:52
 msgid "Schedule…"
 msgstr ""
 
-#: editor/components/post-publish-panel/toggle.js:54
+#: editor/components/post-publish-panel/toggle.js:52
 msgid "Publish…"
 msgstr ""
 
@@ -1619,7 +1647,7 @@ msgstr ""
 msgid "Save Draft"
 msgstr ""
 
-#: editor/components/post-schedule/label.js:11
+#: editor/components/post-schedule/label.js:12
 msgid "Immediately"
 msgstr ""
 
@@ -1635,36 +1663,36 @@ msgstr ""
 msgid "Switch to Draft"
 msgstr ""
 
-#: editor/components/post-taxonomies/flat-term-selector.js:166
+#: editor/components/post-taxonomies/flat-term-selector.js:171
 msgid "Add New Tag"
 msgstr ""
 
-#: editor/components/post-taxonomies/flat-term-selector.js:166
+#: editor/components/post-taxonomies/flat-term-selector.js:171
 msgid "Add New Term"
 msgstr ""
 
-#: editor/components/post-taxonomies/flat-term-selector.js:171
+#: editor/components/post-taxonomies/flat-term-selector.js:176
 msgid "Tag"
 msgstr ""
 
-#: editor/components/post-taxonomies/flat-term-selector.js:171
+#: editor/components/post-taxonomies/flat-term-selector.js:176
 #: editor/components/post-taxonomies/hierarchical-term-selector.js:138
 msgid "Term"
 msgstr ""
 
-#: editor/components/post-taxonomies/hierarchical-term-selector.js:233
+#: editor/components/post-taxonomies/hierarchical-term-selector.js:238
 msgid "Add new category"
 msgstr ""
 
-#: editor/components/post-taxonomies/hierarchical-term-selector.js:234
+#: editor/components/post-taxonomies/hierarchical-term-selector.js:239
 msgid "Add new term"
 msgstr ""
 
-#: editor/components/post-taxonomies/hierarchical-term-selector.js:238
+#: editor/components/post-taxonomies/hierarchical-term-selector.js:243
 msgid "Parent Category"
 msgstr ""
 
-#: editor/components/post-taxonomies/hierarchical-term-selector.js:239
+#: editor/components/post-taxonomies/hierarchical-term-selector.js:244
 msgid "Parent Term"
 msgstr ""
 
@@ -1718,19 +1746,19 @@ msgstr ""
 msgid "Public"
 msgstr ""
 
-#: editor/components/rich-text/format-toolbar/index.js:156
+#: editor/components/rich-text/format-toolbar/index.js:160
 msgid "Link added."
 msgstr ""
 
-#: editor/components/rich-text/format-toolbar/index.js:177
+#: editor/components/rich-text/format-toolbar/index.js:182
 msgid "Unlink"
 msgstr ""
 
-#: editor/components/rich-text/format-toolbar/index.js:193
+#: editor/components/rich-text/format-toolbar/index.js:198
 msgid "Open in new window"
 msgstr ""
 
-#: editor/components/rich-text/format-toolbar/index.js:249
+#: editor/components/rich-text/format-toolbar/index.js:254
 msgid "Link Settings"
 msgstr ""
 
@@ -1899,18 +1927,18 @@ msgctxt "imperative verb"
 msgid "Preview"
 msgstr ""
 
-#: editor/components/post-taxonomies/flat-term-selector.js:173
+#: editor/components/post-taxonomies/flat-term-selector.js:178
 #: editor/components/post-taxonomies/hierarchical-term-selector.js:134
 msgctxt "term"
 msgid "%s added"
 msgstr ""
 
-#: editor/components/post-taxonomies/flat-term-selector.js:174
+#: editor/components/post-taxonomies/flat-term-selector.js:179
 msgctxt "term"
 msgid "%s removed"
 msgstr ""
 
-#: editor/components/post-taxonomies/flat-term-selector.js:175
+#: editor/components/post-taxonomies/flat-term-selector.js:180
 msgctxt "term"
 msgid "Remove %s"
 msgstr ""
