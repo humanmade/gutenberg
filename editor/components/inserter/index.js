@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { isEmpty } from 'lodash';
-
-/**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
@@ -41,21 +36,22 @@ class Inserter extends Component {
 
 	render() {
 		const {
+			items,
 			position,
 			title,
 			children,
 			onInsertBlock,
-			hasSupportedBlocks,
-			isLocked,
+			rootUID,
 		} = this.props;
 
-		if ( ! hasSupportedBlocks || isLocked ) {
+		if ( items.length === 0 ) {
 			return null;
 		}
 
 		return (
 			<Dropdown
 				className="editor-inserter"
+				contentClassName="editor-inserter__popover"
 				position={ position }
 				onToggle={ this.onToggle }
 				expandOnMobile
@@ -79,7 +75,7 @@ class Inserter extends Component {
 						onClose();
 					};
 
-					return <InserterMenu onSelect={ onSelect } />;
+					return <InserterMenu items={ items } onSelect={ onSelect } rootUID={ rootUID } />;
 				} }
 			/>
 		);
@@ -92,19 +88,16 @@ export default compose( [
 			getEditedPostAttribute,
 			getBlockInsertionPoint,
 			getSelectedBlock,
-			getSupportedBlocks,
-			getEditorSettings,
+			getInserterItems,
 		} = select( 'core/editor' );
-		const { allowedBlockTypes, templateLock } = getEditorSettings();
 		const insertionPoint = getBlockInsertionPoint();
 		const { rootUID } = insertionPoint;
-		const supportedBlocks = getSupportedBlocks( rootUID, allowedBlockTypes );
 		return {
 			title: getEditedPostAttribute( 'title' ),
 			insertionPoint,
 			selectedBlock: getSelectedBlock(),
-			hasSupportedBlocks: true === supportedBlocks || ! isEmpty( supportedBlocks ),
-			isLocked: !! templateLock,
+			items: getInserterItems( rootUID ),
+			rootUID,
 		};
 	} ),
 	withDispatch( ( dispatch, ownProps ) => ( {

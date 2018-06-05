@@ -24,11 +24,8 @@ import {
 	getRectangleFromRange,
 	getScrollContainer,
 } from '@wordpress/dom';
-import {
-	keycodes,
-	createBlobURL,
-	deprecated,
-} from '@wordpress/utils';
+import { createBlobURL } from '@wordpress/blob';
+import { keycodes } from '@wordpress/utils';
 import { withInstanceId, withSafeTimeout, Slot } from '@wordpress/components';
 import { withSelect } from '@wordpress/data';
 import { rawHandler } from '@wordpress/blocks';
@@ -43,7 +40,6 @@ import FormatToolbar from './format-toolbar';
 import TinyMCE from './tinymce';
 import { pickAriaProps } from './aria';
 import patterns from './patterns';
-import { EVENTS } from './constants';
 import { withBlockEditContext } from '../block-edit/context';
 import { domToFormat, valueToString } from './format';
 
@@ -113,6 +109,7 @@ export class RichText extends Component {
 		this.onInit = this.onInit.bind( this );
 		this.getSettings = this.getSettings.bind( this );
 		this.onSetup = this.onSetup.bind( this );
+		this.onFocus = this.onFocus.bind( this );
 		this.onChange = this.onChange.bind( this );
 		this.onNewBlock = this.onNewBlock.bind( this );
 		this.onNodeChange = this.onNodeChange.bind( this );
@@ -152,32 +149,15 @@ export class RichText extends Component {
 	}
 
 	/**
-	 * Handles the onSetup event for the tinyMCE component.
+	 * Handles the onSetup event for the TinyMCE component.
 	 *
-	 * Will setup event handlers for the tinyMCE instance.
+	 * Will setup event handlers for the TinyMCE instance.
 	 * An `onSetup` function in the props will be called if it is present.
 	 *
-	 * @param {tinymce} editor The editor instance as passed by tinyMCE.
+	 * @param {tinymce} editor The editor instance as passed by TinyMCE.
 	 */
 	onSetup( editor ) {
 		this.editor = editor;
-
-		EVENTS.forEach( ( name ) => {
-			if ( ! this.props.hasOwnProperty( 'on' + name ) ) {
-				return;
-			}
-
-			deprecated( 'Raw TinyMCE event handlers for RichText', {
-				version: '3.0',
-				alternative: (
-					'Documented props, ancestor event handler, or onSetup ' +
-					'access to the internal editor instance event hub'
-				),
-				plugin: 'gutenberg',
-			} );
-
-			editor.on( name, this.proxyPropHandler( name ) );
-		} );
 
 		editor.on( 'init', this.onInit );
 		editor.on( 'NewBlock', this.onNewBlock );
@@ -187,6 +167,7 @@ export class RichText extends Component {
 		editor.on( 'BeforeExecCommand', this.onPropagateUndo );
 		editor.on( 'PastePreProcess', this.onPastePreProcess, true /* Add before core handlers */ );
 		editor.on( 'paste', this.onPaste, true /* Add before core handlers */ );
+		editor.on( 'focus', this.onFocus );
 		editor.on( 'input', this.onChange );
 		// The change event in TinyMCE fires every time an undo level is added.
 		editor.on( 'change', this.onCreateUndoLevel );
@@ -202,29 +183,6 @@ export class RichText extends Component {
 		if ( this.props.setFocusedElement ) {
 			this.props.setFocusedElement( this.props.instanceId );
 		}
-	}
-
-	/**
-	 * Allows prop event handlers to handle an event.
-	 *
-	 * Allow props an opportunity to handle the event, before default RichText
-	 * behavior takes effect. Should the event be handled by a prop, it should
-	 * `stopImmediatePropagation` on the event to stop continued event handling.
-	 *
-	 * @param {string} name The name of the event.
-	 *
-	 * @return {void} Void.
-	*/
-	proxyPropHandler( name ) {
-		return ( event ) => {
-			// Allow props an opportunity to handle the event, before default
-			// RichText behavior takes effect. Should the event be handled by a
-			// prop, it should `stopImmediatePropagation` on the event to stop
-			// continued event handling.
-			if ( 'function' === typeof this.props[ 'on' + name ] ) {
-				this.props[ 'on' + name ]( event );
-			}
-		};
 	}
 
 	onInit() {
@@ -261,7 +219,7 @@ export class RichText extends Component {
 	}
 
 	/**
-	 * Handles an undo event from tinyMCE.
+	 * Handles an undo event from TinyMCE.
 	 *
 	 * @param {UndoEvent} event The undo event as triggered by TinyMCE.
 	 */
@@ -281,11 +239,11 @@ export class RichText extends Component {
 	}
 
 	/**
-	 * Handles a paste event from tinyMCE.
+	 * Handles a paste event from TinyMCE.
 	 *
 	 * Saves the pasted data as plain text in `pastedPlainText`.
 	 *
-	 * @param {PasteEvent} event The paste event as triggered by tinyMCE.
+	 * @param {PasteEvent} event The paste event as triggered by TinyMCE.
 	 */
 	onPaste( event ) {
 		const dataTransfer =
@@ -331,14 +289,14 @@ export class RichText extends Component {
 	}
 
 	/**
-	 * Handles a PrePasteProcess event from tinyMCE.
+	 * Handles a PrePasteProcess event from TinyMCE.
 	 *
 	 * Will call the paste handler with the pasted data. If it is a string tries
-	 * to put it in the containing tinyMCE editor. Otherwise call the `onSplit`
+	 * to put it in the containing TinyMCE editor. Otherwise call the `onSplit`
 	 * handler.
 	 *
 	 * @param {PrePasteProcessEvent} event The PrePasteProcess event as triggered
-	 *                                     by tinyMCE.
+	 *                                     by TinyMCE.
 	 */
 	onPastePreProcess( event ) {
 		const HTML = this.isPlainTextPaste ? '' : event.content;
@@ -402,7 +360,31 @@ export class RichText extends Component {
 	}
 
 	/**
-	 * Handles any case where the content of the tinyMCE instance has changed.
+	 * Handles a focus event on the contenteditable field, calling the
+	 * `unstableOnFocus` prop callback if one is defined. The callback does not
+	 * receive any arguments.
+	 *
+	 * This is marked as a private API and the `unstableOnFocus` prop is not
+	 * documented, as the current requirements where it is used are subject to
+	 * future refactoring following `isSelected` handling.
+	 *
+	 * In contrast with `setFocusedElement`, this is only triggered in response
+	 * to focus within the contenteditable field, whereas `setFocusedElement`
+	 * is triggered on focus within any `RichText` descendent element.
+	 *
+	 * @see setFocusedElement
+	 *
+	 * @private
+	 */
+	onFocus() {
+		const { unstableOnFocus } = this.props;
+		if ( unstableOnFocus ) {
+			unstableOnFocus();
+		}
+	}
+
+	/**
+	 * Handles any case where the content of the TinyMCE instance has changed.
 	 */
 
 	onChange() {
@@ -446,18 +428,17 @@ export class RichText extends Component {
 	getFocusPosition( position ) {
 		// The container is relatively positioned.
 		const containerPosition = this.containerRef.current.getBoundingClientRect();
-		const toolbarOffset = { top: 10, left: 0 };
 
 		return {
-			top: position.top - containerPosition.top + ( position.height ) + toolbarOffset.top,
-			left: position.left - containerPosition.left + ( position.width / 2 ) + toolbarOffset.left,
+			top: position.top - containerPosition.top + position.height,
+			left: position.left - containerPosition.left + ( position.width / 2 ),
 		};
 	}
 
 	/**
-	 * Handles a keydown event from tinyMCE.
+	 * Handles a keydown event from TinyMCE.
 	 *
-	 * @param {KeydownEvent} event The keydow event as triggered by tinyMCE.
+	 * @param {KeydownEvent} event The keydown event as triggered by TinyMCE.
 	 */
 	onKeyDown( event ) {
 		const dom = this.editor.dom;
@@ -536,7 +517,7 @@ export class RichText extends Component {
 	}
 
 	/**
-	 * Handles tinyMCE key up event.
+	 * Handles TinyMCE key up event.
 	 *
 	 * @param {number} keyCode The key code that has been pressed on the keyboard.
 	 */
@@ -790,27 +771,40 @@ export class RichText extends Component {
 	removeFormat( format ) {
 		this.editor.focus();
 		this.editor.formatter.remove( format );
+		// Formatter does not trigger a change event like `execCommand` does.
+		this.onCreateUndoLevel();
 	}
 
 	applyFormat( format, args, node ) {
 		this.editor.focus();
 		this.editor.formatter.apply( format, args, node );
+		// Formatter does not trigger a change event like `execCommand` does.
+		this.onCreateUndoLevel();
 	}
 
 	changeFormats( formats ) {
 		forEach( formats, ( formatValue, format ) => {
 			if ( format === 'link' ) {
-				if ( formatValue !== undefined ) {
+				if ( !! formatValue ) {
 					if ( formatValue.isAdding ) {
 						return;
 					}
 
-					const anchor = this.editor.dom.getParent( this.editor.selection.getNode(), 'a' );
-					if ( ! anchor ) {
-						this.removeFormat( 'link' );
+					const { value: href, target } = formatValue;
+
+					if ( ! this.isFormatActive( 'link' ) && this.editor.selection.isCollapsed() ) {
+						// When no link or text is selected, insert a link with the URL as its text
+						const anchorHTML = this.editor.dom.createHTML(
+							'a',
+							{ href, target },
+							this.editor.dom.encode( href )
+						);
+						this.editor.insertContent( anchorHTML );
+					} else {
+						// Use built-in TinyMCE command turn the selection into a link. This takes
+						// care of deleting any existing links within the selection
+						this.editor.execCommand( 'mceInsertLink', false, { href, target } );
 					}
-					const { value: href, ...params } = formatValue;
-					this.applyFormat( 'link', { href, ...params }, anchor );
 				} else {
 					this.editor.execCommand( 'Unlink' );
 				}
