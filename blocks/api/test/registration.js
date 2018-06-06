@@ -29,10 +29,7 @@ describe( 'blocks', () => {
 	const defaultBlockSettings = { save: noop, category: 'common', title: 'block title' };
 
 	beforeAll( () => {
-		// Load all hooks that modify blocks
-		require( 'editor/hooks' );
-
-		// Initialize the block store
+		// Initialize the block store.
 		require( '../../store' );
 	} );
 
@@ -87,18 +84,12 @@ describe( 'blocks', () => {
 			expect( console ).not.toHaveErrored();
 			expect( block ).toEqual( {
 				name: 'my-plugin/fancy-block-4',
-				icon: 'block-default',
+				icon: {
+					src: 'block-default',
+				},
 				save: noop,
 				category: 'common',
 				title: 'block title',
-				attributes: {
-					className: {
-						type: 'string',
-					},
-					layout: {
-						type: 'string',
-					},
-				},
 			} );
 		} );
 
@@ -178,16 +169,12 @@ describe( 'blocks', () => {
 				save: noop,
 				category: 'common',
 				title: 'block title',
-				icon: 'block-default',
+				icon: {
+					src: 'block-default',
+				},
 				attributes: {
 					ok: {
 						type: 'boolean',
-					},
-					className: {
-						type: 'string',
-					},
-					layout: {
-						type: 'string',
 					},
 				},
 			} );
@@ -203,14 +190,8 @@ describe( 'blocks', () => {
 				save: noop,
 				category: 'common',
 				title: 'block title',
-				icon: 'block-default',
-				attributes: {
-					className: {
-						type: 'string',
-					},
-					layout: {
-						type: 'string',
-					},
+				icon: {
+					src: 'block-default',
 				},
 			} );
 		} );
@@ -249,14 +230,8 @@ describe( 'blocks', () => {
 					save: noop,
 					category: 'common',
 					title: 'block title',
-					icon: 'block-default',
-					attributes: {
-						className: {
-							type: 'string',
-						},
-						layout: {
-							type: 'string',
-						},
+					icon: {
+						src: 'block-default',
 					},
 				},
 			] );
@@ -267,14 +242,8 @@ describe( 'blocks', () => {
 				save: noop,
 				category: 'common',
 				title: 'block title',
-				icon: 'block-default',
-				attributes: {
-					className: {
-						type: 'string',
-					},
-					layout: {
-						type: 'string',
-					},
+				icon: {
+					src: 'block-default',
 				},
 			} );
 			expect( getBlockTypes() ).toEqual( [] );
@@ -317,14 +286,8 @@ describe( 'blocks', () => {
 				save: noop,
 				category: 'common',
 				title: 'block title',
-				icon: 'block-default',
-				attributes: {
-					className: {
-						type: 'string',
-					},
-					layout: {
-						type: 'string',
-					},
+				icon: {
+					src: 'block-default',
 				},
 			} );
 		} );
@@ -338,14 +301,8 @@ describe( 'blocks', () => {
 				save: noop,
 				category: 'common',
 				title: 'block title',
-				icon: 'block-default',
-				attributes: {
-					className: {
-						type: 'string',
-					},
-					layout: {
-						type: 'string',
-					},
+				icon: {
+					src: 'block-default',
 				},
 			} );
 		} );
@@ -366,14 +323,8 @@ describe( 'blocks', () => {
 					save: noop,
 					category: 'common',
 					title: 'block title',
-					icon: 'block-default',
-					attributes: {
-						className: {
-							type: 'string',
-						},
-						layout: {
-							type: 'string',
-						},
+					icon: {
+						src: 'block-default',
 					},
 				},
 				{
@@ -382,14 +333,8 @@ describe( 'blocks', () => {
 					save: noop,
 					category: 'common',
 					title: 'block title',
-					icon: 'block-default',
-					attributes: {
-						className: {
-							type: 'string',
-						},
-						layout: {
-							type: 'string',
-						},
+					icon: {
+						src: 'block-default',
 					},
 				},
 			] );
