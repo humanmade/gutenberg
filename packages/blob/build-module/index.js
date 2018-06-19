@@ -1,9 +1,6 @@
-import _Promise from "babel-runtime/core-js/promise";
 /**
  * Browser dependencies
  */
-var _window = window,
-    fetch = _window.fetch;
 var _window$URL = window.URL,
     createObjectURL = _window$URL.createObjectURL,
     revokeObjectURL = _window$URL.revokeObjectURL;
@@ -11,28 +8,43 @@ var _window$URL = window.URL,
 
 var cache = {};
 
-export function createBlobURL(blob) {
-	var url = createObjectURL(blob);
+/**
+ * Create a blob URL from a file.
+ *
+ * @param {File} file The file to create a blob URL for.
+ *
+ * @return {string} The blob URL.
+ */
+export function createBlobURL(file) {
+  var url = createObjectURL(file);
 
-	cache[url] = blob;
+  cache[url] = file;
 
-	return url;
+  return url;
 }
 
+/**
+ * Retrieve a file based on a blob URL. The file must have been created by
+ * `createBlobURL` and not removed by `revokeBlobURL`, otherwise it will return
+ * `undefined`.
+ *
+ * @param {string} url The blob URL.
+ *
+ * @return {?File} The file for the blob URL.
+ */
 export function getBlobByURL(url) {
-	if (cache[url]) {
-		return _Promise.resolve(cache[url]);
-	}
-
-	return fetch(url).then(function (response) {
-		return response.blob();
-	});
+  return cache[url];
 }
 
+/**
+ * Remove the resource and file cache from memory.
+ *
+ * @param {string} url The blob URL.
+ */
 export function revokeBlobURL(url) {
-	if (cache[url]) {
-		revokeObjectURL(url);
-	}
+  if (cache[url]) {
+    revokeObjectURL(url);
+  }
 
-	delete cache[url];
+  delete cache[url];
 }

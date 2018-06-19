@@ -486,10 +486,15 @@ function dispatch(reducerKey) {
  */
 var withSelect = exports.withSelect = function withSelect(mapStateToProps) {
 	return (0, _element.createHigherOrderComponent)(function (WrappedComponent) {
+		var defaultMergeProps = {};
+		function getNextMergeProps(props) {
+			return mapStateToProps(select, props) || defaultMergeProps;
+		}
+
 		return function (_Component) {
 			(0, _inherits3.default)(ComponentWithSelect, _Component);
 
-			function ComponentWithSelect() {
+			function ComponentWithSelect(props) {
 				(0, _classCallCheck3.default)(this, ComponentWithSelect);
 
 				var _this = (0, _possibleConstructorReturn3.default)(this, (ComponentWithSelect.__proto__ || (0, _getPrototypeOf2.default)(ComponentWithSelect)).apply(this, arguments));
@@ -503,8 +508,13 @@ var withSelect = exports.withSelect = function withSelect(mapStateToProps) {
      * @type {boolean}
      */
 				_this.shouldComponentUpdate = false;
+				_this.state = {
+					mergeProps: getNextMergeProps(props)
+				};
 
-				_this.state = {};
+				// Subscribtion should happen in the constructor
+				// Parent components should subscribe before children.
+				_this.subscribe();
 				return _this;
 			}
 
@@ -512,14 +522,6 @@ var withSelect = exports.withSelect = function withSelect(mapStateToProps) {
 				key: 'shouldComponentUpdate',
 				value: function shouldComponentUpdate() {
 					return this.shouldComponentUpdate;
-				}
-			}, {
-				key: 'componentWillMount',
-				value: function componentWillMount() {
-					this.subscribe();
-
-					// Populate initial state.
-					this.runSelection();
 				}
 			}, {
 				key: 'componentWillReceiveProps',
@@ -556,7 +558,7 @@ var withSelect = exports.withSelect = function withSelect(mapStateToProps) {
 
 					var mergeProps = this.state.mergeProps;
 
-					var nextMergeProps = mapStateToProps(select, props) || {};
+					var nextMergeProps = getNextMergeProps(props);
 
 					if (!(0, _isShallowEqual2.default)(nextMergeProps, mergeProps)) {
 						this.setState({
@@ -596,21 +598,17 @@ var withDispatch = exports.withDispatch = function withDispatch(mapDispatchToPro
 		return function (_Component2) {
 			(0, _inherits3.default)(ComponentWithDispatch, _Component2);
 
-			function ComponentWithDispatch() {
+			function ComponentWithDispatch(props) {
 				(0, _classCallCheck3.default)(this, ComponentWithDispatch);
 
 				var _this2 = (0, _possibleConstructorReturn3.default)(this, (ComponentWithDispatch.__proto__ || (0, _getPrototypeOf2.default)(ComponentWithDispatch)).apply(this, arguments));
 
 				_this2.proxyProps = {};
+				_this2.setProxyProps(props);
 				return _this2;
 			}
 
 			(0, _createClass3.default)(ComponentWithDispatch, [{
-				key: 'componentWillMount',
-				value: function componentWillMount() {
-					this.setProxyProps(this.props);
-				}
-			}, {
 				key: 'componentWillUpdate',
 				value: function componentWillUpdate(nextProps) {
 					this.setProxyProps(nextProps);

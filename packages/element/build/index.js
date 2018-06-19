@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.pure = exports.compose = exports.renderToString = exports.createPortal = exports.createContext = exports.Fragment = exports.Children = exports.findDOMNode = exports.cloneElement = exports.Component = exports.unmountComponentAtNode = exports.render = exports.forwardRef = exports.createRef = exports.createElement = undefined;
+exports.pure = exports.compose = exports.renderToString = exports.createPortal = exports.isValidElement = exports.createContext = exports.Fragment = exports.StrictMode = exports.Children = exports.findDOMNode = exports.cloneElement = exports.Component = exports.unmountComponentAtNode = exports.render = exports.forwardRef = exports.createRef = exports.createElement = undefined;
 
 var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
 
@@ -148,6 +148,7 @@ exports.cloneElement = _react.cloneElement;
 
 exports.findDOMNode = _reactDom.findDOMNode;
 exports.Children = _react.Children;
+exports.StrictMode = _react.StrictMode;
 
 /**
  * A component which renders its children without any wrapping element.
@@ -164,6 +165,16 @@ exports.Fragment = _react.Fragment;
  */
 
 exports.createContext = _react.createContext;
+
+/**
+ * Checks if an object is a valid WPElement
+ *
+ * @param {Object} objectToCheck The object to be checked.
+ *
+ * @return {boolean} true if objectToTest is a valid WPElement and false otherwise.
+ */
+
+exports.isValidElement = _react.isValidElement;
 
 /**
  * Creates a portal into which a component can be rendered.

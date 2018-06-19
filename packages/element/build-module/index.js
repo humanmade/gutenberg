@@ -8,7 +8,7 @@ import _objectWithoutProperties from 'babel-runtime/helpers/objectWithoutPropert
 /**
  * External dependencies
  */
-import { createElement, createContext, createRef, forwardRef, Component, cloneElement, Children, Fragment } from 'react';
+import { createElement, createContext, createRef, forwardRef, Component, cloneElement, Children, Fragment, isValidElement, StrictMode } from 'react';
 import { render, findDOMNode, createPortal, unmountComponentAtNode } from 'react-dom';
 import { camelCase, flowRight, isString, upperFirst } from 'lodash';
 
@@ -98,6 +98,8 @@ export { findDOMNode };
 
 export { Children };
 
+export { StrictMode };
+
 /**
  * A component which renders its children without any wrapping element.
  */
@@ -111,6 +113,15 @@ export { Fragment };
  * @return {Object} Context object.
  */
 export { createContext };
+
+/**
+ * Checks if an object is a valid WPElement
+ *
+ * @param {Object} objectToCheck The object to be checked.
+ *
+ * @return {boolean} true if objectToTest is a valid WPElement and false otherwise.
+ */
+export { isValidElement };
 
 /**
  * Creates a portal into which a component can be rendered.

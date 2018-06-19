@@ -36,6 +36,11 @@ import _Set from 'babel-runtime/core-js/set';
 import { isEmpty, castArray, omit, kebabCase } from 'lodash';
 
 /**
+ * WordPress dependencies
+ */
+import deprecated from '@wordpress/deprecated';
+
+/**
  * Internal dependencies
  */
 import { Fragment, RawHTML } from './';
@@ -368,6 +373,11 @@ export function renderComponent(Component, props) {
 
 	if (typeof instance.componentWillMount === 'function') {
 		instance.componentWillMount();
+		deprecated('componentWillMount', {
+			version: '3.3',
+			alternative: 'the constructor',
+			plugin: 'Gutenberg'
+		});
 	}
 
 	if (typeof instance.getChildContext === 'function') {

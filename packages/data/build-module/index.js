@@ -403,10 +403,15 @@ export function dispatch(reducerKey) {
  */
 export var withSelect = function withSelect(mapStateToProps) {
 	return createHigherOrderComponent(function (WrappedComponent) {
+		var defaultMergeProps = {};
+		function getNextMergeProps(props) {
+			return mapStateToProps(select, props) || defaultMergeProps;
+		}
+
 		return function (_Component) {
 			_inherits(ComponentWithSelect, _Component);
 
-			function ComponentWithSelect() {
+			function ComponentWithSelect(props) {
 				_classCallCheck(this, ComponentWithSelect);
 
 				var _this = _possibleConstructorReturn(this, (ComponentWithSelect.__proto__ || _Object$getPrototypeOf(ComponentWithSelect)).apply(this, arguments));
@@ -420,8 +425,13 @@ export var withSelect = function withSelect(mapStateToProps) {
      * @type {boolean}
      */
 				_this.shouldComponentUpdate = false;
+				_this.state = {
+					mergeProps: getNextMergeProps(props)
+				};
 
-				_this.state = {};
+				// Subscribtion should happen in the constructor
+				// Parent components should subscribe before children.
+				_this.subscribe();
 				return _this;
 			}
 
@@ -429,14 +439,6 @@ export var withSelect = function withSelect(mapStateToProps) {
 				key: 'shouldComponentUpdate',
 				value: function shouldComponentUpdate() {
 					return this.shouldComponentUpdate;
-				}
-			}, {
-				key: 'componentWillMount',
-				value: function componentWillMount() {
-					this.subscribe();
-
-					// Populate initial state.
-					this.runSelection();
 				}
 			}, {
 				key: 'componentWillReceiveProps',
@@ -473,7 +475,7 @@ export var withSelect = function withSelect(mapStateToProps) {
 
 					var mergeProps = this.state.mergeProps;
 
-					var nextMergeProps = mapStateToProps(select, props) || {};
+					var nextMergeProps = getNextMergeProps(props);
 
 					if (!isShallowEqual(nextMergeProps, mergeProps)) {
 						this.setState({
@@ -514,21 +516,17 @@ export var withDispatch = function withDispatch(mapDispatchToProps) {
 		return function (_Component2) {
 			_inherits(ComponentWithDispatch, _Component2);
 
-			function ComponentWithDispatch() {
+			function ComponentWithDispatch(props) {
 				_classCallCheck(this, ComponentWithDispatch);
 
 				var _this2 = _possibleConstructorReturn(this, (ComponentWithDispatch.__proto__ || _Object$getPrototypeOf(ComponentWithDispatch)).apply(this, arguments));
 
 				_this2.proxyProps = {};
+				_this2.setProxyProps(props);
 				return _this2;
 			}
 
 			_createClass(ComponentWithDispatch, [{
-				key: 'componentWillMount',
-				value: function componentWillMount() {
-					this.setProxyProps(this.props);
-				}
-			}, {
 				key: 'componentWillUpdate',
 				value: function componentWillUpdate(nextProps) {
 					this.setProxyProps(nextProps);

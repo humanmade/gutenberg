@@ -33,6 +33,10 @@ exports.renderStyle = renderStyle;
 
 var _lodash = require('lodash');
 
+var _deprecated = require('@wordpress/deprecated');
+
+var _deprecated2 = _interopRequireDefault(_deprecated);
+
 var _ = require('./');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -41,6 +45,23 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Valid attribute types.
  *
  * @type {Set}
+ */
+
+
+/**
+ * WordPress dependencies
+ */
+var ATTRIBUTES_TYPES = new _set2.default(['string', 'boolean', 'number']);
+
+/**
+ * Element tags which can be self-closing.
+ *
+ * @type {Set}
+ */
+
+
+/**
+ * Internal dependencies
  */
 /**
  * Parts of this source were derived and modified from fast-react-render,
@@ -71,18 +92,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 /**
  * External dependencies
- */
-var ATTRIBUTES_TYPES = new _set2.default(['string', 'boolean', 'number']);
-
-/**
- * Element tags which can be self-closing.
- *
- * @type {Set}
- */
-
-
-/**
- * Internal dependencies
  */
 var SELF_CLOSING_TAGS = new _set2.default(['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
 
@@ -401,6 +410,11 @@ function renderComponent(Component, props) {
 
 	if (typeof instance.componentWillMount === 'function') {
 		instance.componentWillMount();
+		(0, _deprecated2.default)('componentWillMount', {
+			version: '3.3',
+			alternative: 'the constructor',
+			plugin: 'Gutenberg'
+		});
 	}
 
 	if (typeof instance.getChildContext === 'function') {
