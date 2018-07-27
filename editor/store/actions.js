@@ -11,6 +11,7 @@ import {
 	getDefaultBlockName,
 	createBlock,
 } from '@wordpress/blocks';
+import deprecated from '@wordpress/deprecated';
 
 /**
  * Returns an action object used in signalling that editor has initialized with
@@ -56,6 +57,21 @@ export function resetAutosave( post ) {
 	return {
 		type: 'RESET_AUTOSAVE',
 		post,
+	};
+}
+
+/**
+ * Returns an action object used in signalling that a patch of updates for the
+ * latest version of the post have been received.
+ *
+ * @param {Object} edits Updated post fields.
+ *
+ * @return {Object} Action object.
+ */
+export function updatePost( edits ) {
+	return {
+		type: 'UPDATE_POST',
+		edits,
 	};
 }
 
@@ -111,43 +127,55 @@ export function receiveBlocks( blocks ) {
 
 /**
  * Returns an action object used in signalling that the block attributes with
- * the specified UID has been updated.
+ * the specified client ID has been updated.
  *
- * @param {string} uid        Block UID.
+ * @param {string} clientId   Block client ID.
  * @param {Object} attributes Block attributes to be merged.
  *
  * @return {Object} Action object.
  */
-export function updateBlockAttributes( uid, attributes ) {
+export function updateBlockAttributes( clientId, attributes ) {
 	return {
 		type: 'UPDATE_BLOCK_ATTRIBUTES',
-		uid,
+		clientId,
 		attributes,
 	};
 }
 
 /**
  * Returns an action object used in signalling that the block with the
- * specified UID has been updated.
+ * specified client ID has been updated.
  *
- * @param {string} uid     Block UID.
- * @param {Object} updates Block attributes to be merged.
+ * @param {string} clientId Block client ID.
+ * @param {Object} updates  Block attributes to be merged.
  *
  * @return {Object} Action object.
  */
-export function updateBlock( uid, updates ) {
+export function updateBlock( clientId, updates ) {
 	return {
 		type: 'UPDATE_BLOCK',
-		uid,
+		clientId,
 		updates,
 	};
 }
 
-export function selectBlock( uid, initialPosition = null ) {
+/**
+ * Returns an action object used in signalling that the block with the
+ * specified client ID has been selected, optionally accepting a position
+ * value reflecting its selection directionality. An initialPosition of -1
+ * reflects a reverse selection.
+ *
+ * @param {string}  clientId        Block client ID.
+ * @param {?number} initialPosition Optional initial position. Pass as -1 to
+ *                                  reflect reverse selection.
+ *
+ * @return {Object} Action object.
+ */
+export function selectBlock( clientId, initialPosition = null ) {
 	return {
 		type: 'SELECT_BLOCK',
 		initialPosition,
-		uid,
+		clientId,
 	};
 }
 
@@ -196,15 +224,15 @@ export function toggleSelection( isSelectionEnabled = true ) {
  * Returns an action object signalling that a blocks should be replaced with
  * one or more replacement blocks.
  *
- * @param {(string|string[])} uids   Block UID(s) to replace.
- * @param {(Object|Object[])} blocks Replacement block(s).
+ * @param {(string|string[])} clientIds Block client ID(s) to replace.
+ * @param {(Object|Object[])} blocks    Replacement block(s).
  *
  * @return {Object} Action object.
  */
-export function replaceBlocks( uids, blocks ) {
+export function replaceBlocks( clientIds, blocks ) {
 	return {
 		type: 'REPLACE_BLOCKS',
-		uids: castArray( uids ),
+		clientIds: castArray( clientIds ),
 		blocks: castArray( blocks ),
 		time: Date.now(),
 	};
@@ -214,30 +242,29 @@ export function replaceBlocks( uids, blocks ) {
  * Returns an action object signalling that a single block should be replaced
  * with one or more replacement blocks.
  *
- * @param {(string|string[])} uid   Block UID(s) to replace.
- * @param {(Object|Object[])} block Replacement block(s).
+ * @param {(string|string[])} clientId Block client ID to replace.
+ * @param {(Object|Object[])} block    Replacement block(s).
  *
  * @return {Object} Action object.
  */
-export function replaceBlock( uid, block ) {
-	return replaceBlocks( uid, block );
+export function replaceBlock( clientId, block ) {
+	return replaceBlocks( clientId, block );
 }
 
 /**
- * Action creator creator which, given the action type to dispatch
- * creates a prop dispatcher callback for
- * managing block movement.
+ * Higher-order action creator which, given the action type to dispatch creates
+ * an action creator for managing block movement.
  *
- * @param {string}   type     Action type to dispatch.
+ * @param {string} type Action type to dispatch.
  *
- * @return {Function} Prop dispatcher callback.
+ * @return {Function} Action creator.
  */
 function createOnMove( type ) {
-	return ( uids, rootUID ) => {
+	return ( clientIds, rootClientId ) => {
 		return {
-			uids: castArray( uids ),
+			clientIds: castArray( clientIds ),
 			type,
-			rootUID,
+			rootClientId,
 		};
 	};
 }
@@ -249,20 +276,20 @@ export const moveBlocksUp = createOnMove( 'MOVE_BLOCKS_UP' );
  * Returns an action object signalling that an indexed block should be moved
  * to a new index.
  *
- * @param  {?string} uid          The UID of the block.
- * @param  {?string} fromRootUID  root UID source.
- * @param  {?string} toRootUID    root UID destination.
- * @param  {?string} layout       layout to move the block into.
- * @param  {number}  index        The index to move the block into.
+ * @param  {?string} clientId         The client ID of the block.
+ * @param  {?string} fromRootClientId Root client ID source.
+ * @param  {?string} toRootClientId   Root client ID destination.
+ * @param  {?string} layout           Layout to move the block into.
+ * @param  {number}  index            The index to move the block into.
  *
  * @return {Object} Action object.
  */
-export function moveBlockToPosition( uid, fromRootUID, toRootUID, layout, index ) {
+export function moveBlockToPosition( clientId, fromRootClientId, toRootClientId, layout, index ) {
 	return {
 		type: 'MOVE_BLOCK_TO_POSITION',
-		fromRootUID,
-		toRootUID,
-		uid,
+		fromRootClientId,
+		toRootClientId,
+		clientId,
 		index,
 		layout,
 	};
@@ -272,32 +299,34 @@ export function moveBlockToPosition( uid, fromRootUID, toRootUID, layout, index 
  * Returns an action object used in signalling that a single block should be
  * inserted, optionally at a specific index respective a root block list.
  *
- * @param {Object}  block   Block object to insert.
- * @param {?number} index   Index at which block should be inserted.
- * @param {?string} rootUID Optional root UID of block list to insert.
+ * @param {Object}  block        Block object to insert.
+ * @param {?number} index        Index at which block should be inserted.
+ * @param {?string} rootClientId Optional root client ID of block list on which
+ *                               to insert.
  *
  * @return {Object} Action object.
  */
-export function insertBlock( block, index, rootUID ) {
-	return insertBlocks( [ block ], index, rootUID );
+export function insertBlock( block, index, rootClientId ) {
+	return insertBlocks( [ block ], index, rootClientId );
 }
 
 /**
  * Returns an action object used in signalling that an array of blocks should
  * be inserted, optionally at a specific index respective a root block list.
  *
- * @param {Object[]} blocks  Block objects to insert.
- * @param {?number}  index   Index at which block should be inserted.
- * @param {?string}  rootUID Optional root UID of block list to insert.
+ * @param {Object[]} blocks       Block objects to insert.
+ * @param {?number}  index        Index at which block should be inserted.
+ * @param {?string}  rootClientId Optional root cliente ID of block list on
+ *                                which to insert.
  *
  * @return {Object} Action object.
  */
-export function insertBlocks( blocks, index, rootUID ) {
+export function insertBlocks( blocks, index, rootClientId ) {
 	return {
 		type: 'INSERT_BLOCKS',
 		blocks: castArray( blocks ),
 		index,
-		rootUID,
+		rootClientId,
 		time: Date.now(),
 	};
 }
@@ -376,7 +405,7 @@ export function editPost( edits ) {
  *
  * @return {Object} Action object.
  */
-export function savePost( options ) {
+export function savePost( options = {} ) {
 	return {
 		type: 'REQUEST_POST_UPDATE',
 		options,
@@ -400,15 +429,15 @@ export function trashPost( postId, postType ) {
 /**
  * Returns an action object used in signalling that two blocks should be merged
  *
- * @param {string} blockAUid UID of the first block to merge.
- * @param {string} blockBUid UID of the second block to merge.
+ * @param {string} firstBlockClientId  Client ID of the first block to merge.
+ * @param {string} secondBlockClientId Client ID of the second block to merge.
  *
  * @return {Object} Action object.
  */
-export function mergeBlocks( blockAUid, blockBUid ) {
+export function mergeBlocks( firstBlockClientId, secondBlockClientId ) {
 	return {
 		type: 'MERGE_BLOCKS',
-		blocks: [ blockAUid, blockBUid ],
+		blocks: [ firstBlockClientId, secondBlockClientId ],
 	};
 }
 
@@ -451,46 +480,49 @@ export function createUndoLevel() {
 }
 
 /**
- * Returns an action object used in signalling that the blocks
- * corresponding to the specified UID set are to be removed.
+ * Returns an action object used in signalling that the blocks corresponding to
+ * the set of specified client IDs are to be removed.
  *
- * @param {string|string[]} uids           Block UIDs.
- * @param {boolean}         selectPrevious True if the previous block should be selected when a block is removed.
+ * @param {string|string[]} clientIds      Client IDs of blocks to remove.
+ * @param {boolean}         selectPrevious True if the previous block should be
+ *                                         selected when a block is removed.
  *
  * @return {Object} Action object.
  */
-export function removeBlocks( uids, selectPrevious = true ) {
+export function removeBlocks( clientIds, selectPrevious = true ) {
 	return {
 		type: 'REMOVE_BLOCKS',
-		uids: castArray( uids ),
+		clientIds: castArray( clientIds ),
 		selectPrevious,
 	};
 }
 
 /**
  * Returns an action object used in signalling that the block with the
- * specified UID is to be removed.
+ * specified client ID is to be removed.
  *
- * @param {string}  uid            Block UID.
- * @param {boolean} selectPrevious True if the previous block should be selected when a block is removed.
+ * @param {string}  clientId       Client ID of block to remove.
+ * @param {boolean} selectPrevious True if the previous block should be
+ *                                 selected when a block is removed.
  *
  * @return {Object} Action object.
  */
-export function removeBlock( uid, selectPrevious = true ) {
-	return removeBlocks( [ uid ], selectPrevious );
+export function removeBlock( clientId, selectPrevious ) {
+	return removeBlocks( [ clientId ], selectPrevious );
 }
 
 /**
- * Returns an action object used to toggle the block editing mode (visual/html).
+ * Returns an action object used to toggle the block editing mode between
+ * visual and HTML modes.
  *
- * @param {string} uid Block UID.
+ * @param {string} clientId Block client ID.
  *
  * @return {Object} Action object.
  */
-export function toggleBlockMode( uid ) {
+export function toggleBlockMode( clientId ) {
 	return {
 		type: 'TOGGLE_BLOCK_MODE',
-		uid,
+		clientId,
 	};
 }
 
@@ -565,126 +597,127 @@ export const createErrorNotice = partial( createNotice, 'error' );
 export const createWarningNotice = partial( createNotice, 'warning' );
 
 /**
- * Returns an action object used to fetch a single shared block or all shared
- * blocks from the REST API into the store.
+ * Returns an action object used to fetch a single reusable block or all
+ * reusable blocks from the REST API into the store.
  *
- * @param {?string} id If given, only a single shared block with this ID will
+ * @param {?string} id If given, only a single reusable block with this ID will
  *                     be fetched.
  *
  * @return {Object} Action object.
  */
-export function fetchSharedBlocks( id ) {
+export function fetchReusableBlocks( id ) {
 	return {
-		type: 'FETCH_SHARED_BLOCKS',
+		type: 'FETCH_REUSABLE_BLOCKS',
 		id,
 	};
 }
 
 /**
- * Returns an action object used in signalling that shared blocks have been
+ * Returns an action object used in signalling that reusable blocks have been
  * received. `results` is an array of objects containing:
- *  - `sharedBlock` - Details about how the shared block is persisted.
+ *  - `reusableBlock` - Details about how the reusable block is persisted.
  *  - `parsedBlock` - The original block.
  *
- * @param {Object[]} results Shared blocks received.
+ * @param {Object[]} results Reusable blocks received.
  *
  * @return {Object} Action object.
  */
-export function receiveSharedBlocks( results ) {
+export function receiveReusableBlocks( results ) {
 	return {
-		type: 'RECEIVE_SHARED_BLOCKS',
+		type: 'RECEIVE_REUSABLE_BLOCKS',
 		results,
 	};
 }
 
 /**
- * Returns an action object used to save a shared block that's in the store to
+ * Returns an action object used to save a reusable block that's in the store to
  * the REST API.
  *
- * @param {Object} id The ID of the shared block to save.
+ * @param {Object} id The ID of the reusable block to save.
  *
  * @return {Object} Action object.
  */
-export function saveSharedBlock( id ) {
+export function saveReusableBlock( id ) {
 	return {
-		type: 'SAVE_SHARED_BLOCK',
+		type: 'SAVE_REUSABLE_BLOCK',
 		id,
 	};
 }
 
 /**
- * Returns an action object used to delete a shared block via the REST API.
+ * Returns an action object used to delete a reusable block via the REST API.
  *
- * @param {number} id The ID of the shared block to delete.
+ * @param {number} id The ID of the reusable block to delete.
  *
  * @return {Object} Action object.
  */
-export function deleteSharedBlock( id ) {
+export function deleteReusableBlock( id ) {
 	return {
-		type: 'DELETE_SHARED_BLOCK',
+		type: 'DELETE_REUSABLE_BLOCK',
 		id,
 	};
 }
 
 /**
- * Returns an action object used in signalling that a shared block's title is
+ * Returns an action object used in signalling that a reusable block's title is
  * to be updated.
  *
- * @param {number} id    The ID of the shared block to update.
+ * @param {number} id    The ID of the reusable block to update.
  * @param {string} title The new title.
  *
  * @return {Object} Action object.
  */
-export function updateSharedBlockTitle( id, title ) {
+export function updateReusableBlockTitle( id, title ) {
 	return {
-		type: 'UPDATE_SHARED_BLOCK_TITLE',
+		type: 'UPDATE_REUSABLE_BLOCK_TITLE',
 		id,
 		title,
 	};
 }
 
 /**
- * Returns an action object used to convert a shared block into a static block.
+ * Returns an action object used to convert a reusable block into a static block.
  *
- * @param {Object} uid The ID of the block to attach.
+ * @param {string} clientId The client ID of the block to attach.
  *
  * @return {Object} Action object.
  */
-export function convertBlockToStatic( uid ) {
+export function convertBlockToStatic( clientId ) {
 	return {
 		type: 'CONVERT_BLOCK_TO_STATIC',
-		uid,
+		clientId,
 	};
 }
 
 /**
- * Returns an action object used to convert a static block into a shared block.
+ * Returns an action object used to convert a static block into a reusable block.
  *
- * @param {Object} uid The ID of the block to detach.
+ * @param {string} clientId The client ID of the block to detach.
  *
  * @return {Object} Action object.
  */
-export function convertBlockToShared( uid ) {
+export function convertBlockToReusable( clientId ) {
 	return {
-		type: 'CONVERT_BLOCK_TO_SHARED',
-		uid,
+		type: 'CONVERT_BLOCK_TO_REUSABLE',
+		clientId,
 	};
 }
 /**
  * Returns an action object used in signalling that a new block of the default
  * type should be added to the block list.
  *
- * @param {?Object} attributes Optional attributes of the block to assign.
- * @param {?string} rootUID    Optional root UID of block list to append.
- * @param {?number} index      Optional index where to insert the default block
+ * @param {?Object} attributes   Optional attributes of the block to assign.
+ * @param {?string} rootClientId Optional root client ID of block list on which
+ *                               to append.
+ * @param {?number} index        Optional index where to insert the default block
  *
  * @return {Object} Action object
  */
-export function insertDefaultBlock( attributes, rootUID, index ) {
+export function insertDefaultBlock( attributes, rootClientId, index ) {
 	const block = createBlock( getDefaultBlockName(), attributes );
 
 	return {
-		...insertBlock( block, index, rootUID ),
+		...insertBlock( block, index, rootClientId ),
 		isProvisional: true,
 	};
 }
@@ -692,15 +725,16 @@ export function insertDefaultBlock( attributes, rootUID, index ) {
 /**
  * Returns an action object that changes the nested settings of a given block.
  *
- * @param {string} id       UID of the block whose nested setting.
+ * @param {string} clientId Client ID of the block whose nested setting are
+ *                          being received.
  * @param {Object} settings Object with the new settings for the nested block.
  *
  * @return {Object} Action object
  */
-export function updateBlockListSettings( id, settings ) {
+export function updateBlockListSettings( clientId, settings ) {
 	return {
 		type: 'UPDATE_BLOCK_LIST_SETTINGS',
-		id,
+		clientId,
 		settings,
 	};
 }
@@ -717,4 +751,79 @@ export function updateEditorSettings( settings ) {
 		type: 'UPDATE_EDITOR_SETTINGS',
 		settings,
 	};
+}
+
+export function registerToken( name, settings ) {
+	return {
+		type: 'REGISTER_TOKEN',
+		name,
+		settings,
+	};
+}
+
+export function unregisterToken( name ) {
+	return {
+		type: 'UNREGISTER_TOKEN',
+		name,
+	};
+}
+
+export function fetchSharedBlocks( id ) {
+	deprecated( 'fetchSharedBlocks', {
+		alternative: 'fetchReusableBlocks',
+		version: '3.6',
+		plugin: 'Gutenberg',
+	} );
+
+	return fetchReusableBlocks( id );
+}
+
+export function receiveSharedBlocks( results ) {
+	deprecated( 'receiveSharedBlocks', {
+		alternative: 'receiveReusableBlocks',
+		version: '3.6',
+		plugin: 'Gutenberg',
+	} );
+
+	return receiveReusableBlocks( results );
+}
+
+export function saveSharedBlock( id ) {
+	deprecated( 'saveSharedBlock', {
+		alternative: 'saveReusableBlock',
+		version: '3.6',
+		plugin: 'Gutenberg',
+	} );
+
+	return saveReusableBlock( id );
+}
+
+export function deleteSharedBlock( id ) {
+	deprecated( 'deleteSharedBlock', {
+		alternative: 'deleteReusableBlock',
+		version: '3.6',
+		plugin: 'Gutenberg',
+	} );
+
+	return deleteReusableBlock( id );
+}
+
+export function updateSharedBlockTitle( id, title ) {
+	deprecated( 'updateSharedBlockTitle', {
+		alternative: 'updateReusableBlockTitle',
+		version: '3.6',
+		plugin: 'Gutenberg',
+	} );
+
+	return updateReusableBlockTitle( id, title );
+}
+
+export function convertBlockToSaved( clientId ) {
+	deprecated( 'convertBlockToSaved', {
+		alternative: 'convertBlockToReusable',
+		version: '3.6',
+		plugin: 'Gutenberg',
+	} );
+
+	return convertBlockToReusable( clientId );
 }

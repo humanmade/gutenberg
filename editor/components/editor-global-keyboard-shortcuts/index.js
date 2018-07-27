@@ -1,17 +1,16 @@
 /**
  * External dependencies
  */
-import { first, last } from 'lodash';
+import { first, last, some } from 'lodash';
 
 /**
  * WordPress dependencies
  */
-import { Component, Fragment, compose } from '@wordpress/element';
+import { Component, Fragment } from '@wordpress/element';
 import { KeyboardShortcuts } from '@wordpress/components';
 import { withSelect, withDispatch } from '@wordpress/data';
-import { keycodes } from '@wordpress/utils';
-
-const { rawShortcut } = keycodes;
+import { rawShortcut } from '@wordpress/keycodes';
+import { compose } from '@wordpress/compose';
 
 class EditorGlobalKeyboardShortcuts extends Component {
 	constructor() {
@@ -25,9 +24,9 @@ class EditorGlobalKeyboardShortcuts extends Component {
 	}
 
 	selectAll( event ) {
-		const { uids, onMultiSelect } = this.props;
+		const { clientIds, onMultiSelect } = this.props;
 		event.preventDefault();
-		onMultiSelect( first( uids ), last( uids ) );
+		onMultiSelect( first( clientIds ), last( clientIds ) );
 	}
 
 	undoOrRedo( event ) {
@@ -48,11 +47,11 @@ class EditorGlobalKeyboardShortcuts extends Component {
 	}
 
 	deleteSelectedBlocks( event ) {
-		const { multiSelectedBlockUids, onRemove, isLocked } = this.props;
-		if ( multiSelectedBlockUids.length ) {
+		const { multiSelectedBlockClientIds, onRemove, isLocked } = this.props;
+		if ( multiSelectedBlockClientIds.length ) {
 			event.preventDefault();
 			if ( ! isLocked ) {
-				onRemove( multiSelectedBlockUids );
+				onRemove( multiSelectedBlockClientIds );
 			}
 		}
 	}
@@ -96,18 +95,22 @@ export default compose( [
 	withSelect( ( select ) => {
 		const {
 			getBlockOrder,
-			getMultiSelectedBlockUids,
+			getMultiSelectedBlockClientIds,
 			hasMultiSelection,
-			getEditorSettings,
 			isEditedPostDirty,
+			getBlockRootClientId,
+			getTemplateLock,
 		} = select( 'core/editor' );
-		const { templateLock } = getEditorSettings();
+		const multiSelectedBlockClientIds = getMultiSelectedBlockClientIds();
 
 		return {
-			uids: getBlockOrder(),
-			multiSelectedBlockUids: getMultiSelectedBlockUids(),
+			clientIds: getBlockOrder(),
+			multiSelectedBlockClientIds,
 			hasMultiSelection: hasMultiSelection(),
-			isLocked: !! templateLock,
+			isLocked: some(
+				multiSelectedBlockClientIds,
+				( clientId ) => !! getTemplateLock( getBlockRootClientId( clientId ) )
+			),
 			isDirty: isEditedPostDirty(),
 		};
 	} ),

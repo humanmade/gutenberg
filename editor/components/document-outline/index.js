@@ -7,7 +7,7 @@ import { countBy, flatMap, get } from 'lodash';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { compose } from '@wordpress/element';
+import { compose } from '@wordpress/compose';
 import { withSelect, withDispatch } from '@wordpress/data';
 
 /**
@@ -15,6 +15,7 @@ import { withSelect, withDispatch } from '@wordpress/data';
  */
 import './style.scss';
 import DocumentOutlineItem from './item';
+import RichText from './../rich-text';
 
 /**
  * Module constants
@@ -33,28 +34,6 @@ const multipleH1Headings = [
 	<em key="incorrect-message-multiple-h1">{ __( '(Multiple H1 headings are not recommended)' ) }</em>,
 ];
 
-const getHeadingLevel = ( heading ) => {
-	switch ( heading.attributes.nodeName ) {
-		case 'h1':
-		case 'H1':
-			return 1;
-		case 'h2':
-		case 'H2':
-			return 2;
-		case 'h3':
-		case 'H3':
-			return 3;
-		case 'h4':
-		case 'H4':
-			return 4;
-		case 'h5':
-		case 'H5':
-			return 5;
-		case 'h6':
-		case 'H6':
-			return 6;
-	}
-};
 /**
  * Returns an array of heading blocks enhanced with the following properties:
  * path    - An array of blocks that are ancestors of the heading starting from a top-level node.
@@ -73,7 +52,7 @@ const computeOutlineHeadings = ( blocks = [], path = [] ) => {
 			return {
 				...block,
 				path,
-				level: getHeadingLevel( block ),
+				level: block.attributes.level,
 				isEmpty: isEmptyHeading( block ),
 			};
 		}
@@ -94,7 +73,7 @@ export const DocumentOutline = ( { blocks = [], title, onSelect, isTitleSupporte
 
 	// Select the corresponding block in the main editor
 	// when clicking on a heading item from the list.
-	const onSelectHeading = ( uid ) => onSelect( uid );
+	const onSelectHeading = ( clientId ) => onSelect( clientId );
 	const focusTitle = () => {
 		// Not great but it's the simplest way to focus the title right now.
 		const titleNode = document.querySelector( '.editor-post-title__input' );
@@ -137,10 +116,16 @@ export const DocumentOutline = ( { blocks = [], title, onSelect, isTitleSupporte
 							key={ index }
 							level={ `H${ item.level }` }
 							isValid={ isValid }
-							onClick={ () => onSelectHeading( item.uid ) }
+							onClick={ () => onSelectHeading( item.clientId ) }
 							path={ item.path }
 						>
-							{ item.isEmpty ? emptyHeadingContent : item.attributes.content }
+							{ item.isEmpty ?
+								emptyHeadingContent :
+								<RichText.Content
+									tagName="span"
+									value={ item.attributes.content }
+								/>
+							}
 							{ isIncorrectLevel && incorrectLevelContent }
 							{ item.level === 1 && hasMultipleH1 && multipleH1Headings }
 							{ hasTitle && item.level === 1 && ! hasMultipleH1 && singleH1Headings }

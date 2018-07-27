@@ -21,50 +21,53 @@ import { getBlockDOMNode } from '../../utils/dom';
  * ```
  */
 class PreserveScrollInReorder extends Component {
-	componentWillUpdate( nextProps ) {
-		const { blockOrder, selectionStart } = nextProps;
-		if ( blockOrder !== this.props.blockOrder && selectionStart ) {
-			this.setPreviousOffset( selectionStart );
+	getSnapshotBeforeUpdate( prevProps ) {
+		const { blockOrder, selectionStart } = this.props;
+		if ( blockOrder !== prevProps.blockOrder && selectionStart ) {
+			return this.getOffset( selectionStart );
 		}
+
+		return null;
 	}
 
-	componentDidUpdate() {
-		if ( this.previousOffset ) {
-			this.restorePreviousOffset();
+	componentDidUpdate( prevProps, prevState, snapshot ) {
+		if ( snapshot ) {
+			this.restorePreviousOffset( snapshot );
 		}
 	}
 
 	/**
-	 * Given the block UID of the start of the selection, saves the block's
-	 * top offset as an instance property before a reorder is to occur.
+	 * Given the block client ID of the start of the selection, saves the
+	 * block's top offset as an instance property before a reorder is to occur.
 	 *
-	 * @param {string} selectionStart UID of selected block.
+	 * @param {string} selectionStart Client ID of selected block.
+	 *
+	 * @return {number?} The scroll offset.
 	 */
-	setPreviousOffset( selectionStart ) {
+	getOffset( selectionStart ) {
 		const blockNode = getBlockDOMNode( selectionStart );
 		if ( ! blockNode ) {
-			return;
+			return null;
 		}
 
-		this.previousOffset = blockNode.getBoundingClientRect().top;
+		return blockNode.getBoundingClientRect().top;
 	}
 
 	/**
 	 * After a block reordering, restores the previous viewport top offset.
+	 *
+	 * @param {number} offset The scroll offset.
 	 */
-	restorePreviousOffset() {
+	restorePreviousOffset( offset ) {
 		const { selectionStart } = this.props;
 		const blockNode = getBlockDOMNode( selectionStart );
 		if ( blockNode ) {
 			const scrollContainer = getScrollContainer( blockNode );
 			if ( scrollContainer ) {
 				scrollContainer.scrollTop = scrollContainer.scrollTop +
-					blockNode.getBoundingClientRect().top -
-					this.previousOffset;
+					blockNode.getBoundingClientRect().top - offset;
 			}
 		}
-
-		delete this.previousOffset;
 	}
 
 	render() {

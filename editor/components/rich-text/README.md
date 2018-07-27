@@ -6,9 +6,9 @@ Render a rich [`contenteditable` input](https://developer.mozilla.org/en-US/docs
 
 ### `format: String`
 
-*Optional.* Format of the RichText provided value prop. It can be `element` or `string`.
+*Optional.* Format of the RichText provided value prop. It can be `children` or `string`.
 
-*Default: `element`*.
+*Default: `children`*.
 
 ### `value: Array|String`
 
@@ -62,11 +62,6 @@ Render a rich [`contenteditable` input](https://developer.mozilla.org/en-US/docs
 ### `autocompleters: Array<Completer>`
 
 *Optional.* A list of autocompleters to use instead of the default.
-
-### `aria-multiline: Boolean`
-
-*Default: `true`.* [aria-multiline](https://www.w3.org/TR/wai-aria-1.1/#aria-multiline) indicates whether a text box accepts multiple lines of input or only a single line.
-If the context where the RichText is being used is closer to a `<textarea />` than to a `<input type="text">` (multiple lines can be rendered to represent the input) aria-multiline should be equal to true (default) otherwise false should be used.
 
 ## RichText.Content
 
