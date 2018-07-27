@@ -1,14 +1,15 @@
 /**
  * External dependencies
  */
-import { get } from 'lodash';
+import { has, get } from 'lodash';
 
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Spinner, ResponsiveWrapper } from '@wordpress/components';
-import { compose } from '@wordpress/element';
+import { applyFilters } from '@wordpress/hooks';
+import { Button, Spinner, ResponsiveWrapper, withFilters } from '@wordpress/components';
+import { compose } from '@wordpress/compose';
 import { withSelect, withDispatch } from '@wordpress/data';
 
 /**
@@ -20,28 +21,42 @@ import MediaUpload from '../media-upload';
 
 // Used when labels from post type were not yet loaded or when they are not present.
 const DEFAULT_SET_FEATURE_IMAGE_LABEL = __( 'Set featured image' );
-const DEFAULT_REMOVE_FEATURE_IMAGE_LABEL = __( 'Remove featured image' );
+const DEFAULT_REMOVE_FEATURE_IMAGE_LABEL = __( 'Remove image' );
 
-function PostFeaturedImage( { featuredImageId, onUpdateImage, onRemoveImage, media, postType } ) {
+function PostFeaturedImage( { currentPostId, featuredImageId, onUpdateImage, onRemoveImage, media, postType } ) {
 	const postLabel = get( postType, [ 'labels' ], {} );
+
+	let mediaWidth, mediaHeight, mediaSourceUrl;
+	if ( media ) {
+		const mediaSize = applyFilters( 'editor.PostFeaturedImage.imageSize', 'post-thumbnail', media.id, currentPostId );
+		if ( has( media, [ 'media_details', 'sizes', mediaSize ] ) ) {
+			mediaWidth = media.media_details.sizes[ mediaSize ].width;
+			mediaHeight = media.media_details.sizes[ mediaSize ].height;
+			mediaSourceUrl = media.media_details.sizes[ mediaSize ].source_url;
+		} else {
+			mediaWidth = media.media_details.width;
+			mediaHeight = media.media_details.height;
+			mediaSourceUrl = media.source_url;
+		}
+	}
 
 	return (
 		<PostFeaturedImageCheck>
 			<div className="editor-post-featured-image">
 				{ !! featuredImageId &&
 					<MediaUpload
-						title={ postLabel.set_featured_image }
+						title={ __( 'Set featured image' ) }
 						onSelect={ onUpdateImage }
 						type="image"
 						modalClass="editor-post-featured-image__media-modal"
 						render={ ( { open } ) => (
-							<Button className="editor-post-featured-image__preview" onClick={ open } isLink>
+							<Button className="editor-post-featured-image__preview" onClick={ open }>
 								{ media &&
 									<ResponsiveWrapper
-										naturalWidth={ media.media_details.width }
-										naturalHeight={ media.media_details.height }
+										naturalWidth={ mediaWidth }
+										naturalHeight={ mediaHeight }
 									>
-										<img src={ media.source_url } alt={ __( 'Featured image' ) } />
+										<img src={ mediaSourceUrl } alt={ __( 'Featured image' ) } />
 									</ResponsiveWrapper>
 								}
 								{ ! media && <Spinner /> }
@@ -50,25 +65,35 @@ function PostFeaturedImage( { featuredImageId, onUpdateImage, onRemoveImage, med
 					/>
 				}
 				{ !! featuredImageId && media && ! media.isLoading &&
-					<p className="editor-post-featured-image__howto">
-						{ __( 'Click the image to edit or update' ) }
-					</p>
+				<MediaUpload
+					title={ postLabel.set_featured_image || DEFAULT_SET_FEATURE_IMAGE_LABEL }
+					onSelect={ onUpdateImage }
+					type="image"
+					modalClass="editor-post-featured-image__media-modal"
+					render={ ( { open } ) => (
+						<Button onClick={ open } isDefault isLarge>
+							{ __( 'Replace image' ) }
+						</Button>
+					) }
+				/>
 				}
 				{ ! featuredImageId &&
-					<MediaUpload
-						title={ postLabel.set_featured_image || DEFAULT_SET_FEATURE_IMAGE_LABEL }
-						onSelect={ onUpdateImage }
-						type="image"
-						modalClass="editor-post-featured-image__media-modal"
-						render={ ( { open } ) => (
-							<Button className="editor-post-featured-image__toggle" onClick={ open } isLink>
-								{ postLabel.set_featured_image || DEFAULT_SET_FEATURE_IMAGE_LABEL }
-							</Button>
-						) }
-					/>
+					<div>
+						<MediaUpload
+							title={ postLabel.set_featured_image || DEFAULT_SET_FEATURE_IMAGE_LABEL }
+							onSelect={ onUpdateImage }
+							type="image"
+							modalClass="editor-post-featured-image__media-modal"
+							render={ ( { open } ) => (
+								<Button className="editor-post-featured-image__toggle" onClick={ open }>
+									{ __( 'Set featured image' ) }
+								</Button>
+							) }
+						/>
+					</div>
 				}
 				{ !! featuredImageId &&
-					<Button className="editor-post-featured-image__toggle" onClick={ onRemoveImage } isLink>
+					<Button onClick={ onRemoveImage } isLink isDestructive>
 						{ postLabel.remove_featured_image || DEFAULT_REMOVE_FEATURE_IMAGE_LABEL }
 					</Button>
 				}
@@ -79,11 +104,12 @@ function PostFeaturedImage( { featuredImageId, onUpdateImage, onRemoveImage, med
 
 const applyWithSelect = withSelect( ( select ) => {
 	const { getMedia, getPostType } = select( 'core' );
-	const { getEditedPostAttribute } = select( 'core/editor' );
+	const { getCurrentPostId, getEditedPostAttribute } = select( 'core/editor' );
 	const featuredImageId = getEditedPostAttribute( 'featured_media' );
 
 	return {
 		media: featuredImageId ? getMedia( featuredImageId ) : null,
+		currentPostId: getCurrentPostId(),
 		postType: getPostType( getEditedPostAttribute( 'type' ) ),
 		featuredImageId,
 	};
@@ -104,4 +130,5 @@ const applyWithDispatch = withDispatch( ( dispatch ) => {
 export default compose(
 	applyWithSelect,
 	applyWithDispatch,
+	withFilters( 'editor.PostFeaturedImage' ),
 )( PostFeaturedImage );

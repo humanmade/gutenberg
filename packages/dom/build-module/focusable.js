@@ -1,9 +1,10 @@
-import _toConsumableArray from 'babel-runtime/helpers/toConsumableArray';
+import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
+import "core-js/modules/es6.function.name";
+
 /**
  * External dependencies
  */
 import 'element-closest';
-
 /**
  * References:
  *
@@ -24,7 +25,6 @@ import 'element-closest';
  */
 
 var SELECTOR = ['[tabindex]', 'a[href]', 'button:not([disabled])', 'input:not([type="hidden"]):not([disabled])', 'select:not([disabled])', 'textarea:not([disabled])', 'iframe', 'object', 'embed', 'area[href]', '[contenteditable]:not([contenteditable=false])'].join(',');
-
 /**
  * Returns true if the specified element is visible (i.e. neither display: none
  * nor visibility: hidden).
@@ -33,10 +33,10 @@ var SELECTOR = ['[tabindex]', 'a[href]', 'button:not([disabled])', 'input:not([t
  *
  * @return {boolean} Whether element is visible.
  */
+
 function isVisible(element) {
   return element.offsetWidth > 0 || element.offsetHeight > 0 || element.getClientRects().length > 0;
 }
-
 /**
  * Returns true if the specified area element is a valid focusable element, or
  * false otherwise. Area is only focusable if within a map where a named map
@@ -46,8 +46,11 @@ function isVisible(element) {
  *
  * @return {boolean} Whether area element is valid for focus.
  */
+
+
 function isValidFocusableArea(element) {
   var map = element.closest('map[name]');
+
   if (!map) {
     return false;
   }
@@ -55,7 +58,6 @@ function isValidFocusableArea(element) {
   var img = document.querySelector('img[usemap="#' + map.name + '"]');
   return !!img && isVisible(img);
 }
-
 /**
  * Returns all focusable elements within a given context.
  *
@@ -63,10 +65,11 @@ function isValidFocusableArea(element) {
  *
  * @return {Element[]} Focusable elements.
  */
+
+
 export function find(context) {
   var elements = context.querySelectorAll(SELECTOR);
-
-  return [].concat(_toConsumableArray(elements)).filter(function (element) {
+  return _toConsumableArray(elements).filter(function (element) {
     if (!isVisible(element)) {
       return false;
     }

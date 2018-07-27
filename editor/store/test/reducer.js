@@ -30,10 +30,10 @@ import {
 	preferences,
 	saving,
 	notices,
-	provisionalBlockUID,
+	provisionalBlockClientId,
 	blocksMode,
 	isInsertionPointVisible,
-	sharedBlocks,
+	reusableBlocks,
 	template,
 	blockListSettings,
 	autosave,
@@ -73,14 +73,14 @@ describe( 'state', () => {
 		it( 'should return false if not updating the same block', () => {
 			const action = {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
-				uid: '9db792c6-a25a-495d-adbd-97d56a4c4189',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
 				attributes: {
 					foo: 10,
 				},
 			};
 			const previousAction = {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
-				uid: 'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1',
+				clientId: 'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1',
 				attributes: {
 					foo: 20,
 				},
@@ -92,14 +92,14 @@ describe( 'state', () => {
 		it( 'should return false if not updating the same block attributes', () => {
 			const action = {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
-				uid: '9db792c6-a25a-495d-adbd-97d56a4c4189',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
 				attributes: {
 					foo: 10,
 				},
 			};
 			const previousAction = {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
-				uid: '9db792c6-a25a-495d-adbd-97d56a4c4189',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
 				attributes: {
 					bar: 20,
 				},
@@ -111,14 +111,14 @@ describe( 'state', () => {
 		it( 'should return true if updating the same block attributes', () => {
 			const action = {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
-				uid: '9db792c6-a25a-495d-adbd-97d56a4c4189',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
 				attributes: {
 					foo: 10,
 				},
 			};
 			const previousAction = {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
-				uid: '9db792c6-a25a-495d-adbd-97d56a4c4189',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
 				attributes: {
 					foo: 20,
 				},
@@ -132,14 +132,14 @@ describe( 'state', () => {
 		it( 'should return false if not editing post', () => {
 			const action = {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
-				uid: 'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1',
+				clientId: 'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1',
 				attributes: {
 					foo: 10,
 				},
 			};
 			const previousAction = {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
-				uid: 'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1',
+				clientId: 'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1',
 				attributes: {
 					foo: 10,
 				},
@@ -216,14 +216,14 @@ describe( 'state', () => {
 		it( 'should return true if updating same block attribute', () => {
 			const action = {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
-				uid: '9db792c6-a25a-495d-adbd-97d56a4c4189',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
 				attributes: {
 					foo: 10,
 				},
 			};
 			const previousAction = {
 				type: 'UPDATE_BLOCK_ATTRIBUTES',
-				uid: '9db792c6-a25a-495d-adbd-97d56a4c4189',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
 				attributes: {
 					foo: 20,
 				},
@@ -278,43 +278,43 @@ describe( 'state', () => {
 			unregisterBlockType( 'core/test-block' );
 		} );
 
-		it( 'should return history (empty edits, blocksByUID, blockOrder), dirty flag by default', () => {
+		it( 'should return history (empty edits, blocksByClientId, blockOrder), dirty flag by default', () => {
 			const state = editor( undefined, {} );
 
 			expect( state.past ).toEqual( [] );
 			expect( state.future ).toEqual( [] );
 			expect( state.present.edits ).toEqual( {} );
-			expect( state.present.blocksByUID ).toEqual( {} );
+			expect( state.present.blocksByClientId ).toEqual( {} );
 			expect( state.present.blockOrder ).toEqual( {} );
 			expect( state.isDirty ).toBe( false );
 		} );
 
-		it( 'should key by reset blocks uid', () => {
+		it( 'should key by reset blocks clientId', () => {
 			const original = editor( undefined, {} );
 			const state = editor( original, {
 				type: 'RESET_BLOCKS',
-				blocks: [ { uid: 'bananas', innerBlocks: [] } ],
+				blocks: [ { clientId: 'bananas', innerBlocks: [] } ],
 			} );
 
-			expect( Object.keys( state.present.blocksByUID ) ).toHaveLength( 1 );
-			expect( values( state.present.blocksByUID )[ 0 ].uid ).toBe( 'bananas' );
+			expect( Object.keys( state.present.blocksByClientId ) ).toHaveLength( 1 );
+			expect( values( state.present.blocksByClientId )[ 0 ].clientId ).toBe( 'bananas' );
 			expect( state.present.blockOrder ).toEqual( {
 				'': [ 'bananas' ],
 				bananas: [],
 			} );
 		} );
 
-		it( 'should key by reset blocks uid, including inner blocks', () => {
+		it( 'should key by reset blocks clientId, including inner blocks', () => {
 			const original = editor( undefined, {} );
 			const state = editor( original, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'bananas',
-					innerBlocks: [ { uid: 'apples', innerBlocks: [] } ],
+					clientId: 'bananas',
+					innerBlocks: [ { clientId: 'apples', innerBlocks: [] } ],
 				} ],
 			} );
 
-			expect( Object.keys( state.present.blocksByUID ) ).toHaveLength( 2 );
+			expect( Object.keys( state.present.blocksByClientId ) ).toHaveLength( 2 );
 			expect( state.present.blockOrder ).toEqual( {
 				'': [ 'bananas' ],
 				apples: [],
@@ -326,7 +326,7 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -335,14 +335,14 @@ describe( 'state', () => {
 			const state = editor( original, {
 				type: 'INSERT_BLOCKS',
 				blocks: [ {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/freeform',
 					innerBlocks: [],
 				} ],
 			} );
 
-			expect( Object.keys( state.present.blocksByUID ) ).toHaveLength( 2 );
-			expect( values( state.present.blocksByUID )[ 1 ].uid ).toBe( 'ribs' );
+			expect( Object.keys( state.present.blocksByClientId ) ).toHaveLength( 2 );
+			expect( values( state.present.blocksByClientId )[ 1 ].clientId ).toBe( 'ribs' );
 			expect( state.present.blockOrder ).toEqual( {
 				'': [ 'chicken', 'ribs' ],
 				chicken: [],
@@ -354,7 +354,7 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -362,17 +362,17 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'REPLACE_BLOCKS',
-				uids: [ 'chicken' ],
+				clientIds: [ 'chicken' ],
 				blocks: [ {
-					uid: 'wings',
+					clientId: 'wings',
 					name: 'core/freeform',
 					innerBlocks: [],
 				} ],
 			} );
 
-			expect( Object.keys( state.present.blocksByUID ) ).toHaveLength( 1 );
-			expect( values( state.present.blocksByUID )[ 0 ].name ).toBe( 'core/freeform' );
-			expect( values( state.present.blocksByUID )[ 0 ].uid ).toBe( 'wings' );
+			expect( Object.keys( state.present.blocksByClientId ) ).toHaveLength( 1 );
+			expect( values( state.present.blocksByClientId )[ 0 ].name ).toBe( 'core/freeform' );
+			expect( values( state.present.blocksByClientId )[ 0 ].clientId ).toBe( 'wings' );
 			expect( state.present.blockOrder ).toEqual( {
 				'': [ 'wings' ],
 				wings: [],
@@ -390,22 +390,22 @@ describe( 'state', () => {
 
 			const state = editor( original, {
 				type: 'REPLACE_BLOCKS',
-				uids: [ nestedBlock.uid ],
+				clientIds: [ nestedBlock.clientId ],
 				blocks: [ replacementBlock ],
 			} );
 
 			expect( state.present.blockOrder ).toEqual( {
-				'': [ wrapperBlock.uid ],
-				[ wrapperBlock.uid ]: [ replacementBlock.uid ],
-				[ replacementBlock.uid ]: [],
+				'': [ wrapperBlock.clientId ],
+				[ wrapperBlock.clientId ]: [ replacementBlock.clientId ],
+				[ replacementBlock.clientId ]: [],
 			} );
 		} );
 
-		it( 'should replace the block even if the new block uid is the same', () => {
+		it( 'should replace the block even if the new block clientId is the same', () => {
 			const originalState = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -413,32 +413,32 @@ describe( 'state', () => {
 			} );
 			const replacedState = editor( originalState, {
 				type: 'REPLACE_BLOCKS',
-				uids: [ 'chicken' ],
+				clientIds: [ 'chicken' ],
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/freeform',
 					innerBlocks: [],
 				} ],
 			} );
 
-			expect( Object.keys( replacedState.present.blocksByUID ) ).toHaveLength( 1 );
-			expect( values( originalState.present.blocksByUID )[ 0 ].name ).toBe( 'core/test-block' );
-			expect( values( replacedState.present.blocksByUID )[ 0 ].name ).toBe( 'core/freeform' );
-			expect( values( replacedState.present.blocksByUID )[ 0 ].uid ).toBe( 'chicken' );
+			expect( Object.keys( replacedState.present.blocksByClientId ) ).toHaveLength( 1 );
+			expect( values( originalState.present.blocksByClientId )[ 0 ].name ).toBe( 'core/test-block' );
+			expect( values( replacedState.present.blocksByClientId )[ 0 ].name ).toBe( 'core/freeform' );
+			expect( values( replacedState.present.blocksByClientId )[ 0 ].clientId ).toBe( 'chicken' );
 			expect( replacedState.present.blockOrder ).toEqual( {
 				'': [ 'chicken' ],
 				chicken: [],
 			} );
 
 			const nestedBlock = {
-				uid: 'chicken',
+				clientId: 'chicken',
 				name: 'core/test-block',
 				attributes: {},
 				innerBlocks: [],
 			};
 			const wrapperBlock = createBlock( 'core/test-block', {}, [ nestedBlock ] );
 			const replacementNestedBlock = {
-				uid: 'chicken',
+				clientId: 'chicken',
 				name: 'core/freeform',
 				attributes: {},
 				innerBlocks: [],
@@ -451,25 +451,25 @@ describe( 'state', () => {
 
 			const replacedNestedState = editor( originalNestedState, {
 				type: 'REPLACE_BLOCKS',
-				uids: [ nestedBlock.uid ],
+				clientIds: [ nestedBlock.clientId ],
 				blocks: [ replacementNestedBlock ],
 			} );
 
 			expect( replacedNestedState.present.blockOrder ).toEqual( {
-				'': [ wrapperBlock.uid ],
-				[ wrapperBlock.uid ]: [ replacementNestedBlock.uid ],
-				[ replacementNestedBlock.uid ]: [],
+				'': [ wrapperBlock.clientId ],
+				[ wrapperBlock.clientId ]: [ replacementNestedBlock.clientId ],
+				[ replacementNestedBlock.clientId ]: [],
 			} );
 
-			expect( originalNestedState.present.blocksByUID.chicken.name ).toBe( 'core/test-block' );
-			expect( replacedNestedState.present.blocksByUID.chicken.name ).toBe( 'core/freeform' );
+			expect( originalNestedState.present.blocksByClientId.chicken.name ).toBe( 'core/test-block' );
+			expect( replacedNestedState.present.blocksByClientId.chicken.name ).toBe( 'core/freeform' );
 		} );
 
 		it( 'should update the block', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					isValid: false,
@@ -478,29 +478,29 @@ describe( 'state', () => {
 			} );
 			const state = editor( deepFreeze( original ), {
 				type: 'UPDATE_BLOCK',
-				uid: 'chicken',
+				clientId: 'chicken',
 				updates: {
 					attributes: { content: 'ribs' },
 					isValid: true,
 				},
 			} );
 
-			expect( state.present.blocksByUID.chicken ).toEqual( {
-				uid: 'chicken',
+			expect( state.present.blocksByClientId.chicken ).toEqual( {
+				clientId: 'chicken',
 				name: 'core/test-block',
 				attributes: { content: 'ribs' },
 				isValid: true,
 			} );
 		} );
 
-		it( 'should update the shared block reference if the temporary id is swapped', () => {
+		it( 'should update the reusable block reference if the temporary id is swapped', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/block',
 					attributes: {
-						ref: 'random-uid',
+						ref: 'random-clientId',
 					},
 					isValid: false,
 					innerBlocks: [],
@@ -508,13 +508,13 @@ describe( 'state', () => {
 			} );
 
 			const state = editor( deepFreeze( original ), {
-				type: 'SAVE_SHARED_BLOCK_SUCCESS',
-				id: 'random-uid',
+				type: 'SAVE_REUSABLE_BLOCK_SUCCESS',
+				id: 'random-clientId',
 				updatedId: 3,
 			} );
 
-			expect( state.present.blocksByUID.chicken ).toEqual( {
-				uid: 'chicken',
+			expect( state.present.blocksByClientId.chicken ).toEqual( {
+				clientId: 'chicken',
 				name: 'core/block',
 				attributes: {
 					ref: 3,
@@ -527,12 +527,12 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -540,7 +540,7 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCKS_UP',
-				uids: [ 'ribs' ],
+				clientIds: [ 'ribs' ],
 			} );
 
 			expect( state.present.blockOrder[ '' ] ).toEqual( [ 'ribs', 'chicken' ] );
@@ -556,15 +556,15 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCKS_UP',
-				uids: [ movedBlock.uid ],
-				rootUID: wrapperBlock.uid,
+				clientIds: [ movedBlock.clientId ],
+				rootClientId: wrapperBlock.clientId,
 			} );
 
 			expect( state.present.blockOrder ).toEqual( {
-				'': [ wrapperBlock.uid ],
-				[ wrapperBlock.uid ]: [ movedBlock.uid, siblingBlock.uid ],
-				[ movedBlock.uid ]: [],
-				[ siblingBlock.uid ]: [],
+				'': [ wrapperBlock.clientId ],
+				[ wrapperBlock.clientId ]: [ movedBlock.clientId, siblingBlock.clientId ],
+				[ movedBlock.clientId ]: [],
+				[ siblingBlock.clientId ]: [],
 			} );
 		} );
 
@@ -572,17 +572,17 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'veggies',
+					clientId: 'veggies',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -590,7 +590,7 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCKS_UP',
-				uids: [ 'ribs', 'veggies' ],
+				clientIds: [ 'ribs', 'veggies' ],
 			} );
 
 			expect( state.present.blockOrder[ '' ] ).toEqual( [ 'ribs', 'veggies', 'chicken' ] );
@@ -607,16 +607,16 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCKS_UP',
-				uids: [ movedBlockA.uid, movedBlockB.uid ],
-				rootUID: wrapperBlock.uid,
+				clientIds: [ movedBlockA.clientId, movedBlockB.clientId ],
+				rootClientId: wrapperBlock.clientId,
 			} );
 
 			expect( state.present.blockOrder ).toEqual( {
-				'': [ wrapperBlock.uid ],
-				[ wrapperBlock.uid ]: [ movedBlockA.uid, movedBlockB.uid, siblingBlock.uid ],
-				[ movedBlockA.uid ]: [],
-				[ movedBlockB.uid ]: [],
-				[ siblingBlock.uid ]: [],
+				'': [ wrapperBlock.clientId ],
+				[ wrapperBlock.clientId ]: [ movedBlockA.clientId, movedBlockB.clientId, siblingBlock.clientId ],
+				[ movedBlockA.clientId ]: [],
+				[ movedBlockB.clientId ]: [],
+				[ siblingBlock.clientId ]: [],
 			} );
 		} );
 
@@ -624,12 +624,12 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -637,7 +637,7 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCKS_UP',
-				uids: [ 'chicken' ],
+				clientIds: [ 'chicken' ],
 			} );
 
 			expect( state.present.blockOrder ).toBe( original.present.blockOrder );
@@ -647,12 +647,12 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -660,7 +660,7 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCKS_DOWN',
-				uids: [ 'chicken' ],
+				clientIds: [ 'chicken' ],
 			} );
 
 			expect( state.present.blockOrder[ '' ] ).toEqual( [ 'ribs', 'chicken' ] );
@@ -676,15 +676,15 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCKS_DOWN',
-				uids: [ movedBlock.uid ],
-				rootUID: wrapperBlock.uid,
+				clientIds: [ movedBlock.clientId ],
+				rootClientId: wrapperBlock.clientId,
 			} );
 
 			expect( state.present.blockOrder ).toEqual( {
-				'': [ wrapperBlock.uid ],
-				[ wrapperBlock.uid ]: [ siblingBlock.uid, movedBlock.uid ],
-				[ movedBlock.uid ]: [],
-				[ siblingBlock.uid ]: [],
+				'': [ wrapperBlock.clientId ],
+				[ wrapperBlock.clientId ]: [ siblingBlock.clientId, movedBlock.clientId ],
+				[ movedBlock.clientId ]: [],
+				[ siblingBlock.clientId ]: [],
 			} );
 		} );
 
@@ -692,17 +692,17 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'veggies',
+					clientId: 'veggies',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -710,7 +710,7 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCKS_DOWN',
-				uids: [ 'chicken', 'ribs' ],
+				clientIds: [ 'chicken', 'ribs' ],
 			} );
 
 			expect( state.present.blockOrder[ '' ] ).toEqual( [ 'veggies', 'chicken', 'ribs' ] );
@@ -727,16 +727,16 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCKS_DOWN',
-				uids: [ movedBlockA.uid, movedBlockB.uid ],
-				rootUID: wrapperBlock.uid,
+				clientIds: [ movedBlockA.clientId, movedBlockB.clientId ],
+				rootClientId: wrapperBlock.clientId,
 			} );
 
 			expect( state.present.blockOrder ).toEqual( {
-				'': [ wrapperBlock.uid ],
-				[ wrapperBlock.uid ]: [ siblingBlock.uid, movedBlockA.uid, movedBlockB.uid ],
-				[ movedBlockA.uid ]: [],
-				[ movedBlockB.uid ]: [],
-				[ siblingBlock.uid ]: [],
+				'': [ wrapperBlock.clientId ],
+				[ wrapperBlock.clientId ]: [ siblingBlock.clientId, movedBlockA.clientId, movedBlockB.clientId ],
+				[ movedBlockA.clientId ]: [],
+				[ movedBlockB.clientId ]: [],
+				[ siblingBlock.clientId ]: [],
 			} );
 		} );
 
@@ -744,12 +744,12 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -757,7 +757,7 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCKS_DOWN',
-				uids: [ 'ribs' ],
+				clientIds: [ 'ribs' ],
 			} );
 
 			expect( state.present.blockOrder ).toBe( original.present.blockOrder );
@@ -767,12 +767,12 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -780,14 +780,14 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'REMOVE_BLOCKS',
-				uids: [ 'chicken' ],
+				clientIds: [ 'chicken' ],
 			} );
 
 			expect( state.present.blockOrder[ '' ] ).toEqual( [ 'ribs' ] );
 			expect( state.present.blockOrder ).not.toHaveProperty( 'chicken' );
-			expect( state.present.blocksByUID ).toEqual( {
+			expect( state.present.blocksByClientId ).toEqual( {
 				ribs: {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 				},
@@ -798,17 +798,17 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'veggies',
+					clientId: 'veggies',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -816,15 +816,15 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'REMOVE_BLOCKS',
-				uids: [ 'chicken', 'veggies' ],
+				clientIds: [ 'chicken', 'veggies' ],
 			} );
 
 			expect( state.present.blockOrder[ '' ] ).toEqual( [ 'ribs' ] );
 			expect( state.present.blockOrder ).not.toHaveProperty( 'chicken' );
 			expect( state.present.blockOrder ).not.toHaveProperty( 'veggies' );
-			expect( state.present.blocksByUID ).toEqual( {
+			expect( state.present.blocksByClientId ).toEqual( {
 				ribs: {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 				},
@@ -845,10 +845,10 @@ describe( 'state', () => {
 
 			const state = editor( original, {
 				type: 'REMOVE_BLOCKS',
-				uids: [ block.uid ],
+				clientIds: [ block.clientId ],
 			} );
 
-			expect( state.present.blocksByUID ).toEqual( {} );
+			expect( state.present.blocksByClientId ).toEqual( {} );
 			expect( state.present.blockOrder ).toEqual( {
 				'': [],
 			} );
@@ -858,12 +858,12 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'kumquat',
+					clientId: 'kumquat',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'loquat',
+					clientId: 'loquat',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -874,13 +874,13 @@ describe( 'state', () => {
 				type: 'INSERT_BLOCKS',
 				index: 1,
 				blocks: [ {
-					uid: 'persimmon',
+					clientId: 'persimmon',
 					name: 'core/freeform',
 					innerBlocks: [],
 				} ],
 			} );
 
-			expect( Object.keys( state.present.blocksByUID ) ).toHaveLength( 3 );
+			expect( Object.keys( state.present.blocksByClientId ) ).toHaveLength( 3 );
 			expect( state.present.blockOrder[ '' ] ).toEqual( [ 'kumquat', 'persimmon', 'loquat' ] );
 		} );
 
@@ -888,17 +888,17 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'veggies',
+					clientId: 'veggies',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -906,7 +906,7 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCK_TO_POSITION',
-				uid: 'ribs',
+				clientId: 'ribs',
 				index: 0,
 			} );
 
@@ -917,17 +917,17 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'veggies',
+					clientId: 'veggies',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -935,7 +935,7 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCK_TO_POSITION',
-				uid: 'ribs',
+				clientId: 'ribs',
 				index: 2,
 			} );
 
@@ -946,17 +946,17 @@ describe( 'state', () => {
 			const original = editor( undefined, {
 				type: 'RESET_BLOCKS',
 				blocks: [ {
-					uid: 'chicken',
+					clientId: 'chicken',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
 				}, {
-					uid: 'veggies',
+					clientId: 'veggies',
 					name: 'core/test-block',
 					attributes: {},
 					innerBlocks: [],
@@ -964,7 +964,7 @@ describe( 'state', () => {
 			} );
 			const state = editor( original, {
 				type: 'MOVE_BLOCK_TO_POSITION',
-				uid: 'ribs',
+				clientId: 'ribs',
 				index: 1,
 			} );
 
@@ -1072,12 +1072,12 @@ describe( 'state', () => {
 				state = editor( original, {
 					type: 'RESET_BLOCKS',
 					blocks: [ {
-						uid: 'kumquat',
+						clientId: 'kumquat',
 						name: 'core/test-block',
 						attributes: {},
 						innerBlocks: [],
 					}, {
-						uid: 'loquat',
+						clientId: 'loquat',
 						name: 'core/test-block',
 						attributes: {},
 						innerBlocks: [],
@@ -1088,32 +1088,32 @@ describe( 'state', () => {
 			} );
 		} );
 
-		describe( 'blocksByUID', () => {
+		describe( 'blocksByClientId', () => {
 			it( 'should return with attribute block updates', () => {
 				const original = deepFreeze( editor( undefined, {
 					type: 'RESET_BLOCKS',
 					blocks: [ {
-						uid: 'kumquat',
+						clientId: 'kumquat',
 						attributes: {},
 						innerBlocks: [],
 					} ],
 				} ) );
 				const state = editor( original, {
 					type: 'UPDATE_BLOCK_ATTRIBUTES',
-					uid: 'kumquat',
+					clientId: 'kumquat',
 					attributes: {
 						updated: true,
 					},
 				} );
 
-				expect( state.present.blocksByUID.kumquat.attributes.updated ).toBe( true );
+				expect( state.present.blocksByClientId.kumquat.attributes.updated ).toBe( true );
 			} );
 
 			it( 'should accumulate attribute block updates', () => {
 				const original = deepFreeze( editor( undefined, {
 					type: 'RESET_BLOCKS',
 					blocks: [ {
-						uid: 'kumquat',
+						clientId: 'kumquat',
 						attributes: {
 							updated: true,
 						},
@@ -1122,13 +1122,13 @@ describe( 'state', () => {
 				} ) );
 				const state = editor( original, {
 					type: 'UPDATE_BLOCK_ATTRIBUTES',
-					uid: 'kumquat',
+					clientId: 'kumquat',
 					attributes: {
 						moreUpdated: true,
 					},
 				} );
 
-				expect( state.present.blocksByUID.kumquat.attributes ).toEqual( {
+				expect( state.present.blocksByClientId.kumquat.attributes ).toEqual( {
 					updated: true,
 					moreUpdated: true,
 				} );
@@ -1141,20 +1141,20 @@ describe( 'state', () => {
 				} ) );
 				const state = editor( original, {
 					type: 'UPDATE_BLOCK_ATTRIBUTES',
-					uid: 'kumquat',
+					clientId: 'kumquat',
 					attributes: {
 						updated: true,
 					},
 				} );
 
-				expect( state.present.blocksByUID ).toBe( original.present.blocksByUID );
+				expect( state.present.blocksByClientId ).toBe( original.present.blocksByClientId );
 			} );
 
 			it( 'should return with same reference if no changes in updates', () => {
 				const original = deepFreeze( editor( undefined, {
 					type: 'RESET_BLOCKS',
 					blocks: [ {
-						uid: 'kumquat',
+						clientId: 'kumquat',
 						attributes: {
 							updated: true,
 						},
@@ -1163,13 +1163,13 @@ describe( 'state', () => {
 				} ) );
 				const state = editor( original, {
 					type: 'UPDATE_BLOCK_ATTRIBUTES',
-					uid: 'kumquat',
+					clientId: 'kumquat',
 					attributes: {
 						updated: true,
 					},
 				} );
 
-				expect( state.present.blocksByUID ).toBe( state.present.blocksByUID );
+				expect( state.present.blocksByClientId ).toBe( state.present.blocksByClientId );
 			} );
 		} );
 
@@ -1180,7 +1180,7 @@ describe( 'state', () => {
 				state = editor( state, {
 					type: 'RESET_BLOCKS',
 					blocks: [ {
-						uid: 'kumquat',
+						clientId: 'kumquat',
 						attributes: {},
 						innerBlocks: [],
 					} ],
@@ -1190,7 +1190,7 @@ describe( 'state', () => {
 
 				state = editor( state, {
 					type: 'UPDATE_BLOCK_ATTRIBUTES',
-					uid: 'kumquat',
+					clientId: 'kumquat',
 					attributes: {
 						test: 1,
 					},
@@ -1198,7 +1198,7 @@ describe( 'state', () => {
 
 				state = editor( state, {
 					type: 'UPDATE_BLOCK_ATTRIBUTES',
-					uid: 'kumquat',
+					clientId: 'kumquat',
 					attributes: {
 						test: 2,
 					},
@@ -1213,7 +1213,7 @@ describe( 'state', () => {
 				state = editor( state, {
 					type: 'RESET_BLOCKS',
 					blocks: [ {
-						uid: 'kumquat',
+						clientId: 'kumquat',
 						attributes: {},
 						innerBlocks: [],
 					} ],
@@ -1223,7 +1223,7 @@ describe( 'state', () => {
 
 				state = editor( state, {
 					type: 'UPDATE_BLOCK_ATTRIBUTES',
-					uid: 'kumquat',
+					clientId: 'kumquat',
 					attributes: {
 						test: 1,
 					},
@@ -1231,7 +1231,7 @@ describe( 'state', () => {
 
 				state = editor( state, {
 					type: 'UPDATE_BLOCK_ATTRIBUTES',
-					uid: 'kumquat',
+					clientId: 'kumquat',
 					attributes: {
 						other: 1,
 					},
@@ -1271,24 +1271,6 @@ describe( 'state', () => {
 			expect( state ).toEqual( {
 				title: 'updated post object from server',
 				status: 'publish',
-			} );
-		} );
-
-		it( 'should set status to draft if autosave reset while auto-draft', () => {
-			const original = deepFreeze( { title: '', status: 'auto-draft' } );
-
-			const state = currentPost( original, {
-				type: 'RESET_AUTOSAVE',
-				edits: {
-					title: 'Hello world',
-					content: '',
-					excerpt: '',
-				},
-			} );
-
-			expect( state ).toEqual( {
-				title: '',
-				status: 'draft',
 			} );
 		} );
 	} );
@@ -1336,10 +1318,10 @@ describe( 'state', () => {
 	} );
 
 	describe( 'blockSelection()', () => {
-		it( 'should return with block uid as selected', () => {
+		it( 'should return with block clientId as selected', () => {
 			const state = blockSelection( undefined, {
 				type: 'SELECT_BLOCK',
-				uid: 'kumquat',
+				clientId: 'kumquat',
 				initialPosition: -1,
 			} );
 
@@ -1449,7 +1431,7 @@ describe( 'state', () => {
 
 			const state1 = blockSelection( original, {
 				type: 'SELECT_BLOCK',
-				uid: 'ribs',
+				clientId: 'ribs',
 			} );
 
 			expect( state1 ).toBe( original );
@@ -1486,7 +1468,7 @@ describe( 'state', () => {
 			const state3 = blockSelection( original, {
 				type: 'INSERT_BLOCKS',
 				blocks: [ {
-					uid: 'ribs',
+					clientId: 'ribs',
 					name: 'core/freeform',
 				} ],
 			} );
@@ -1503,7 +1485,7 @@ describe( 'state', () => {
 			const original = deepFreeze( { start: 'ribs', end: 'ribs' } );
 			const state = blockSelection( original, {
 				type: 'MOVE_BLOCKS_UP',
-				uids: [ 'ribs' ],
+				clientIds: [ 'ribs' ],
 			} );
 
 			expect( state ).toBe( original );
@@ -1513,9 +1495,9 @@ describe( 'state', () => {
 			const original = deepFreeze( { start: 'chicken', end: 'chicken' } );
 			const state = blockSelection( original, {
 				type: 'REPLACE_BLOCKS',
-				uids: [ 'chicken' ],
+				clientIds: [ 'chicken' ],
 				blocks: [ {
-					uid: 'wings',
+					clientId: 'wings',
 					name: 'core/freeform',
 				} ],
 			} );
@@ -1532,7 +1514,7 @@ describe( 'state', () => {
 			const original = deepFreeze( { start: 'chicken', end: 'chicken' } );
 			const state = blockSelection( original, {
 				type: 'REPLACE_BLOCKS',
-				uids: [ 'chicken' ],
+				clientIds: [ 'chicken' ],
 				blocks: [],
 			} );
 
@@ -1548,9 +1530,9 @@ describe( 'state', () => {
 			const original = deepFreeze( { start: 'chicken', end: 'chicken' } );
 			const state = blockSelection( original, {
 				type: 'REPLACE_BLOCKS',
-				uids: [ 'ribs' ],
+				clientIds: [ 'ribs' ],
 				blocks: [ {
-					uid: 'wings',
+					clientId: 'wings',
 					name: 'core/freeform',
 				} ],
 			} );
@@ -1567,7 +1549,7 @@ describe( 'state', () => {
 			} );
 			const state = blockSelection( original, {
 				type: 'REMOVE_BLOCKS',
-				uids: [ 'chicken' ],
+				clientIds: [ 'chicken' ],
 			} );
 
 			expect( state ).toEqual( {
@@ -1587,7 +1569,7 @@ describe( 'state', () => {
 			} );
 			const state = blockSelection( original, {
 				type: 'REMOVE_BLOCKS',
-				uids: [ 'ribs' ],
+				clientIds: [ 'ribs' ],
 			} );
 
 			expect( state ).toBe( original );
@@ -1611,7 +1593,7 @@ describe( 'state', () => {
 			const state = preferences( deepFreeze( { insertUsage: {} } ), {
 				type: 'INSERT_BLOCKS',
 				blocks: [ {
-					uid: 'bacon',
+					clientId: 'bacon',
 					name: 'core-embed/twitter',
 				} ],
 				time: 123456,
@@ -1638,10 +1620,10 @@ describe( 'state', () => {
 			} ), {
 				type: 'INSERT_BLOCKS',
 				blocks: [ {
-					uid: 'eggs',
+					clientId: 'eggs',
 					name: 'core-embed/twitter',
 				}, {
-					uid: 'bacon',
+					clientId: 'bacon',
 					name: 'core/block',
 					attributes: { ref: 123 },
 				} ],
@@ -1664,7 +1646,7 @@ describe( 'state', () => {
 			} );
 		} );
 
-		it( 'should remove recorded shared blocks that are deleted', () => {
+		it( 'should remove recorded reusable blocks that are deleted', () => {
 			const initialState = {
 				insertUsage: {
 					'core/block/123': {
@@ -1676,7 +1658,7 @@ describe( 'state', () => {
 			};
 
 			const state = preferences( deepFreeze( initialState ), {
-				type: 'REMOVE_SHARED_BLOCK',
+				type: 'REMOVE_REUSABLE_BLOCK',
 				id: 123,
 			} );
 
@@ -1813,11 +1795,11 @@ describe( 'state', () => {
 		} );
 	} );
 
-	describe( 'provisionalBlockUID()', () => {
+	describe( 'provisionalBlockClientId()', () => {
 		const PROVISIONAL_UPDATE_ACTION_TYPES = [
 			'UPDATE_BLOCK_ATTRIBUTES',
 			'UPDATE_BLOCK',
-			'CONVERT_BLOCK_TO_SHARED',
+			'CONVERT_BLOCK_TO_REUSABLE',
 		];
 
 		const PROVISIONAL_REPLACE_ACTION_TYPES = [
@@ -1826,28 +1808,28 @@ describe( 'state', () => {
 		];
 
 		it( 'returns null by default', () => {
-			const state = provisionalBlockUID( undefined, {} );
+			const state = provisionalBlockClientId( undefined, {} );
 
 			expect( state ).toBe( null );
 		} );
 
-		it( 'returns the uid of the first inserted provisional block', () => {
-			const state = provisionalBlockUID( null, {
+		it( 'returns the clientId of the first inserted provisional block', () => {
+			const state = provisionalBlockClientId( null, {
 				type: 'INSERT_BLOCKS',
 				isProvisional: true,
 				blocks: [
-					{ uid: 'chicken' },
+					{ clientId: 'chicken' },
 				],
 			} );
 
 			expect( state ).toBe( 'chicken' );
 		} );
 
-		it( 'does not return uid of block if not provisional', () => {
-			const state = provisionalBlockUID( null, {
+		it( 'does not return clientId of block if not provisional', () => {
+			const state = provisionalBlockClientId( null, {
 				type: 'INSERT_BLOCKS',
 				blocks: [
-					{ uid: 'chicken' },
+					{ clientId: 'chicken' },
 				],
 			} );
 
@@ -1855,7 +1837,7 @@ describe( 'state', () => {
 		} );
 
 		it( 'returns null on block reset', () => {
-			const state = provisionalBlockUID( 'chicken', {
+			const state = provisionalBlockClientId( 'chicken', {
 				type: 'RESET_BLOCKS',
 			} );
 
@@ -1864,9 +1846,9 @@ describe( 'state', () => {
 
 		it( 'returns null on block update', () => {
 			PROVISIONAL_UPDATE_ACTION_TYPES.forEach( ( type ) => {
-				const state = provisionalBlockUID( 'chicken', {
+				const state = provisionalBlockClientId( 'chicken', {
 					type,
-					uid: 'chicken',
+					clientId: 'chicken',
 				} );
 
 				expect( state ).toBe( null );
@@ -1875,9 +1857,9 @@ describe( 'state', () => {
 
 		it( 'does not return null if update occurs to non-provisional block', () => {
 			PROVISIONAL_UPDATE_ACTION_TYPES.forEach( ( type ) => {
-				const state = provisionalBlockUID( 'chicken', {
+				const state = provisionalBlockClientId( 'chicken', {
 					type,
-					uid: 'ribs',
+					clientId: 'ribs',
 				} );
 
 				expect( state ).toBe( 'chicken' );
@@ -1886,9 +1868,9 @@ describe( 'state', () => {
 
 		it( 'returns null if replacement of provisional block', () => {
 			PROVISIONAL_REPLACE_ACTION_TYPES.forEach( ( type ) => {
-				const state = provisionalBlockUID( 'chicken', {
+				const state = provisionalBlockClientId( 'chicken', {
 					type,
-					uids: [ 'chicken' ],
+					clientIds: [ 'chicken' ],
 				} );
 
 				expect( state ).toBe( null );
@@ -1897,9 +1879,9 @@ describe( 'state', () => {
 
 		it( 'does not return null if replacement of non-provisional block', () => {
 			PROVISIONAL_REPLACE_ACTION_TYPES.forEach( ( type ) => {
-				const state = provisionalBlockUID( 'chicken', {
+				const state = provisionalBlockClientId( 'chicken', {
 					type,
-					uids: [ 'ribs' ],
+					clientIds: [ 'ribs' ],
 				} );
 
 				expect( state ).toBe( 'chicken' );
@@ -1911,7 +1893,7 @@ describe( 'state', () => {
 		it( 'should set mode to html if not set', () => {
 			const action = {
 				type: 'TOGGLE_BLOCK_MODE',
-				uid: 'chicken',
+				clientId: 'chicken',
 			};
 			const value = blocksMode( deepFreeze( {} ), action );
 
@@ -1921,7 +1903,7 @@ describe( 'state', () => {
 		it( 'should toggle mode to visual if set as html', () => {
 			const action = {
 				type: 'TOGGLE_BLOCK_MODE',
-				uid: 'chicken',
+				clientId: 'chicken',
 			};
 			const value = blocksMode( deepFreeze( { chicken: 'html' } ), action );
 
@@ -1929,9 +1911,9 @@ describe( 'state', () => {
 		} );
 	} );
 
-	describe( 'sharedBlocks()', () => {
+	describe( 'reusableBlocks()', () => {
 		it( 'should start out empty', () => {
-			const state = sharedBlocks( undefined, {} );
+			const state = reusableBlocks( undefined, {} );
 			expect( state ).toEqual( {
 				data: {},
 				isFetching: {},
@@ -1939,77 +1921,77 @@ describe( 'state', () => {
 			} );
 		} );
 
-		it( 'should add received shared blocks', () => {
-			const state = sharedBlocks( {}, {
-				type: 'RECEIVE_SHARED_BLOCKS',
+		it( 'should add received reusable blocks', () => {
+			const state = reusableBlocks( {}, {
+				type: 'RECEIVE_REUSABLE_BLOCKS',
 				results: [ {
-					sharedBlock: {
+					reusableBlock: {
 						id: 123,
 						title: 'My cool block',
 					},
 					parsedBlock: {
-						uid: 'foo',
+						clientId: 'foo',
 					},
 				} ],
 			} );
 
 			expect( state ).toEqual( {
 				data: {
-					123: { uid: 'foo', title: 'My cool block' },
+					123: { clientId: 'foo', title: 'My cool block' },
 				},
 				isFetching: {},
 				isSaving: {},
 			} );
 		} );
 
-		it( 'should update a shared block', () => {
+		it( 'should update a reusable block', () => {
 			const initialState = {
 				data: {
-					123: { uid: '', title: '' },
+					123: { clientId: '', title: '' },
 				},
 				isFetching: {},
 				isSaving: {},
 			};
 
-			const state = sharedBlocks( initialState, {
-				type: 'UPDATE_SHARED_BLOCK_TITLE',
+			const state = reusableBlocks( initialState, {
+				type: 'UPDATE_REUSABLE_BLOCK_TITLE',
 				id: 123,
 				title: 'My block',
 			} );
 
 			expect( state ).toEqual( {
 				data: {
-					123: { uid: '', title: 'My block' },
+					123: { clientId: '', title: 'My block' },
 				},
 				isFetching: {},
 				isSaving: {},
 			} );
 		} );
 
-		it( 'should update the shared block\'s id if it was temporary', () => {
+		it( "should update the reusable block's id if it was temporary", () => {
 			const initialState = {
 				data: {
-					shared1: { uid: '', title: '' },
+					reusable1: { clientId: '', title: '' },
 				},
 				isSaving: {},
 			};
 
-			const state = sharedBlocks( initialState, {
-				type: 'SAVE_SHARED_BLOCK_SUCCESS',
-				id: 'shared1',
+			const state = reusableBlocks( initialState, {
+				type: 'SAVE_REUSABLE_BLOCK_SUCCESS',
+				id: 'reusable1',
 				updatedId: 123,
 			} );
 
 			expect( state ).toEqual( {
 				data: {
-					123: { uid: '', title: '' },
+					123: { clientId: '', title: '' },
 				},
 				isFetching: {},
 				isSaving: {},
 			} );
 		} );
 
-		it( 'should remove a shared block', () => {
+		it( 'should remove a reusable block', () => {
 			const id = 123;
 			const initialState = {
 				data: {
@@ -2027,8 +2009,8 @@ describe( 'state', () => {
 				isSaving: {},
 			};
 
-			const state = sharedBlocks( deepFreeze( initialState ), {
-				type: 'REMOVE_SHARED_BLOCK',
+			const state = reusableBlocks( deepFreeze( initialState ), {
+				type: 'REMOVE_REUSABLE_BLOCK',
 				id,
 			} );
 
@@ -2039,7 +2021,7 @@ describe( 'state', () => {
 			} );
 		} );
 
-		it( 'should indicate that a shared block is fetching', () => {
+		it( 'should indicate that a reusable block is fetching', () => {
 			const id = 123;
 			const initialState = {
 				data: {},
@@ -2047,8 +2029,8 @@ describe( 'state', () => {
 				isSaving: {},
 			};
 
-			const state = sharedBlocks( initialState, {
-				type: 'FETCH_SHARED_BLOCKS',
+			const state = reusableBlocks( initialState, {
+				type: 'FETCH_REUSABLE_BLOCKS',
 				id,
 			} );
 
@@ -2061,7 +2043,7 @@ describe( 'state', () => {
 			} );
 		} );
 
-		it( 'should stop indicating that a shared block is saving when the fetch succeeded', () => {
+		it( 'should stop indicating that a reusable block is saving when the fetch succeeded', () => {
 			const id = 123;
 			const initialState = {
 				data: {
@@ -2073,8 +2055,8 @@ describe( 'state', () => {
 				isSaving: {},
 			};
 
-			const state = sharedBlocks( initialState, {
-				type: 'FETCH_SHARED_BLOCKS_SUCCESS',
+			const state = reusableBlocks( initialState, {
+				type: 'FETCH_REUSABLE_BLOCKS_SUCCESS',
 				id,
 				updatedId: id,
 			} );
@@ -2088,7 +2070,7 @@ describe( 'state', () => {
 			} );
 		} );
 
-		it( 'should stop indicating that a shared block is fetching when there is an error', () => {
+		it( 'should stop indicating that a reusable block is fetching when there is an error', () => {
 			const id = 123;
 			const initialState = {
 				data: {},
@@ -2098,8 +2080,8 @@ describe( 'state', () => {
 				isSaving: {},
 			};
 
-			const state = sharedBlocks( initialState, {
-				type: 'FETCH_SHARED_BLOCKS_FAILURE',
+			const state = reusableBlocks( initialState, {
+				type: 'FETCH_REUSABLE_BLOCKS_FAILURE',
 				id,
 			} );
 
@@ -2110,7 +2092,7 @@ describe( 'state', () => {
 			} );
 		} );
 
-		it( 'should indicate that a shared block is saving', () => {
+		it( 'should indicate that a reusable block is saving', () => {
 			const id = 123;
 			const initialState = {
 				data: {},
@@ -2118,8 +2100,8 @@ describe( 'state', () => {
 				isSaving: {},
 			};
 
-			const state = sharedBlocks( initialState, {
-				type: 'SAVE_SHARED_BLOCK',
+			const state = reusableBlocks( initialState, {
+				type: 'SAVE_REUSABLE_BLOCK',
 				id,
 			} );
 
@@ -2132,7 +2114,7 @@ describe( 'state', () => {
 			} );
 		} );
 
-		it( 'should stop indicating that a shared block is saving when the save succeeded', () => {
+		it( 'should stop indicating that a reusable block is saving when the save succeeded', () => {
 			const id = 123;
 			const initialState = {
 				data: {
@@ -2144,8 +2126,8 @@ describe( 'state', () => {
 				},
 			};
 
-			const state = sharedBlocks( initialState, {
-				type: 'SAVE_SHARED_BLOCK_SUCCESS',
+			const state = reusableBlocks( initialState, {
+				type: 'SAVE_REUSABLE_BLOCK_SUCCESS',
 				id,
 				updatedId: id,
 			} );
@@ -2159,7 +2141,7 @@ describe( 'state', () => {
 			} );
 		} );
 
-		it( 'should stop indicating that a shared block is saving when there is an error', () => {
+		it( 'should stop indicating that a reusable block is saving when there is an error', () => {
 			const id = 123;
 			const initialState = {
 				data: {},
@@ -2169,8 +2151,8 @@ describe( 'state', () => {
 				},
 			};
 
-			const state = sharedBlocks( initialState, {
-				type: 'SAVE_SHARED_BLOCK_FAILURE',
+			const state = reusableBlocks( initialState, {
+				type: 'SAVE_REUSABLE_BLOCK_FAILURE',
 				id,
 			} );
 
@@ -2203,76 +2185,128 @@ describe( 'state', () => {
 	describe( 'blockListSettings', () => {
 		it( 'should add new settings', () => {
 			const original = deepFreeze( {} );
+
 			const state = blockListSettings( original, {
 				type: 'UPDATE_BLOCK_LIST_SETTINGS',
-				id: 'chicken',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
 				settings: {
-					chicken: 'ribs',
+					allowedBlocks: [ 'core/paragraph' ],
 				},
 			} );
+
 			expect( state ).toEqual( {
-				chicken: {
-					chicken: 'ribs',
+				'9db792c6-a25a-495d-adbd-97d56a4c4189': {
+					allowedBlocks: [ 'core/paragraph' ],
 				},
 			} );
+		} );
+
+		it( 'should return same reference if updated as the same', () => {
+			const original = deepFreeze( {
+				'9db792c6-a25a-495d-adbd-97d56a4c4189': {
+					allowedBlocks: [ 'core/paragraph' ],
+				},
+			} );
+
+			const state = blockListSettings( original, {
+				type: 'UPDATE_BLOCK_LIST_SETTINGS',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
+				settings: {
+					allowedBlocks: [ 'core/paragraph' ],
+				},
+			} );
+
+			expect( state ).toBe( original );
+		} );
+
+		it( 'should return same reference if updated settings not assigned and id not exists', () => {
+			const original = deepFreeze( {} );
+
+			const state = blockListSettings( original, {
+				type: 'UPDATE_BLOCK_LIST_SETTINGS',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
+			} );
+
+			expect( state ).toBe( original );
 		} );
 
 		it( 'should update the settings of a block', () => {
 			const original = deepFreeze( {
-				chicken: {
-					chicken: 'ribs',
+				'9db792c6-a25a-495d-adbd-97d56a4c4189': {
+					allowedBlocks: [ 'core/paragraph' ],
 				},
-				otherBlock: {
-					setting1: true,
+				'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1': {
+					allowedBlocks: true,
 				},
 			} );
+
 			const state = blockListSettings( original, {
 				type: 'UPDATE_BLOCK_LIST_SETTINGS',
-				id: 'chicken',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
 				settings: {
-					ribs: 'not-chicken',
+					allowedBlocks: [ 'core/list' ],
 				},
 			} );
+
 			expect( state ).toEqual( {
-				chicken: {
-					ribs: 'not-chicken',
+				'9db792c6-a25a-495d-adbd-97d56a4c4189': {
+					allowedBlocks: [ 'core/list' ],
 				},
-				otherBlock: {
-					setting1: true,
+				'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1': {
+					allowedBlocks: true,
 				},
 			} );
 		} );
 
+		it( 'should remove existing settings if updated settings not assigned', () => {
+			const original = deepFreeze( {
+				'9db792c6-a25a-495d-adbd-97d56a4c4189': {
+					allowedBlocks: [ 'core/paragraph' ],
+				},
+			} );
+
+			const state = blockListSettings( original, {
+				type: 'UPDATE_BLOCK_LIST_SETTINGS',
+				clientId: '9db792c6-a25a-495d-adbd-97d56a4c4189',
+			} );
+
+			expect( state ).toEqual( {} );
+		} );
+
 		it( 'should remove the settings of a block when it is replaced', () => {
 			const original = deepFreeze( {
-				chicken: {
-					chicken: 'ribs',
+				'9db792c6-a25a-495d-adbd-97d56a4c4189': {
+					allowedBlocks: [ 'core/paragraph' ],
 				},
-				otherBlock: {
-					setting1: true,
+				'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1': {
+					allowedBlocks: true,
 				},
 			} );
+
 			const state = blockListSettings( original, {
 				type: 'REPLACE_BLOCKS',
-				uids: [ 'otherBlock' ],
+				clientIds: [ 'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1' ],
 			} );
+
 			expect( state ).toEqual( {
-				chicken: {
-					chicken: 'ribs',
+				'9db792c6-a25a-495d-adbd-97d56a4c4189': {
+					allowedBlocks: [ 'core/paragraph' ],
 				},
 			} );
 		} );
 
 		it( 'should remove the settings of a block when it is removed', () => {
 			const original = deepFreeze( {
-				otherBlock: {
-					setting1: true,
+				'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1': {
+					allowedBlocks: true,
 				},
 			} );
+
 			const state = blockListSettings( original, {
-				type: 'REPLACE_BLOCKS',
-				uids: [ 'otherBlock' ],
+				type: 'REMOVE_BLOCKS',
+				clientIds: [ 'afd1cb17-2c08-4e7a-91be-007ba7ddc3a1' ],
 			} );
+
 			expect( state ).toEqual( {} );
 		} );
 	} );
@@ -2298,6 +2332,7 @@ describe( 'state', () => {
 						raw: 'The Excerpt',
 					},
 					status: 'draft',
+					preview_link: 'https://wordpress.org/?p=1&preview=true',
 				},
 			} );
 
@@ -2305,6 +2340,7 @@ describe( 'state', () => {
 				title: 'The Title',
 				content: 'The Content',
 				excerpt: 'The Excerpt',
+				preview_link: 'https://wordpress.org/?p=1&preview=true',
 			} );
 		} );
 	} );

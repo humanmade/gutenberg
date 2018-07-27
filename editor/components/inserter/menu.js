@@ -20,23 +20,23 @@ import scrollIntoView from 'dom-scroll-into-view';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Component, compose, findDOMNode, createRef } from '@wordpress/element';
+import { Component, findDOMNode, createRef } from '@wordpress/element';
 import {
-	withInstanceId,
 	withSpokenMessages,
 	PanelBody,
-	withSafeTimeout,
 } from '@wordpress/components';
-import { getCategories, isSharedBlock } from '@wordpress/blocks';
+import { getCategories, isReusableBlock } from '@wordpress/blocks';
 import { withDispatch, withSelect } from '@wordpress/data';
+import { withInstanceId, compose, withSafeTimeout } from '@wordpress/compose';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
 import BlockPreview from '../block-preview';
-import ItemList from './item-list';
+import BlockTypesList from '../block-types-list';
 import ChildBlocks from './child-blocks';
+import InserterResultsPortal from './results-portal';
 
 const MAX_SUGGESTED_ITEMS = 9;
 
@@ -65,7 +65,7 @@ export class InserterMenu extends Component {
 			filterValue: '',
 			hoveredItem: null,
 			suggestedItems: [],
-			sharedItems: [],
+			reusableItems: [],
 			itemsPerCategory: {},
 			openPanels: [ 'suggested' ],
 		};
@@ -77,7 +77,7 @@ export class InserterMenu extends Component {
 
 	componentDidMount() {
 		// This could be replaced by a resolver.
-		this.props.fetchSharedBlocks();
+		this.props.fetchReusableBlocks();
 		this.filter();
 	}
 
@@ -95,6 +95,12 @@ export class InserterMenu extends Component {
 		this.setState( {
 			hoveredItem: item,
 		} );
+
+		if ( item ) {
+			this.props.showInsertionPoint();
+		} else {
+			this.props.hideInsertionPoint();
+		}
 	}
 
 	bindPanel( name ) {
@@ -141,13 +147,13 @@ export class InserterMenu extends Component {
 			suggestedItems = filter( items, ( item ) => item.utility > 0 ).slice( 0, maxSuggestedItems );
 		}
 
-		const sharedItems = filter( filteredItems, { category: 'shared' } );
+		const reusableItems = filter( filteredItems, { category: 'reusable' } );
 
 		const getCategoryIndex = ( item ) => {
 			return findIndex( getCategories(), ( category ) => category.slug === item.category );
 		};
 		const itemsPerCategory = flow(
-			( itemList ) => filter( itemList, ( item ) => item.category !== 'shared' ),
+			( itemList ) => filter( itemList, ( item ) => item.category !== 'reusable' ),
 			( itemList ) => sortBy( itemList, getCategoryIndex ),
 			( itemList ) => groupBy( itemList, 'category' )
 		)( filteredItems );
@@ -156,8 +162,8 @@ export class InserterMenu extends Component {
 		if ( filterValue !== this.state.filterValue ) {
 			if ( ! filterValue ) {
 				openPanels = [ 'suggested' ];
-			} else if ( sharedItems.length ) {
-				openPanels = [ 'shared' ];
+			} else if ( reusableItems.length ) {
+				openPanels = [ 'reusable' ];
 			} else if ( filteredItems.length ) {
 				const firstCategory = find( getCategories(), ( { slug } ) => itemsPerCategory[ slug ] && itemsPerCategory[ slug ].length );
 				openPanels = [ firstCategory.slug ];
@@ -169,15 +175,15 @@ export class InserterMenu extends Component {
 			childItems,
 			filterValue,
 			suggestedItems,
-			sharedItems,
+			reusableItems,
 			itemsPerCategory,
 			openPanels,
 		} );
 	}
 
 	render() {
-		const { instanceId, onSelect, rootUID } = this.props;
-		const { childItems, filterValue, hoveredItem, suggestedItems, sharedItems, itemsPerCategory, openPanels } = this.state;
+		const { instanceId, onSelect, rootClientId } = this.props;
+		const { childItems, filterValue, hoveredItem, suggestedItems, reusableItems, itemsPerCategory, openPanels } = this.state;
 		const isPanelOpen = ( panel ) => openPanels.indexOf( panel ) !== -1;
 		const isSearching = !! filterValue;
 
@@ -200,9 +206,17 @@ export class InserterMenu extends Component {
 					onChange={ this.onChangeSearchInput }
 				/>
 
-				<div className="editor-inserter__results" ref={ this.inserterResults }>
+				<div
+					className="editor-inserter__results"
+					ref={ this.inserterResults }
+					tabIndex="0"
+					role="region"
+					aria-label={ __( 'Available block types' ) }
+				>
+					<InserterResultsPortal.Slot fillProps={ { filterValue } } />
+
 					<ChildBlocks
-						rootUID={ rootUID }
+						rootClientId={ rootClientId }
 						items={ childItems }
 						onSelect={ onSelect }
 						onHover={ this.onHover }
@@ -215,7 +229,7 @@ export class InserterMenu extends Component {
 							onToggle={ this.onTogglePanel( 'suggested' ) }
 							ref={ this.bindPanel( 'suggested' ) }
 						>
-							<ItemList items={ suggestedItems } onSelect={ onSelect } onHover={ this.onHover } />
+							<BlockTypesList items={ suggestedItems } onSelect={ onSelect } onHover={ this.onHover } />
 						</PanelBody>
 					}
 					{ map( getCategories(), ( category ) => {
@@ -231,27 +245,27 @@ export class InserterMenu extends Component {
 								onToggle={ this.onTogglePanel( category.slug ) }
 								ref={ this.bindPanel( category.slug ) }
 							>
-								<ItemList items={ categoryItems } onSelect={ onSelect } onHover={ this.onHover } />
+								<BlockTypesList items={ categoryItems } onSelect={ onSelect } onHover={ this.onHover } />
 							</PanelBody>
 						);
 					} ) }
-					{ !! sharedItems.length && (
+					{ !! reusableItems.length && (
 						<PanelBody
-							title={ __( 'Shared' ) }
-							opened={ isPanelOpen( 'shared' ) }
-							onToggle={ this.onTogglePanel( 'shared' ) }
+							title={ __( 'Reusable' ) }
+							opened={ isPanelOpen( 'reusable' ) }
+							onToggle={ this.onTogglePanel( 'reusable' ) }
 							icon="controls-repeat"
-							ref={ this.bindPanel( 'shared' ) }
+							ref={ this.bindPanel( 'reusable' ) }
 						>
-							<ItemList items={ sharedItems } onSelect={ onSelect } onHover={ this.onHover } />
+							<BlockTypesList items={ reusableItems } onSelect={ onSelect } onHover={ this.onHover } />
 						</PanelBody>
 					) }
-					{ isEmpty( suggestedItems ) && isEmpty( sharedItems ) && isEmpty( itemsPerCategory ) && (
+					{ isEmpty( suggestedItems ) && isEmpty( reusableItems ) && isEmpty( itemsPerCategory ) && (
 						<p className="editor-inserter__no-results">{ __( 'No blocks found.' ) }</p>
 					) }
 				</div>
 
-				{ hoveredItem && isSharedBlock( hoveredItem ) &&
+				{ hoveredItem && isReusableBlock( hoveredItem ) &&
 					<BlockPreview name={ hoveredItem.name } attributes={ hoveredItem.initialAttributes } />
 				}
 			</div>
@@ -261,20 +275,22 @@ export class InserterMenu extends Component {
 }
 
 export default compose(
-	withSelect( ( select, { rootUID } ) => {
+	withSelect( ( select, { rootClientId } ) => {
 		const {
 			getChildBlockNames,
 		} = select( 'core/blocks' );
 		const {
 			getBlockName,
 		} = select( 'core/editor' );
-		const rootBlockName = getBlockName( rootUID );
+		const rootBlockName = getBlockName( rootClientId );
 		return {
 			rootChildBlocks: getChildBlockNames( rootBlockName ),
 		};
 	} ),
 	withDispatch( ( dispatch ) => ( {
-		fetchSharedBlocks: dispatch( 'core/editor' ).fetchSharedBlocks,
+		fetchReusableBlocks: dispatch( 'core/editor' ).fetchReusableBlocks,
+		showInsertionPoint: dispatch( 'core/editor' ).showInsertionPoint,
+		hideInsertionPoint: dispatch( 'core/editor' ).hideInsertionPoint,
 	} ) ),
 	withSpokenMessages,
 	withInstanceId,

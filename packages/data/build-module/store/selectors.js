@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { get } from 'lodash';
-
 /**
  * Returns the raw `isResolving` value for a given reducer key, selector name,
  * and arguments set. May be undefined if the selector has never been resolved
@@ -16,15 +15,16 @@ import { get } from 'lodash';
  *
  * @return {?boolean} isResolving value.
  */
+
 export function getIsResolving(state, reducerKey, selectorName, args) {
   var map = get(state, [reducerKey, selectorName]);
+
   if (!map) {
     return;
   }
 
   return map.get(args);
 }
-
 /**
  * Returns true if resolution has already been triggered for a given reducer
  * key, selector name, and arguments set.
@@ -36,12 +36,11 @@ export function getIsResolving(state, reducerKey, selectorName, args) {
  *
  * @return {boolean} Whether resolution has been triggered.
  */
+
 export function hasStartedResolution(state, reducerKey, selectorName) {
   var args = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
-
   return getIsResolving(state, reducerKey, selectorName, args) !== undefined;
 }
-
 /**
  * Returns true if resolution has completed for a given reducer key, selector
  * name, and arguments set.
@@ -53,12 +52,11 @@ export function hasStartedResolution(state, reducerKey, selectorName) {
  *
  * @return {boolean} Whether resolution has completed.
  */
+
 export function hasFinishedResolution(state, reducerKey, selectorName) {
   var args = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
-
   return getIsResolving(state, reducerKey, selectorName, args) === false;
 }
-
 /**
  * Returns true if resolution has been triggered but has not yet completed for
  * a given reducer key, selector name, and arguments set.
@@ -70,8 +68,8 @@ export function hasFinishedResolution(state, reducerKey, selectorName) {
  *
  * @return {boolean} Whether resolution is in progress.
  */
+
 export function isResolving(state, reducerKey, selectorName) {
   var args = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
-
   return getIsResolving(state, reducerKey, selectorName, args) === true;
 }

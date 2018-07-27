@@ -1,102 +1,74 @@
-import _JSON$stringify from 'babel-runtime/core-js/json/stringify';
-import _defineProperty from 'babel-runtime/helpers/defineProperty';
-import _extends from 'babel-runtime/helpers/extends';
-/**
- * WordPress dependencies
- */
-import deprecated from '@wordpress/deprecated';
-
-/**
- * External dependencies
- */
-import { get } from 'lodash';
-
+import _defineProperty from "@babel/runtime/helpers/defineProperty";
+import _objectSpread from "@babel/runtime/helpers/objectSpread";
 // Defaults to the local storage.
-var persistenceStorage = window.localStorage;
-
+var persistenceStorage;
 /**
  * Sets a different persistence storage.
  *
  * @param {Object} storage Persistence storage.
  */
-export function setPersistenceStorage(storage) {
-	persistenceStorage = storage;
-}
 
+export function setPersistenceStorage(storage) {
+  persistenceStorage = storage;
+}
+/**
+ * Get the persistence storage handler.
+ *
+ * @return {Object} Persistence storage.
+ */
+
+export function getPersistenceStorage() {
+  return persistenceStorage || window.localStorage;
+}
 /**
  * Adds the rehydration behavior to redux reducers.
  *
  * @param {Function} reducer    The reducer to enhance.
- * @param {string}   reducerKey The reducer key to persist.
  * @param {string}   storageKey The storage key to use.
  *
  * @return {Function} Enhanced reducer.
  */
-export function withRehydration(reducer, reducerKey, storageKey) {
-	// EnhancedReducer with auto-rehydration
-	var enhancedReducer = function enhancedReducer(state, action) {
-		var nextState = reducer(state, action);
 
-		if (action.type === 'REDUX_REHYDRATE' && action.storageKey === storageKey) {
-			return _extends({}, nextState, _defineProperty({}, reducerKey, action.payload));
-		}
+export function withRehydration(reducer) {
+  // EnhancedReducer with auto-rehydration
+  var enhancedReducer = function enhancedReducer(state, action) {
+    if (action.type === 'REDUX_REHYDRATE') {
+      return reducer(action.payload, _objectSpread({}, action, {
+        previousState: state
+      }));
+    }
 
-		return nextState;
-	};
+    return reducer(state, action);
+  };
 
-	return enhancedReducer;
+  return enhancedReducer;
 }
-
 /**
- * Export withRehydratation (a misspelling of withRehydration) for backwards
- * compatibility.
+ * Higher-order reducer used to persist just one key from the reducer state.
  *
- * @param {Function} reducer    The reducer to enhance.
- * @param {string}   reducerKey The reducer key to persist.
- * @param {string}   storageKey The storage key to use.
+ * @param {function} reducer    Reducer function.
+ * @param {string} keyToPersist The reducer key to persist.
  *
- * @return {Function} Enhanced reducer.
+ * @return {function} Updated reducer.
  */
-export function withRehydratation(reducer, reducerKey, storageKey) {
-	deprecated('wp.data.withRehydratation', {
-		version: '3.2',
-		alternative: 'wp.data.withRehydration',
-		plugin: 'Gutenberg'
-	});
-	return withRehydration(reducer, reducerKey, storageKey);
-}
 
-/**
- * Loads the initial state and persist on changes.
- *
- * This should be executed after the reducer's registration.
- *
- * @param {Object}   store      Store to enhance.
- * @param {Function} reducer    The reducer function. Used to get default values and to allow custom serialization by the reducers.
- * @param {string}   reducerKey The reducer key to persist (example: reducerKey.subReducerKey).
- * @param {string}   storageKey The storage key to use.
- */
-export function loadAndPersist(store, reducer, reducerKey, storageKey) {
-	// Load initially persisted value
-	var persistedString = persistenceStorage.getItem(storageKey);
-	if (persistedString) {
-		var persistedState = _extends({}, get(reducer(undefined, { type: '@@gutenberg/init' }), reducerKey), JSON.parse(persistedString));
+export function restrictPersistence(reducer, keyToPersist) {
+  return function (state, action) {
+    var nextState = reducer(state, action);
 
-		store.dispatch({
-			type: 'REDUX_REHYDRATE',
-			payload: persistedState,
-			storageKey: storageKey
-		});
-	}
+    if (action.type === 'SERIALIZE') {
+      // Returning the same instance if the state is kept identical avoids reserializing again
+      if (action.previousState && action.previousState[keyToPersist] === nextState[keyToPersist]) {
+        return action.previousState;
+      }
 
-	// Persist updated preferences
-	var currentStateValue = get(store.getState(), reducerKey);
-	store.subscribe(function () {
-		var newStateValue = get(store.getState(), reducerKey);
-		if (newStateValue !== currentStateValue) {
-			currentStateValue = newStateValue;
-			var stateToSave = get(reducer(store.getState(), { type: 'SERIALIZE' }), reducerKey);
-			persistenceStorage.setItem(storageKey, _JSON$stringify(stateToSave));
-		}
-	});
+      return _defineProperty({}, keyToPersist, nextState[keyToPersist]);
+    }
+
+    if (action.type === 'REDUX_REHYDRATE') {
+      return _objectSpread({}, action.previousState, state, _defineProperty({}, keyToPersist, _objectSpread({}, action.previousState[keyToPersist], state[keyToPersist])));
+    }
+
+    return nextState;
+  };
 }

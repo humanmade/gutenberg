@@ -1,35 +1,26 @@
-'use strict';
+"use strict";
+
+var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
-exports.default = registerDataStore;
+exports.default = void 0;
 
-var _ = require('../');
+var _reducer = _interopRequireDefault(require("./reducer"));
 
-var _reducer = require('./reducer');
+var selectors = _interopRequireWildcard(require("./selectors"));
 
-var _reducer2 = _interopRequireDefault(_reducer);
-
-var _selectors = require('./selectors');
-
-var selectors = _interopRequireWildcard(_selectors);
-
-var _actions = require('./actions');
-
-var actions = _interopRequireWildcard(_actions);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var actions = _interopRequireWildcard(require("./actions"));
 
 /**
  * Internal dependencies
  */
-function registerDataStore() {
-	(0, _.registerStore)('core/data', {
-		reducer: _reducer2.default,
-		actions: actions,
-		selectors: selectors
-	});
-}
+var _default = {
+  reducer: _reducer.default,
+  actions: actions,
+  selectors: selectors
+};
+exports.default = _default;

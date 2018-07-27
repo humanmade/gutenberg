@@ -10,18 +10,18 @@ import {
 	Toolbar,
 	withSpokenMessages,
 	Popover,
+	ExternalLink,
 } from '@wordpress/components';
-import { keycodes } from '@wordpress/utils';
+import { ESCAPE, LEFT, RIGHT, UP, DOWN, BACKSPACE, ENTER, displayShortcut } from '@wordpress/keycodes';
 import { prependHTTP } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
-import UrlInput from '../../url-input';
+import PositionedAtSelection from './positioned-at-selection';
+import URLInput from '../../url-input';
 import { filterURLForDisplay } from '../../../utils/url';
-
-const { ESCAPE, LEFT, RIGHT, UP, DOWN, BACKSPACE, ENTER, displayShortcut } = keycodes;
 
 const FORMATTING_CONTROLS = [
 	{
@@ -56,14 +56,26 @@ const DEFAULT_CONTROLS = [ 'bold', 'italic', 'strikethrough', 'link' ];
 // Stop the key event from propagating up to maybeStartTyping in BlockListBlock
 const stopKeyPropagation = ( event ) => event.stopPropagation();
 
+/**
+ * Returns the Format Toolbar state given a set of props.
+ *
+ * @param {Object} props Component props.
+ *
+ * @return {Object} State object.
+ */
+function computeDerivedState( props ) {
+	return {
+		selectedNodeId: props.selectedNodeId,
+		settingsVisible: false,
+		opensInNewWindow: !! props.formats.link && !! props.formats.link.target,
+		linkValue: '',
+	};
+}
+
 class FormatToolbar extends Component {
 	constructor() {
 		super( ...arguments );
-		this.state = {
-			settingsVisible: false,
-			opensInNewWindow: false,
-			linkValue: '',
-		};
+		this.state = {};
 
 		this.addLink = this.addLink.bind( this );
 		this.editLink = this.editLink.bind( this );
@@ -93,14 +105,12 @@ class FormatToolbar extends Component {
 		}
 	}
 
-	componentWillReceiveProps( nextProps ) {
-		if ( this.props.selectedNodeId !== nextProps.selectedNodeId ) {
-			this.setState( {
-				settingsVisible: false,
-				opensInNewWindow: !! nextProps.formats.link && !! nextProps.formats.link.target,
-				linkValue: '',
-			} );
+	static getDerivedStateFromProps( props, state ) {
+		if ( state.selectedNodeId !== props.selectedNodeId ) {
+			return computeDerivedState( props );
 		}
+
+		return null;
 	}
 
 	onChangeLinkValue( value ) {
@@ -167,7 +177,7 @@ class FormatToolbar extends Component {
 	}
 
 	render() {
-		const { formats, focusPosition, enabledControls = DEFAULT_CONTROLS, customControls = [], selectedNodeId } = this.props;
+		const { formats, enabledControls = DEFAULT_CONTROLS, customControls = [], selectedNodeId } = this.props;
 		const { linkValue, settingsVisible, opensInNewWindow } = this.state;
 		const isAddingLink = formats.link && formats.link.isAdding;
 
@@ -208,10 +218,10 @@ class FormatToolbar extends Component {
 
 				{ ( isAddingLink || formats.link ) && (
 					<Fill name="RichText.Siblings">
-						<div className="editor-format-toolbar__link-container" style={ { ...focusPosition } }>
+						<PositionedAtSelection className="editor-format-toolbar__link-container">
 							<Popover
 								position="bottom center"
-								focusOnMount={ !! isAddingLink }
+								focusOnMount={ isAddingLink ? 'firstElement' : false }
 								key={ selectedNodeId /* Used to force rerender on change */ }
 							>
 								{ isAddingLink && (
@@ -223,7 +233,7 @@ class FormatToolbar extends Component {
 										onKeyDown={ this.onKeyDown }
 										onSubmit={ this.submitLink }>
 										<div className="editor-format-toolbar__link-modal-line">
-											<UrlInput value={ linkValue } onChange={ this.onChangeLinkValue } />
+											<URLInput value={ linkValue } onChange={ this.onChangeLinkValue } />
 											<IconButton icon="editor-break" label={ __( 'Apply' ) } type="submit" />
 											<IconButton
 												className="editor-format-toolbar__link-settings-toggle"
@@ -246,13 +256,12 @@ class FormatToolbar extends Component {
 										onKeyPress={ stopKeyPropagation }
 									>
 										<div className="editor-format-toolbar__link-modal-line">
-											<a
+											<ExternalLink
 												className="editor-format-toolbar__link-value"
 												href={ formats.link.value }
-												target="_blank"
 											>
 												{ formats.link.value && filterURLForDisplay( decodeURI( formats.link.value ) ) }
-											</a>
+											</ExternalLink>
 											<IconButton icon="edit" label={ __( 'Edit' ) } onClick={ this.editLink } />
 											<IconButton
 												className="editor-format-toolbar__link-settings-toggle"
@@ -267,7 +276,7 @@ class FormatToolbar extends Component {
 								/* eslint-enable jsx-a11y/no-static-element-interactions */
 								) }
 							</Popover>
-						</div>
+						</PositionedAtSelection>
 					</Fill>
 				) }
 			</div>

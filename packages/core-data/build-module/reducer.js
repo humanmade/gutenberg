@@ -1,23 +1,24 @@
-import _slicedToArray from 'babel-runtime/helpers/slicedToArray';
-import _Object$entries from 'babel-runtime/core-js/object/entries';
-import _toConsumableArray from 'babel-runtime/helpers/toConsumableArray';
-import _defineProperty from 'babel-runtime/helpers/defineProperty';
-import _extends from 'babel-runtime/helpers/extends';
+import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
+import _Object$entries from "@babel/runtime/core-js/object/entries";
+import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
+import "core-js/modules/es6.function.name";
+import _defineProperty from "@babel/runtime/helpers/defineProperty";
+import _objectSpread from "@babel/runtime/helpers/objectSpread";
+
 /**
  * External dependencies
  */
 import { keyBy, map, groupBy } from 'lodash';
-
 /**
  * WordPress dependencies
  */
-import { combineReducers } from '@wordpress/data';
 
+import { combineReducers } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { defaultEntities } from './entities';
 
+import { defaultEntities } from './entities';
 /**
  * Reducer managing terms state. Keyed by taxonomy slug, the value is either
  * undefined (if no request has been made for given taxonomy), null (if a
@@ -29,18 +30,18 @@ import { defaultEntities } from './entities';
  *
  * @return {Object} Updated state.
  */
+
 export function terms() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	switch (action.type) {
-		case 'RECEIVE_TERMS':
-			return _extends({}, state, _defineProperty({}, action.taxonomy, action.terms));
-	}
+  switch (action.type) {
+    case 'RECEIVE_TERMS':
+      return _objectSpread({}, state, _defineProperty({}, action.taxonomy, action.terms));
+  }
 
-	return state;
+  return state;
 }
-
 /**
  * Reducer managing authors state. Keyed by id.
  *
@@ -49,23 +50,26 @@ export function terms() {
  *
  * @return {Object} Updated state.
  */
+
 export function users() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { byId: {}, queries: {} };
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
+    byId: {},
+    queries: {}
+  };
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	switch (action.type) {
-		case 'RECEIVE_USER_QUERY':
-			return {
-				byId: _extends({}, state.byId, keyBy(action.users, 'id')),
-				queries: _extends({}, state.queries, _defineProperty({}, action.queryID, map(action.users, function (user) {
-					return user.id;
-				})))
-			};
-	}
+  switch (action.type) {
+    case 'RECEIVE_USER_QUERY':
+      return {
+        byId: _objectSpread({}, state.byId, keyBy(action.users, 'id')),
+        queries: _objectSpread({}, state.queries, _defineProperty({}, action.queryID, map(action.users, function (user) {
+          return user.id;
+        })))
+      };
+  }
 
-	return state;
+  return state;
 }
-
 /**
  * Reducer managing taxonomies.
  *
@@ -74,18 +78,18 @@ export function users() {
  *
  * @return {Object} Updated state.
  */
+
 export function taxonomies() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	switch (action.type) {
-		case 'RECEIVE_TAXONOMIES':
-			return action.taxonomies;
-	}
+  switch (action.type) {
+    case 'RECEIVE_TAXONOMIES':
+      return action.taxonomies;
+  }
 
-	return state;
+  return state;
 }
-
 /**
  * Reducer managing theme supports data.
  *
@@ -94,18 +98,18 @@ export function taxonomies() {
  *
  * @return {Object} Updated state.
  */
+
 export function themeSupports() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	switch (action.type) {
-		case 'RECEIVE_THEME_SUPPORTS':
-			return _extends({}, state, action.themeSupports);
-	}
+  switch (action.type) {
+    case 'RECEIVE_THEME_SUPPORTS':
+      return _objectSpread({}, state, action.themeSupports);
+  }
 
-	return state;
+  return state;
 }
-
 /**
  * Higher Order Reducer for a given entity config. It supports:
  *
@@ -115,28 +119,30 @@ export function themeSupports() {
  *
  * @return {Function} Reducer.
  */
+
 function entity(entityConfig) {
-	var key = entityConfig.key || 'id';
+  var key = entityConfig.key || 'id';
+  return function () {
+    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
+      byKey: {}
+    };
+    var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	return function () {
-		var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { byKey: {} };
-		var action = arguments[1];
+    if (!action.name || !action.kind || action.name !== entityConfig.name || action.kind !== entityConfig.kind) {
+      return state;
+    }
 
-		if (!action.name || !action.kind || action.name !== entityConfig.name || action.kind !== entityConfig.kind) {
-			return state;
-		}
+    switch (action.type) {
+      case 'RECEIVE_ENTITY_RECORDS':
+        return {
+          byKey: _objectSpread({}, state.byKey, keyBy(action.records, key))
+        };
 
-		switch (action.type) {
-			case 'RECEIVE_ENTITY_RECORDS':
-				return {
-					byKey: _extends({}, state.byKey, keyBy(action.records, key))
-				};
-			default:
-				return state;
-		}
-	};
+      default:
+        return state;
+    }
+  };
 }
-
 /**
  * Reducer keeping track of the registered entities.
  *
@@ -145,18 +151,19 @@ function entity(entityConfig) {
  *
  * @return {Object} Updated state.
  */
+
+
 export function entitiesConfig() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultEntities;
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultEntities;
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	switch (action.type) {
-		case 'ADD_ENTITIES':
-			return [].concat(_toConsumableArray(state), _toConsumableArray(action.entities));
-	}
+  switch (action.type) {
+    case 'ADD_ENTITIES':
+      return _toConsumableArray(state).concat(_toConsumableArray(action.entities));
+  }
 
-	return state;
+  return state;
 }
-
 /**
  * Reducer keeping track of the registered entities config and data.
  *
@@ -165,47 +172,45 @@ export function entitiesConfig() {
  *
  * @return {Object} Updated state.
  */
+
 export var entities = function entities() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var action = arguments.length > 1 ? arguments[1] : undefined;
+  var newConfig = entitiesConfig(state.config, action); // Generates a dynamic reducer for the entities
 
-	var newConfig = entitiesConfig(state.config, action);
+  var entitiesDataReducer = state.reducer;
 
-	// Generates a dynamic reducer for the entities
-	var entitiesDataReducer = state.reducer;
-	if (!entitiesDataReducer || newConfig !== state.config) {
-		var entitiesByKind = groupBy(newConfig, 'kind');
-		entitiesDataReducer = combineReducers(_Object$entries(entitiesByKind).reduce(function (memo, _ref) {
-			var _ref2 = _slicedToArray(_ref, 2),
-			    kind = _ref2[0],
-			    subEntities = _ref2[1];
+  if (!entitiesDataReducer || newConfig !== state.config) {
+    var entitiesByKind = groupBy(newConfig, 'kind');
+    entitiesDataReducer = combineReducers(_Object$entries(entitiesByKind).reduce(function (memo, _ref) {
+      var _ref2 = _slicedToArray(_ref, 2),
+          kind = _ref2[0],
+          subEntities = _ref2[1];
 
-			var kindReducer = combineReducers(subEntities.reduce(function (kindMemo, entityConfig) {
-				return _extends({}, kindMemo, _defineProperty({}, entityConfig.name, entity(entityConfig)));
-			}, {}));
+      var kindReducer = combineReducers(subEntities.reduce(function (kindMemo, entityConfig) {
+        return _objectSpread({}, kindMemo, _defineProperty({}, entityConfig.name, entity(entityConfig)));
+      }, {}));
+      memo[kind] = kindReducer;
+      return memo;
+    }, {}));
+  }
 
-			memo[kind] = kindReducer;
-			return memo;
-		}, {}));
-	}
+  var newData = entitiesDataReducer(state.data, action);
 
-	var newData = entitiesDataReducer(state.data, action);
+  if (newData === state.data && newConfig === state.config && entitiesDataReducer === state.reducer) {
+    return state;
+  }
 
-	if (newData === state.data && newConfig === state.config && entitiesDataReducer === state.reducer) {
-		return state;
-	}
-
-	return {
-		reducer: entitiesDataReducer,
-		data: newData,
-		config: newConfig
-	};
+  return {
+    reducer: entitiesDataReducer,
+    data: newData,
+    config: newConfig
+  };
 };
-
 export default combineReducers({
-	terms: terms,
-	users: users,
-	taxonomies: taxonomies,
-	themeSupports: themeSupports,
-	entities: entities
+  terms: terms,
+  users: users,
+  taxonomies: taxonomies,
+  themeSupports: themeSupports,
+  entities: entities
 });

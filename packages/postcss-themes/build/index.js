@@ -1,88 +1,95 @@
-'use strict';
+"use strict";
 
-var _entries = require('babel-runtime/core-js/object/entries');
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _entries2 = _interopRequireDefault(_entries);
+require("core-js/modules/es6.regexp.split");
 
-var _slicedToArray2 = require('babel-runtime/helpers/slicedToArray');
+var _entries = _interopRequireDefault(require("@babel/runtime/core-js/object/entries"));
 
-var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
+require("core-js/modules/es6.regexp.replace");
 
-var _keys = require('babel-runtime/core-js/object/keys');
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
-var _keys2 = _interopRequireDefault(_keys);
+var _keys = _interopRequireDefault(require("@babel/runtime/core-js/object/keys"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+require("core-js/modules/web.dom.iterable");
+
+require("core-js/modules/es6.regexp.match");
 
 var postcss = require('postcss');
 
 module.exports = postcss.plugin('postcss-test-plugin', function (options) {
-	return function (root) {
-		root.walkRules(function (rule) {
-			var themeDecls = {};
-			var hasThemeDecls = false;
-			rule.walkDecls(function (decl) {
-				var themeMatch = /(theme\(([^\)]*)\))/g;
-				if (!decl.value) {
-					return;
-				}
-				var matched = decl.value.match(themeMatch);
-				if (!matched) {
-					return;
-				}
-				var value = decl.value;
-				var parsed = void 0;
-				var themeValues = {};
+  return function (root) {
+    root.walkRules(function (rule) {
+      var themeDecls = {};
+      var hasThemeDecls = false;
+      rule.walkDecls(function (decl) {
+        var themeMatch = /(theme\(([^\)]*)\))/g;
 
-				var _loop = function _loop() {
-					var _parsed = parsed,
-					    _parsed2 = (0, _slicedToArray3.default)(_parsed, 3),
-					    whole = _parsed2[1],
-					    color = _parsed2[2];
+        if (!decl.value) {
+          return;
+        }
 
-					var colorKey = color.trim();
-					var defaultColor = options.defaults[colorKey];
-					value = value.replace(whole, defaultColor);
+        var matched = decl.value.match(themeMatch);
 
-					(0, _entries2.default)(options.themes).forEach(function (_ref) {
-						var _ref2 = (0, _slicedToArray3.default)(_ref, 2),
-						    key = _ref2[0],
-						    colors = _ref2[1];
+        if (!matched) {
+          return;
+        }
 
-						var previousValue = themeValues[key] ? themeValues[key] : decl.value;
-						themeValues[key] = previousValue.replace(whole, colors[colorKey]);
-					});
-				};
+        var value = decl.value;
+        var parsed;
+        var themeValues = {};
 
-				while ((parsed = themeMatch.exec(decl.value)) !== null) {
-					_loop();
-				}
+        var _loop = function _loop() {
+          var _parsed = parsed,
+              _parsed2 = (0, _slicedToArray2.default)(_parsed, 3),
+              whole = _parsed2[1],
+              color = _parsed2[2];
 
-				hasThemeDecls = true;
-				decl.value = value;
-				(0, _keys2.default)(options.themes).forEach(function (key) {
-					var themeDecl = decl.clone();
-					themeDecl.value = themeValues[key];
-					if (!themeDecls[key]) {
-						themeDecls[key] = [];
-					}
-					themeDecls[key].push(themeDecl);
-				});
-			});
+          var colorKey = color.trim();
+          var defaultColor = options.defaults[colorKey];
+          value = value.replace(whole, defaultColor);
+          (0, _entries.default)(options.themes).forEach(function (_ref) {
+            var _ref2 = (0, _slicedToArray2.default)(_ref, 2),
+                key = _ref2[0],
+                colors = _ref2[1];
 
-			if (hasThemeDecls) {
-				(0, _keys2.default)(options.themes).forEach(function (key) {
-					var newRule = postcss.rule({
-						selector: rule.selector.split(',').map(function (subselector) {
-							return 'body.' + key + ' ' + subselector.trim();
-						}).join(', ')
-					});
-					themeDecls[key].forEach(function (decl) {
-						return newRule.append(decl);
-					});
-					rule.parent.insertAfter(rule, newRule);
-				});
-			}
-		});
-	};
+            var previousValue = themeValues[key] ? themeValues[key] : decl.value;
+            themeValues[key] = previousValue.replace(whole, colors[colorKey]);
+          });
+        };
+
+        while ((parsed = themeMatch.exec(decl.value)) !== null) {
+          _loop();
+        }
+
+        hasThemeDecls = true;
+        decl.value = value;
+        (0, _keys.default)(options.themes).forEach(function (key) {
+          var themeDecl = decl.clone();
+          themeDecl.value = themeValues[key];
+
+          if (!themeDecls[key]) {
+            themeDecls[key] = [];
+          }
+
+          themeDecls[key].push(themeDecl);
+        });
+      });
+
+      if (hasThemeDecls) {
+        (0, _keys.default)(options.themes).forEach(function (key) {
+          var newRule = postcss.rule({
+            selector: rule.selector.split(',').map(function (subselector) {
+              return 'body.' + key + ' ' + subselector.trim();
+            }).join(', ')
+          });
+          themeDecls[key].forEach(function (decl) {
+            return newRule.append(decl);
+          });
+          rule.parent.insertAfter(rule, newRule);
+        });
+      }
+    });
+  };
 });

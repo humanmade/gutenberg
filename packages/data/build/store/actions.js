@@ -1,10 +1,11 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.startResolution = startResolution;
 exports.finishResolution = finishResolution;
+
 /**
  * Returns an action object used in signalling that selector resolution has
  * started.
@@ -23,7 +24,6 @@ function startResolution(reducerKey, selectorName, args) {
     args: args
   };
 }
-
 /**
  * Returns an action object used in signalling that selector resolution has
  * completed.
@@ -34,6 +34,8 @@ function startResolution(reducerKey, selectorName, args) {
  *
  * @return {Object} Action object.
  */
+
+
 function finishResolution(reducerKey, selectorName, args) {
   return {
     type: 'FINISH_RESOLUTION',

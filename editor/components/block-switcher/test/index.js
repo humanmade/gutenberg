@@ -7,47 +7,44 @@ import { shallow } from 'enzyme';
  * WordPress dependencies
  */
 import { registerCoreBlocks } from '@wordpress/core-blocks';
-import { keycodes } from '@wordpress/utils';
+import { DOWN } from '@wordpress/keycodes';
 
 /**
  * Internal dependencies
  */
 import { BlockSwitcher } from '../';
 
-const { DOWN } = keycodes;
-
 describe( 'BlockSwitcher', () => {
 	const headingBlock1 = {
 		attributes: {
 			content: [ 'How are you?' ],
-			nodeName: 'H2',
+			level: 2,
 		},
 		isValid: true,
 		name: 'core/heading',
 		originalContent: '<h2>How are you?</h2>',
-		uid: 'a1303fd6-3e60-4fff-a770-0e0ea656c5b9',
+		clientId: 'a1303fd6-3e60-4fff-a770-0e0ea656c5b9',
 	};
 
 	const textBlock = {
 		attributes: {
 			content: [ 'I am great!' ],
-			nodeName: 'P',
 		},
 		isValid: true,
 		name: 'core/text',
 		originalContent: '<p>I am great!</p>',
-		uid: 'b1303fdb-3e60-43faf-a770-2e1ea656c5b8',
+		clientId: 'b1303fdb-3e60-43faf-a770-2e1ea656c5b8',
 	};
 
 	const headingBlock2 = {
 		attributes: {
 			content: [ 'I am the greatest!' ],
-			nodeName: 'H3',
+			level: 3,
 		},
 		isValid: true,
 		name: 'core/text',
 		originalContent: '<h3>I am the greatest!</h3>',
-		uid: 'c2403fd2-4e63-5ffa-b71c-1e0ea656c5b0',
+		clientId: 'c2403fd2-4e63-5ffa-b71c-1e0ea656c5b0',
 	};
 
 	beforeAll( () => {
@@ -136,22 +133,11 @@ describe( 'BlockSwitcher', () => {
 		} );
 
 		describe( '.renderContent', () => {
-			const onCloseStub = jest.fn();
-
-			const getIconButtons = () => {
-				const content = shallow( getDropdown().props().renderContent( { onClose: onCloseStub } ) );
-				return content.find( 'IconButton' );
-			};
-
-			test( 'should create the iconButtons for the chosen block. A heading block will have 3 items', () => {
-				expect( getIconButtons() ).toHaveLength( 3 );
-			} );
-
-			test( 'should simulate the click event by closing the switcher and causing a block transform on iconButtons.', () => {
-				getIconButtons().first().simulate( 'click' );
-
-				expect( onCloseStub ).toHaveBeenCalledTimes( 1 );
-				expect( onTransformStub ).toHaveBeenCalledTimes( 1 );
+			test( 'should create the transform items for the chosen block. A heading block will have 3 items', () => {
+				const onCloseStub = jest.fn();
+				const content = shallow( <div>{ getDropdown().props().renderContent( { onClose: onCloseStub } ) }</div> );
+				const blockList = content.find( 'BlockTypesList' );
+				expect( blockList.prop( 'items' ) ).toHaveLength( 3 );
 			} );
 		} );
 	} );

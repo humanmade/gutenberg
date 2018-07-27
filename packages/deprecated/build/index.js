@@ -1,9 +1,24 @@
-'use strict';
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = deprecated;
+exports.logged = void 0;
+
+require("core-js/modules/es6.string.link");
+
+var _create = _interopRequireDefault(require("@babel/runtime/core-js/object/create"));
+
+/**
+ * Object map tracking messages which have been logged, for use in ensuring a
+ * message is only logged once.
+ *
+ * @type {Object}
+ */
+var logged = (0, _create.default)(null);
 /**
  * Logs a message to notify developers about a deprecated feature.
  *
@@ -15,6 +30,9 @@ exports.default = deprecated;
  * @param {?string} options.link        Link to documentation
  * @param {?string} options.hint        Additional message to help transition away from the deprecated feature.
  */
+
+exports.logged = logged;
+
 function deprecated(feature) {
   var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
       version = _ref.version,
@@ -23,13 +41,18 @@ function deprecated(feature) {
       link = _ref.link,
       hint = _ref.hint;
 
-  var pluginMessage = plugin ? ' from ' + plugin : '';
-  var versionMessage = version ? pluginMessage + ' in ' + version : '';
-  var useInsteadMessage = alternative ? ' Please use ' + alternative + ' instead.' : '';
-  var linkMessage = link ? ' See: ' + link : '';
-  var hintMessage = hint ? ' Note: ' + hint : '';
-  var message = feature + ' is deprecated and will be removed' + versionMessage + '.' + useInsteadMessage + linkMessage + hintMessage;
+  var pluginMessage = plugin ? " from ".concat(plugin) : '';
+  var versionMessage = version ? "".concat(pluginMessage, " in ").concat(version) : '';
+  var useInsteadMessage = alternative ? " Please use ".concat(alternative, " instead.") : '';
+  var linkMessage = link ? " See: ".concat(link) : '';
+  var hintMessage = hint ? " Note: ".concat(hint) : '';
+  var message = "".concat(feature, " is deprecated and will be removed").concat(versionMessage, ".").concat(useInsteadMessage).concat(linkMessage).concat(hintMessage); // Skip if already logged.
 
-  // eslint-disable-next-line no-console
+  if (message in logged) {
+    return;
+  } // eslint-disable-next-line no-console
+
+
   console.warn(message);
+  logged[message] = true;
 }

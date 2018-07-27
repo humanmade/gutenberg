@@ -7,9 +7,10 @@ import classnames from 'classnames';
  * WordPress dependencies
  */
 import { withDispatch, withSelect } from '@wordpress/data';
-import { Component, compose } from '@wordpress/element';
+import { Component } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { ClipboardButton, Button } from '@wordpress/components';
+import { compose } from '@wordpress/compose';
+import { ClipboardButton, Button, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal Dependencies
@@ -47,7 +48,7 @@ class PostPermalink extends Component {
 	componentDidUpdate( prevProps, prevState ) {
 		// If we've just stopped editing the permalink, focus on the new permalink.
 		if ( prevState.isEditingPermalink && ! this.state.isEditingPermalink ) {
-			this.permalinkButton.focus();
+			this.linkElement.focus();
 		}
 	}
 
@@ -56,11 +57,11 @@ class PostPermalink extends Component {
 	}
 
 	render() {
-		const { isNew, previewLink, isEditable, samplePermalink, isPublished } = this.props;
+		const { isNew, postLink, isEditable, samplePermalink, isPublished } = this.props;
 		const { isCopied, isEditingPermalink } = this.state;
 		const ariaLabel = isCopied ? __( 'Permalink copied' ) : __( 'Copy the permalink' );
 
-		if ( isNew || ! previewLink ) {
+		if ( isNew || ! postLink ) {
 			return null;
 		}
 
@@ -78,15 +79,15 @@ class PostPermalink extends Component {
 				<span className="editor-post-permalink__label">{ __( 'Permalink:' ) }</span>
 
 				{ ! isEditingPermalink &&
-					<Button
+					<ExternalLink
 						className="editor-post-permalink__link"
-						href={ ! isPublished ? previewLink : samplePermalink }
+						href={ ! isPublished ? postLink : samplePermalink }
 						target="_blank"
-						ref={ ( permalinkButton ) => this.permalinkButton = permalinkButton }
+						ref={ ( linkElement ) => this.linkElement = linkElement }
 					>
 						{ decodeURI( samplePermalink ) }
 						&lrm;
-					</Button>
+					</ExternalLink>
 				}
 
 				{ isEditingPermalink &&
@@ -123,10 +124,19 @@ class PostPermalink extends Component {
 
 export default compose( [
 	withSelect( ( select ) => {
-		const { isEditedPostNew, isPermalinkEditable, getEditedPostPreviewLink, getPermalink, isCurrentPostPublished } = select( 'core/editor' );
+		const {
+			isEditedPostNew,
+			isPermalinkEditable,
+			getCurrentPost,
+			getPermalink,
+			isCurrentPostPublished,
+		} = select( 'core/editor' );
+
+		const { link } = getCurrentPost();
+
 		return {
 			isNew: isEditedPostNew(),
-			previewLink: getEditedPostPreviewLink(),
+			postLink: link,
 			isEditable: isPermalinkEditable(),
 			samplePermalink: getPermalink(),
 			isPublished: isCurrentPostPublished(),

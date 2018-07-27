@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { castArray } from 'lodash';
-
 /**
  * Returns an action object used in signalling that terms have been received
  * for a given taxonomy.
@@ -12,6 +11,7 @@ import { castArray } from 'lodash';
  *
  * @return {Object} Action object.
  */
+
 export function receiveTerms(taxonomy, terms) {
   return {
     type: 'RECEIVE_TERMS',
@@ -19,7 +19,6 @@ export function receiveTerms(taxonomy, terms) {
     terms: terms
   };
 }
-
 /**
  * Returns an action object used in signalling that authors have been received.
  *
@@ -28,6 +27,7 @@ export function receiveTerms(taxonomy, terms) {
  *
  * @return {Object} Action object.
  */
+
 export function receiveUserQuery(queryID, users) {
   return {
     type: 'RECEIVE_USER_QUERY',
@@ -35,7 +35,6 @@ export function receiveUserQuery(queryID, users) {
     queryID: queryID
   };
 }
-
 /**
  * Returns an action object used in adding new entities.
  *
@@ -43,13 +42,13 @@ export function receiveUserQuery(queryID, users) {
  *
  * @return {Object} Action object.
  */
+
 export function addEntities(entities) {
   return {
     type: 'ADD_ENTITIES',
     entities: entities
   };
 }
-
 /**
  * Returns an action object used in signalling that entity records have been received.
  *
@@ -59,6 +58,7 @@ export function addEntities(entities) {
  *
  * @return {Object} Action object.
  */
+
 export function receiveEntityRecords(kind, name, records) {
   return {
     type: 'RECEIVE_ENTITY_RECORDS',
@@ -67,7 +67,6 @@ export function receiveEntityRecords(kind, name, records) {
     name: name
   };
 }
-
 /**
  * Returns an action object used in signalling that the index has been received.
  *
@@ -75,6 +74,7 @@ export function receiveEntityRecords(kind, name, records) {
  *
  * @return {Object} Action object.
  */
+
 export function receiveThemeSupportsFromIndex(index) {
   return {
     type: 'RECEIVE_THEME_SUPPORTS',

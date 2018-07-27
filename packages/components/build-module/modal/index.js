@@ -1,0 +1,196 @@
+import _extends from "@babel/runtime/helpers/extends";
+import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
+import _createClass from "@babel/runtime/helpers/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/inherits";
+import { createElement } from "@wordpress/element";
+
+/**
+ * External dependencies
+ */
+import classnames from 'classnames';
+import { noop } from 'lodash';
+/**
+ * WordPress dependencies
+ */
+
+import { Component, createPortal } from '@wordpress/element';
+import { withInstanceId } from '@wordpress/compose';
+/**
+ * Internal dependencies
+ */
+
+import ModalFrame from './frame';
+import ModalHeader from './header';
+import * as ariaHelper from './aria-helper'; // Used to count the number of open modals.
+
+var parentElement,
+    openModalCount = 0;
+
+var Modal =
+/*#__PURE__*/
+function (_Component) {
+  _inherits(Modal, _Component);
+
+  function Modal(props) {
+    var _this;
+
+    _classCallCheck(this, Modal);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(Modal).call(this, props));
+
+    _this.prepareDOM();
+
+    return _this;
+  }
+  /**
+   * Appends the modal's node to the DOM, so the portal can render the
+   * modal in it. Also calls the openFirstModal when this is the first modal to be
+   * opened.
+   */
+
+
+  _createClass(Modal, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      openModalCount++;
+
+      if (openModalCount === 1) {
+        this.openFirstModal();
+      }
+    }
+    /**
+     * Removes the modal's node from the DOM. Also calls closeLastModal when this is
+     * the last modal to be closed.
+     */
+
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      openModalCount--;
+
+      if (openModalCount === 0) {
+        this.closeLastModal();
+      }
+
+      this.cleanDOM();
+    }
+    /**
+     * Prepares the DOM for the modals to be rendered.
+     *
+     * Every modal is mounted in a separate div appended to a parent div
+     * that is appended to the document body.
+     *
+     * The parent div will be created if it does not yet exist, and the
+     * separate div for this specific modal will be appended to that.
+     */
+
+  }, {
+    key: "prepareDOM",
+    value: function prepareDOM() {
+      if (!parentElement) {
+        parentElement = document.createElement('div');
+        document.body.appendChild(parentElement);
+      }
+
+      this.node = document.createElement('div');
+      parentElement.appendChild(this.node);
+    }
+    /**
+     * Removes the specific mounting point for this modal from the DOM.
+     */
+
+  }, {
+    key: "cleanDOM",
+    value: function cleanDOM() {
+      parentElement.removeChild(this.node);
+    }
+    /**
+     * Prepares the DOM for this modal and any additional modal to be mounted.
+     *
+     * It appends an additional div to the body for the modals to be rendered in,
+     * it hides any other elements from screen-readers and adds an additional class
+     * to the body to prevent scrolling while the modal is open.
+     */
+
+  }, {
+    key: "openFirstModal",
+    value: function openFirstModal() {
+      ariaHelper.hideApp(parentElement);
+      document.body.classList.add(this.props.bodyOpenClassName);
+    }
+    /**
+     * Cleans up the DOM after the last modal is closed and makes the app available
+     * for screen-readers again.
+     */
+
+  }, {
+    key: "closeLastModal",
+    value: function closeLastModal() {
+      document.body.classList.remove(this.props.bodyOpenClassName);
+      ariaHelper.showApp();
+    }
+    /**
+     * Renders the modal.
+     *
+     * @return {WPElement} The modal element.
+     */
+
+  }, {
+    key: "render",
+    value: function render() {
+      var _this$props = this.props,
+          overlayClassName = _this$props.overlayClassName,
+          className = _this$props.className,
+          onRequestClose = _this$props.onRequestClose,
+          title = _this$props.title,
+          icon = _this$props.icon,
+          closeButtonLabel = _this$props.closeButtonLabel,
+          children = _this$props.children,
+          aria = _this$props.aria,
+          instanceId = _this$props.instanceId,
+          otherProps = _objectWithoutProperties(_this$props, ["overlayClassName", "className", "onRequestClose", "title", "icon", "closeButtonLabel", "children", "aria", "instanceId"]);
+
+      var headingId = aria.labelledby || 'components-modal-header-' + instanceId;
+      return createPortal(createElement("div", {
+        className: classnames('components-modal__screen-overlay', overlayClassName)
+      }, createElement(ModalFrame, _extends({
+        className: classnames('components-modal__frame', className),
+        onRequestClose: onRequestClose,
+        aria: {
+          labelledby: title ? headingId : null,
+          describedby: aria.describedby
+        }
+      }, otherProps), createElement(ModalHeader, {
+        closeLabel: closeButtonLabel,
+        onClose: onRequestClose,
+        title: title,
+        headingId: headingId,
+        icon: icon
+      }), createElement("div", {
+        className: 'components-modal__content'
+      }, children))), this.node);
+    }
+  }]);
+
+  return Modal;
+}(Component);
+
+Modal.defaultProps = {
+  bodyOpenClassName: 'modal-open',
+  role: 'dialog',
+  title: null,
+  onRequestClose: noop,
+  focusOnMount: true,
+  shouldCloseOnEsc: true,
+  shouldCloseOnClickOutside: true,
+
+  /* accessibility */
+  aria: {
+    labelledby: null,
+    describedby: null
+  }
+};
+export default withInstanceId(Modal);

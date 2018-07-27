@@ -1,16 +1,30 @@
-'use strict';
+"use strict";
 
-import _Object$defineProperty from 'babel-runtime/core-js/object/define-property';
-import _Object$keys from 'babel-runtime/core-js/object/keys';
+var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
+
+var _Object$defineProperty = require("@babel/runtime/core-js/object/define-property");
+
+var _Object$keys = require("@babel/runtime/core-js/object/keys");
+
+require("core-js/modules/web.dom.iterable");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.focus = undefined;
+var _exportNames = {
+  focus: true
+};
+exports.focus = void 0;
 
-var _dom = require('./dom');
+var focusable = _interopRequireWildcard(require("./focusable"));
+
+var tabbable = _interopRequireWildcard(require("./tabbable"));
+
+var _dom = require("./dom");
 
 _Object$keys(_dom).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
 
   _Object$defineProperty(exports, key, {
     enumerable: true,
@@ -20,17 +34,11 @@ _Object$keys(_dom).forEach(function (key) {
   });
 });
 
-var _focusable = require('./focusable');
-
-var focusable = _interopRequireWildcard(_focusable);
-
-var _tabbable = require('./tabbable');
-
-var tabbable = _interopRequireWildcard(_tabbable);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
 /**
  * Internal dependencies
  */
-var focus = exports.focus = { focusable: focusable, tabbable: tabbable };
+var focus = {
+  focusable: focusable,
+  tabbable: tabbable
+};
+exports.focus = focus;

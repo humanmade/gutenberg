@@ -1,5 +1,8 @@
-import _classCallCheck from 'babel-runtime/helpers/classCallCheck';
-import _createClass from 'babel-runtime/helpers/createClass';
+import "core-js/modules/es6.function.name";
+import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
+import _createClass from "@babel/runtime/helpers/createClass";
+import "core-js/modules/es7.array.includes";
+import "core-js/modules/es6.string.includes";
 
 /**
  * External dependencies
@@ -10,43 +13,46 @@ var _require = require('lodash'),
 var _require2 = require('webpack-sources'),
     ConcatSource = _require2.ConcatSource;
 
-module.exports = function () {
-	function LibraryExportDefaultPlugin(entryPointNames) {
-		_classCallCheck(this, LibraryExportDefaultPlugin);
+module.exports =
+/*#__PURE__*/
+function () {
+  function LibraryExportDefaultPlugin(entryPointNames) {
+    _classCallCheck(this, LibraryExportDefaultPlugin);
 
-		this.entryPointNames = entryPointNames;
-	}
+    this.entryPointNames = entryPointNames;
+  }
 
-	_createClass(LibraryExportDefaultPlugin, [{
-		key: 'apply',
-		value: function apply(compiler) {
-			var _this = this;
+  _createClass(LibraryExportDefaultPlugin, [{
+    key: "apply",
+    value: function apply(compiler) {
+      var _this = this;
 
-			compiler.hooks.compilation.tap('LibraryExportDefaultPlugin', function (compilation) {
-				var mainTemplate = compilation.mainTemplate,
-				    chunkTemplate = compilation.chunkTemplate;
+      compiler.hooks.compilation.tap('LibraryExportDefaultPlugin', function (compilation) {
+        var mainTemplate = compilation.mainTemplate,
+            chunkTemplate = compilation.chunkTemplate;
 
+        var onRenderWithEntry = function onRenderWithEntry(source, chunk) {
+          if (!includes(_this.entryPointNames, chunk.name)) {
+            return source;
+          }
 
-				var onRenderWithEntry = function onRenderWithEntry(source, chunk) {
-					if (!includes(_this.entryPointNames, chunk.name)) {
-						return source;
-					}
-					return new ConcatSource(source, '["default"]');
-				};
+          return new ConcatSource(source, '["default"]');
+        };
 
-				var _arr = [mainTemplate, chunkTemplate];
-				for (var _i = 0; _i < _arr.length; _i++) {
-					var template = _arr[_i];
-					template.hooks.renderWithEntry.tap('LibraryExportDefaultPlugin', onRenderWithEntry);
-				}
+        var _arr = [mainTemplate, chunkTemplate];
 
-				mainTemplate.hooks.hash.tap('LibraryExportDefaultPlugin', function (hash) {
-					hash.update('export property');
-					hash.update('default');
-				});
-			});
-		}
-	}]);
+        for (var _i = 0; _i < _arr.length; _i++) {
+          var template = _arr[_i];
+          template.hooks.renderWithEntry.tap('LibraryExportDefaultPlugin', onRenderWithEntry);
+        }
 
-	return LibraryExportDefaultPlugin;
+        mainTemplate.hooks.hash.tap('LibraryExportDefaultPlugin', function (hash) {
+          hash.update('export property');
+          hash.update('default');
+        });
+      });
+    }
+  }]);
+
+  return LibraryExportDefaultPlugin;
 }();

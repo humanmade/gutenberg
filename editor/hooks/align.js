@@ -7,7 +7,8 @@ import { assign, includes } from 'lodash';
 /**
  * WordPress dependencies
  */
-import { createHigherOrderComponent } from '@wordpress/element';
+import { createHigherOrderComponent } from '@wordpress/compose';
+import deprecated from '@wordpress/deprecated';
 import { addFilter } from '@wordpress/hooks';
 import { hasBlockSupport, getBlockSupport } from '@wordpress/blocks';
 
@@ -55,7 +56,13 @@ export function getBlockValidAlignments( blockName ) {
 		validAlignments.push( 'left', 'center', 'right' );
 
 		// ...including wide alignments unless explicitly `false`.
-		if ( hasBlockSupport( blockName, 'wideAlign', true ) ) {
+		if ( getBlockSupport( blockName, 'wideAlign' ) === false ) {
+			deprecated( 'supports.wideAlign in Block API', {
+				version: '3.6',
+				alternative: 'supports.alignWide',
+				plugin: 'Gutenberg',
+			} );
+		} else if ( hasBlockSupport( blockName, 'alignWide', true ) ) {
 			validAlignments.push( 'wide', 'full' );
 		}
 	}
@@ -97,7 +104,7 @@ export const withToolbarControls = createHigherOrderComponent( ( BlockEdit ) => 
  * @param  {Function} BlockListBlock Original component
  * @return {Function}                Wrapped component
  */
-export const withAlign = createHigherOrderComponent( ( BlockListBlock ) => {
+export const withDataAlign = createHigherOrderComponent( ( BlockListBlock ) => {
 	return ( props ) => {
 		const { align } = props.block.attributes;
 		const validAlignments = getBlockValidAlignments( props.block.name );
@@ -109,7 +116,7 @@ export const withAlign = createHigherOrderComponent( ( BlockListBlock ) => {
 
 		return <BlockListBlock { ...props } wrapperProps={ wrapperProps } />;
 	};
-}, 'withAlign' );
+}, 'withDataAlign' );
 
 /**
  * Override props assigned to save component to inject alignment class name if
@@ -131,7 +138,7 @@ export function addAssignedAlign( props, blockType, attributes ) {
 }
 
 addFilter( 'blocks.registerBlockType', 'core/align/addAttribute', addAttribute );
-addFilter( 'editor.BlockListBlock', 'core/align/withAlign', withAlign );
-addFilter( 'blocks.BlockEdit', 'core/align/withToolbarControls', withToolbarControls );
+addFilter( 'editor.BlockListBlock', 'core/editor/align/with-data-align', withDataAlign );
+addFilter( 'editor.BlockEdit', 'core/editor/align/with-toolbar-controls', withToolbarControls );
 addFilter( 'blocks.getSaveContent.extraProps', 'core/align/addAssignedAlign', addAssignedAlign );
 

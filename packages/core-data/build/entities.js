@@ -1,60 +1,77 @@
-'use strict';
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
+require("core-js/modules/es6.array.find");
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
-exports.getKindEntities = exports.getMethodName = exports.kinds = exports.defaultEntities = undefined;
+exports.getKindEntities = getKindEntities;
+exports.getMethodName = exports.kinds = exports.defaultEntities = void 0;
 
-var _asyncGenerator2 = require('babel-runtime/helpers/asyncGenerator');
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
-var _asyncGenerator3 = _interopRequireDefault(_asyncGenerator2);
+require("regenerator-runtime/runtime");
 
-var _regenerator = require('babel-runtime/regenerator');
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
-var _regenerator2 = _interopRequireDefault(_regenerator);
+var _awaitAsyncGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/awaitAsyncGenerator"));
 
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+var _wrapAsyncGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapAsyncGenerator"));
 
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+var _lodash = require("lodash");
 
+var _apiFetch = _interopRequireDefault(require("@wordpress/api-fetch"));
+
+var _selectors = require("./selectors");
+
+var _actions = require("./actions");
+
+/**
+ * External dependencies
+ */
+
+/**
+ * WordPress dependencies
+ */
+
+/**
+ * Internal dependencies
+ */
+var defaultEntities = [{
+  name: 'postType',
+  kind: 'root',
+  key: 'slug',
+  baseURL: '/wp/v2/types'
+}, {
+  name: 'media',
+  kind: 'root',
+  baseURL: '/wp/v2/media',
+  plural: 'mediaItems'
+}, {
+  name: 'taxonomy',
+  kind: 'root',
+  key: 'slug',
+  baseURL: '/wp/v2/taxonomies',
+  plural: 'taxonomies'
+}];
+exports.defaultEntities = defaultEntities;
+var kinds = [{
+  name: 'postType',
+  loadEntities: loadPostTypeEntities
+}];
 /**
  * Returns the list of post type entities.
  *
  * @return {Promise} Entities promise
  */
-var loadPostTypeEntities = function () {
-	var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
-		var postTypes;
-		return _regenerator2.default.wrap(function _callee$(_context) {
-			while (1) {
-				switch (_context.prev = _context.next) {
-					case 0:
-						_context.next = 2;
-						return (0, _apiRequest2.default)({ path: '/wp/v2/types?context=edit' });
 
-					case 2:
-						postTypes = _context.sent;
-						return _context.abrupt('return', (0, _lodash.map)(postTypes, function (postType, name) {
-							return {
-								kind: 'postType',
-								baseUrl: '/wp/v2/' + postType.rest_base,
-								name: name
-							};
-						}));
+exports.kinds = kinds;
 
-					case 4:
-					case 'end':
-						return _context.stop();
-				}
-			}
-		}, _callee, this);
-	}));
-
-	return function loadPostTypeEntities() {
-		return _ref.apply(this, arguments);
-	};
-}();
-
+function loadPostTypeEntities() {
+  return _loadPostTypeEntities.apply(this, arguments);
+}
 /**
  * Returns the entity's getter method name given its kind and name.
  *
@@ -67,6 +84,52 @@ var loadPostTypeEntities = function () {
  */
 
 
+function _loadPostTypeEntities() {
+  _loadPostTypeEntities = (0, _asyncToGenerator2.default)(
+  /*#__PURE__*/
+  _regenerator.default.mark(function _callee2() {
+    var postTypes;
+    return _regenerator.default.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            _context2.next = 2;
+            return (0, _apiFetch.default)({
+              path: '/wp/v2/types?context=edit'
+            });
+
+          case 2:
+            postTypes = _context2.sent;
+            return _context2.abrupt("return", (0, _lodash.map)(postTypes, function (postType, name) {
+              return {
+                kind: 'postType',
+                baseURL: '/wp/v2/' + postType.rest_base,
+                name: name
+              };
+            }));
+
+          case 4:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2, this);
+  }));
+  return _loadPostTypeEntities.apply(this, arguments);
+}
+
+var getMethodName = function getMethodName(kind, name) {
+  var prefix = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'get';
+  var usePlural = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+  var entity = (0, _lodash.find)(defaultEntities, {
+    kind: kind,
+    name: name
+  });
+  var kindPrefix = kind === 'root' ? '' : (0, _lodash.upperFirst)((0, _lodash.camelCase)(kind));
+  var nameSuffix = (0, _lodash.upperFirst)((0, _lodash.camelCase)(name)) + (usePlural ? 's' : '');
+  var suffix = usePlural && entity.plural ? (0, _lodash.upperFirst)((0, _lodash.camelCase)(entity.plural)) : nameSuffix;
+  return "".concat(prefix).concat(kindPrefix).concat(suffix);
+};
 /**
  * Loads the kind entities into the store.
  *
@@ -75,87 +138,62 @@ var loadPostTypeEntities = function () {
  *
  * @return {Array} Entities
  */
-var getKindEntities = exports.getKindEntities = function () {
-	var _ref2 = _asyncGenerator3.default.wrap( /*#__PURE__*/_regenerator2.default.mark(function _callee2(state, kind) {
-		var entities, kindConfig;
-		return _regenerator2.default.wrap(function _callee2$(_context2) {
-			while (1) {
-				switch (_context2.prev = _context2.next) {
-					case 0:
-						entities = (0, _selectors.getEntitiesByKind)(state, kind);
 
-						if (!(entities && entities.length !== 0)) {
-							_context2.next = 3;
-							break;
-						}
 
-						return _context2.abrupt('return', entities);
+exports.getMethodName = getMethodName;
 
-					case 3:
-						kindConfig = (0, _lodash.find)(kinds, { name: kind });
+function getKindEntities(_x, _x2) {
+  return _getKindEntities.apply(this, arguments);
+}
 
-						if (kindConfig) {
-							_context2.next = 6;
-							break;
-						}
+function _getKindEntities() {
+  _getKindEntities = (0, _wrapAsyncGenerator2.default)(
+  /*#__PURE__*/
+  _regenerator.default.mark(function _callee(state, kind) {
+    var entities, kindConfig;
+    return _regenerator.default.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            entities = (0, _selectors.getEntitiesByKind)(state, kind);
 
-						return _context2.abrupt('return', []);
+            if (!(entities && entities.length !== 0)) {
+              _context.next = 3;
+              break;
+            }
 
-					case 6:
-						_context2.next = 8;
-						return _asyncGenerator3.default.await(kindConfig.loadEntities());
+            return _context.abrupt("return", entities);
 
-					case 8:
-						entities = _context2.sent;
-						_context2.next = 11;
-						return (0, _actions.addEntities)(entities);
+          case 3:
+            kindConfig = (0, _lodash.find)(kinds, {
+              name: kind
+            });
 
-					case 11:
-						return _context2.abrupt('return', entities);
+            if (kindConfig) {
+              _context.next = 6;
+              break;
+            }
 
-					case 12:
-					case 'end':
-						return _context2.stop();
-				}
-			}
-		}, _callee2, this);
-	}));
+            return _context.abrupt("return", []);
 
-	return function getKindEntities(_x3, _x4) {
-		return _ref2.apply(this, arguments);
-	};
-}();
+          case 6:
+            _context.next = 8;
+            return (0, _awaitAsyncGenerator2.default)(kindConfig.loadEntities());
 
-var _lodash = require('lodash');
+          case 8:
+            entities = _context.sent;
+            _context.next = 11;
+            return (0, _actions.addEntities)(entities);
 
-var _apiRequest = require('@wordpress/api-request');
+          case 11:
+            return _context.abrupt("return", entities);
 
-var _apiRequest2 = _interopRequireDefault(_apiRequest);
-
-var _selectors = require('./selectors');
-
-var _actions = require('./actions');
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * Internal dependencies
- */
-/**
- * External dependencies
- */
-var defaultEntities = exports.defaultEntities = [{ name: 'postType', kind: 'root', key: 'slug', baseUrl: '/wp/v2/types' }, { name: 'media', kind: 'root', baseUrl: '/wp/v2/media', plural: 'mediaItems' }, { name: 'taxonomy', kind: 'root', key: 'slug', baseUrl: '/wp/v2/taxonomies', plural: 'taxonomies' }];
-
-/**
- * WordPress dependencies
- */
-var kinds = exports.kinds = [{ name: 'postType', loadEntities: loadPostTypeEntities }];var getMethodName = exports.getMethodName = function getMethodName(kind, name) {
-	var prefix = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'get';
-	var usePlural = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-
-	var entity = (0, _lodash.find)(defaultEntities, { kind: kind, name: name });
-	var kindPrefix = kind === 'root' ? '' : (0, _lodash.upperFirst)((0, _lodash.camelCase)(kind));
-	var nameSuffix = (0, _lodash.upperFirst)((0, _lodash.camelCase)(name)) + (usePlural ? 's' : '');
-	var suffix = usePlural && entity.plural ? (0, _lodash.upperFirst)((0, _lodash.camelCase)(entity.plural)) : nameSuffix;
-	return '' + prefix + kindPrefix + suffix;
-};
+          case 12:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee, this);
+  }));
+  return _getKindEntities.apply(this, arguments);
+}

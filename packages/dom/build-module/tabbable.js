@@ -1,8 +1,9 @@
+import "core-js/modules/es6.array.sort";
+
 /**
  * Internal dependencies
  */
 import { find as findFocusable } from './focusable';
-
 /**
  * Returns the tab index of the given element. In contrast with the tabIndex
  * property, this normalizes the default (0) to avoid browser inconsistencies,
@@ -15,11 +16,11 @@ import { find as findFocusable } from './focusable';
  *
  * @return {?number} Tab index of element (default 0).
  */
+
 function getTabIndex(element) {
   var tabIndex = element.getAttribute('tabindex');
   return tabIndex === null ? 0 : parseInt(tabIndex, 10);
 }
-
 /**
  * Returns true if the specified element is tabbable, or false otherwise.
  *
@@ -27,10 +28,11 @@ function getTabIndex(element) {
  *
  * @return {boolean} Whether element is tabbable.
  */
+
+
 export function isTabbableIndex(element) {
   return getTabIndex(element) !== -1;
 }
-
 /**
  * An array map callback, returning an object with the element value and its
  * array index location as properties. This is used to emulate a proper stable
@@ -42,10 +44,13 @@ export function isTabbableIndex(element) {
  *
  * @return {Object} Mapped object with element, index.
  */
-function mapElementToObjectTabbable(element, index) {
-  return { element: element, index: index };
-}
 
+function mapElementToObjectTabbable(element, index) {
+  return {
+    element: element,
+    index: index
+  };
+}
 /**
  * An array map callback, returning an element of the given mapped object's
  * element value.
@@ -54,10 +59,11 @@ function mapElementToObjectTabbable(element, index) {
  *
  * @return {Element} Mapped object element.
  */
+
+
 function mapObjectTabbableToElement(object) {
   return object.element;
 }
-
 /**
  * A sort comparator function used in comparing two objects of mapped elements.
  *
@@ -68,6 +74,8 @@ function mapObjectTabbableToElement(object) {
  *
  * @return {number} Comparator result.
  */
+
+
 function compareObjectTabbables(a, b) {
   var aTabIndex = getTabIndex(a.element);
   var bTabIndex = getTabIndex(b.element);

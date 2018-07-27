@@ -3,12 +3,11 @@
  */
 import { flowRight } from 'lodash';
 import EquivalentKeyMap from 'equivalent-key-map';
-
 /**
  * Internal dependencies
  */
-import { onSubKey } from './utils';
 
+import { onSubKey } from './utils';
 /**
  * Reducer function returning next state for selector resolution, object form:
  *
@@ -19,9 +18,10 @@ import { onSubKey } from './utils';
  *
  * @returns {Object} Next state.
  */
+
 var isResolved = flowRight([onSubKey('reducerKey'), onSubKey('selectorName')])(function () {
   var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new EquivalentKeyMap();
-  var action = arguments[1];
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
   switch (action.type) {
     case 'START_RESOLUTION':
@@ -34,5 +34,4 @@ var isResolved = flowRight([onSubKey('reducerKey'), onSubKey('selectorName')])(f
 
   return state;
 });
-
 export default isResolved;

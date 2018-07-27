@@ -1,14 +1,16 @@
-'use strict';
+"use strict";
 
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+require("core-js/modules/es6.function.name");
 
-var _createClass2 = require('babel-runtime/helpers/createClass');
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
-var _createClass3 = _interopRequireDefault(_createClass2);
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+require("core-js/modules/es7.array.includes");
+
+require("core-js/modules/es6.string.includes");
 
 /**
  * External dependencies
@@ -19,42 +21,44 @@ var _require = require('lodash'),
 var _require2 = require('webpack-sources'),
     ConcatSource = _require2.ConcatSource;
 
-module.exports = function () {
-	function LibraryExportDefaultPlugin(entryPointNames) {
-		(0, _classCallCheck3.default)(this, LibraryExportDefaultPlugin);
+module.exports =
+/*#__PURE__*/
+function () {
+  function LibraryExportDefaultPlugin(entryPointNames) {
+    (0, _classCallCheck2.default)(this, LibraryExportDefaultPlugin);
+    this.entryPointNames = entryPointNames;
+  }
 
-		this.entryPointNames = entryPointNames;
-	}
+  (0, _createClass2.default)(LibraryExportDefaultPlugin, [{
+    key: "apply",
+    value: function apply(compiler) {
+      var _this = this;
 
-	(0, _createClass3.default)(LibraryExportDefaultPlugin, [{
-		key: 'apply',
-		value: function apply(compiler) {
-			var _this = this;
+      compiler.hooks.compilation.tap('LibraryExportDefaultPlugin', function (compilation) {
+        var mainTemplate = compilation.mainTemplate,
+            chunkTemplate = compilation.chunkTemplate;
 
-			compiler.hooks.compilation.tap('LibraryExportDefaultPlugin', function (compilation) {
-				var mainTemplate = compilation.mainTemplate,
-				    chunkTemplate = compilation.chunkTemplate;
+        var onRenderWithEntry = function onRenderWithEntry(source, chunk) {
+          if (!includes(_this.entryPointNames, chunk.name)) {
+            return source;
+          }
 
+          return new ConcatSource(source, '["default"]');
+        };
 
-				var onRenderWithEntry = function onRenderWithEntry(source, chunk) {
-					if (!includes(_this.entryPointNames, chunk.name)) {
-						return source;
-					}
-					return new ConcatSource(source, '["default"]');
-				};
+        var _arr = [mainTemplate, chunkTemplate];
 
-				var _arr = [mainTemplate, chunkTemplate];
-				for (var _i = 0; _i < _arr.length; _i++) {
-					var template = _arr[_i];
-					template.hooks.renderWithEntry.tap('LibraryExportDefaultPlugin', onRenderWithEntry);
-				}
+        for (var _i = 0; _i < _arr.length; _i++) {
+          var template = _arr[_i];
+          template.hooks.renderWithEntry.tap('LibraryExportDefaultPlugin', onRenderWithEntry);
+        }
 
-				mainTemplate.hooks.hash.tap('LibraryExportDefaultPlugin', function (hash) {
-					hash.update('export property');
-					hash.update('default');
-				});
-			});
-		}
-	}]);
-	return LibraryExportDefaultPlugin;
+        mainTemplate.hooks.hash.tap('LibraryExportDefaultPlugin', function (hash) {
+          hash.update('export property');
+          hash.update('default');
+        });
+      });
+    }
+  }]);
+  return LibraryExportDefaultPlugin;
 }();

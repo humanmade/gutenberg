@@ -1,18 +1,21 @@
-'use strict';
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
-
-var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
-
 exports.find = find;
 
-require('element-closest');
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+require("core-js/modules/es6.function.name");
+
+require("element-closest");
+
+/**
+ * External dependencies
+ */
 
 /**
  * References:
@@ -32,9 +35,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * AREA elements associated with an IMG:
  *  - https://w3c.github.io/html/editing.html#data-model
  */
-
 var SELECTOR = ['[tabindex]', 'a[href]', 'button:not([disabled])', 'input:not([type="hidden"]):not([disabled])', 'select:not([disabled])', 'textarea:not([disabled])', 'iframe', 'object', 'embed', 'area[href]', '[contenteditable]:not([contenteditable=false])'].join(',');
-
 /**
  * Returns true if the specified element is visible (i.e. neither display: none
  * nor visibility: hidden).
@@ -43,13 +44,10 @@ var SELECTOR = ['[tabindex]', 'a[href]', 'button:not([disabled])', 'input:not([t
  *
  * @return {boolean} Whether element is visible.
  */
-/**
- * External dependencies
- */
+
 function isVisible(element) {
   return element.offsetWidth > 0 || element.offsetHeight > 0 || element.getClientRects().length > 0;
 }
-
 /**
  * Returns true if the specified area element is a valid focusable element, or
  * false otherwise. Area is only focusable if within a map where a named map
@@ -59,8 +57,11 @@ function isVisible(element) {
  *
  * @return {boolean} Whether area element is valid for focus.
  */
+
+
 function isValidFocusableArea(element) {
   var map = element.closest('map[name]');
+
   if (!map) {
     return false;
   }
@@ -68,7 +69,6 @@ function isValidFocusableArea(element) {
   var img = document.querySelector('img[usemap="#' + map.name + '"]');
   return !!img && isVisible(img);
 }
-
 /**
  * Returns all focusable elements within a given context.
  *
@@ -76,10 +76,11 @@ function isValidFocusableArea(element) {
  *
  * @return {Element[]} Focusable elements.
  */
+
+
 function find(context) {
   var elements = context.querySelectorAll(SELECTOR);
-
-  return [].concat((0, _toConsumableArray3.default)(elements)).filter(function (element) {
+  return (0, _toConsumableArray2.default)(elements).filter(function (element) {
     if (!isVisible(element)) {
       return false;
     }

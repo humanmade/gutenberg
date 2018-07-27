@@ -6,16 +6,14 @@ Object.defineProperty(exports, "__esModule", {
 exports.createBlobURL = createBlobURL;
 exports.getBlobByURL = getBlobByURL;
 exports.revokeBlobURL = revokeBlobURL;
+
 /**
  * Browser dependencies
  */
 var _window$URL = window.URL,
     createObjectURL = _window$URL.createObjectURL,
     revokeObjectURL = _window$URL.revokeObjectURL;
-
-
 var cache = {};
-
 /**
  * Create a blob URL from a file.
  *
@@ -23,14 +21,12 @@ var cache = {};
  *
  * @return {string} The blob URL.
  */
+
 function createBlobURL(file) {
   var url = createObjectURL(file);
-
   cache[url] = file;
-
   return url;
 }
-
 /**
  * Retrieve a file based on a blob URL. The file must have been created by
  * `createBlobURL` and not removed by `revokeBlobURL`, otherwise it will return
@@ -40,15 +36,18 @@ function createBlobURL(file) {
  *
  * @return {?File} The file for the blob URL.
  */
+
+
 function getBlobByURL(url) {
   return cache[url];
 }
-
 /**
  * Remove the resource and file cache from memory.
  *
  * @param {string} url The blob URL.
  */
+
+
 function revokeBlobURL(url) {
   if (cache[url]) {
     revokeObjectURL(url);

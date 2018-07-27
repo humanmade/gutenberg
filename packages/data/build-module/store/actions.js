@@ -16,7 +16,6 @@ export function startResolution(reducerKey, selectorName, args) {
     args: args
   };
 }
-
 /**
  * Returns an action object used in signalling that selector resolution has
  * completed.
@@ -27,6 +26,7 @@ export function startResolution(reducerKey, selectorName, args) {
  *
  * @return {Object} Action object.
  */
+
 export function finishResolution(reducerKey, selectorName, args) {
   return {
     type: 'FINISH_RESOLUTION',

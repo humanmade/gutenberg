@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -9,7 +9,11 @@ exports.addEntities = addEntities;
 exports.receiveEntityRecords = receiveEntityRecords;
 exports.receiveThemeSupportsFromIndex = receiveThemeSupportsFromIndex;
 
-var _lodash = require('lodash');
+var _lodash = require("lodash");
+
+/**
+ * External dependencies
+ */
 
 /**
  * Returns an action object used in signalling that terms have been received
@@ -27,7 +31,6 @@ function receiveTerms(taxonomy, terms) {
     terms: terms
   };
 }
-
 /**
  * Returns an action object used in signalling that authors have been received.
  *
@@ -36,9 +39,8 @@ function receiveTerms(taxonomy, terms) {
  *
  * @return {Object} Action object.
  */
-/**
- * External dependencies
- */
+
+
 function receiveUserQuery(queryID, users) {
   return {
     type: 'RECEIVE_USER_QUERY',
@@ -46,7 +48,6 @@ function receiveUserQuery(queryID, users) {
     queryID: queryID
   };
 }
-
 /**
  * Returns an action object used in adding new entities.
  *
@@ -54,13 +55,14 @@ function receiveUserQuery(queryID, users) {
  *
  * @return {Object} Action object.
  */
+
+
 function addEntities(entities) {
   return {
     type: 'ADD_ENTITIES',
     entities: entities
   };
 }
-
 /**
  * Returns an action object used in signalling that entity records have been received.
  *
@@ -70,6 +72,8 @@ function addEntities(entities) {
  *
  * @return {Object} Action object.
  */
+
+
 function receiveEntityRecords(kind, name, records) {
   return {
     type: 'RECEIVE_ENTITY_RECORDS',
@@ -78,7 +82,6 @@ function receiveEntityRecords(kind, name, records) {
     name: name
   };
 }
-
 /**
  * Returns an action object used in signalling that the index has been received.
  *
@@ -86,6 +89,8 @@ function receiveEntityRecords(kind, name, records) {
  *
  * @return {Object} Action object.
  */
+
+
 function receiveThemeSupportsFromIndex(index) {
   return {
     type: 'RECEIVE_THEME_SUPPORTS',

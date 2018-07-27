@@ -1,43 +1,46 @@
-'use strict';
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
-exports.entities = undefined;
-
-var _slicedToArray2 = require('babel-runtime/helpers/slicedToArray');
-
-var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
-
-var _entries = require('babel-runtime/core-js/object/entries');
-
-var _entries2 = _interopRequireDefault(_entries);
-
-var _toConsumableArray2 = require('babel-runtime/helpers/toConsumableArray');
-
-var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
-
-var _defineProperty2 = require('babel-runtime/helpers/defineProperty');
-
-var _defineProperty3 = _interopRequireDefault(_defineProperty2);
-
-var _extends5 = require('babel-runtime/helpers/extends');
-
-var _extends6 = _interopRequireDefault(_extends5);
-
 exports.terms = terms;
 exports.users = users;
 exports.taxonomies = taxonomies;
 exports.themeSupports = themeSupports;
 exports.entitiesConfig = entitiesConfig;
+exports.default = exports.entities = void 0;
 
-var _lodash = require('lodash');
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
-var _data = require('@wordpress/data');
+var _entries = _interopRequireDefault(require("@babel/runtime/core-js/object/entries"));
 
-var _entities = require('./entities');
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+require("core-js/modules/es6.function.name");
+
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
+
+var _objectSpread5 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
+
+var _lodash = require("lodash");
+
+var _data = require("@wordpress/data");
+
+var _entities = require("./entities");
+
+/**
+ * External dependencies
+ */
+
+/**
+ * WordPress dependencies
+ */
+
+/**
+ * Internal dependencies
+ */
 
 /**
  * Reducer managing terms state. Keyed by taxonomy slug, the value is either
@@ -50,23 +53,17 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  *
  * @return {Object} Updated state.
  */
-
-
-/**
- * WordPress dependencies
- */
 function terms() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	switch (action.type) {
-		case 'RECEIVE_TERMS':
-			return (0, _extends6.default)({}, state, (0, _defineProperty3.default)({}, action.taxonomy, action.terms));
-	}
+  switch (action.type) {
+    case 'RECEIVE_TERMS':
+      return (0, _objectSpread5.default)({}, state, (0, _defineProperty2.default)({}, action.taxonomy, action.terms));
+  }
 
-	return state;
+  return state;
 }
-
 /**
  * Reducer managing authors state. Keyed by id.
  *
@@ -77,29 +74,25 @@ function terms() {
  */
 
 
-/**
- * Internal dependencies
- */
-/**
- * External dependencies
- */
 function users() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { byId: {}, queries: {} };
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
+    byId: {},
+    queries: {}
+  };
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	switch (action.type) {
-		case 'RECEIVE_USER_QUERY':
-			return {
-				byId: (0, _extends6.default)({}, state.byId, (0, _lodash.keyBy)(action.users, 'id')),
-				queries: (0, _extends6.default)({}, state.queries, (0, _defineProperty3.default)({}, action.queryID, (0, _lodash.map)(action.users, function (user) {
-					return user.id;
-				})))
-			};
-	}
+  switch (action.type) {
+    case 'RECEIVE_USER_QUERY':
+      return {
+        byId: (0, _objectSpread5.default)({}, state.byId, (0, _lodash.keyBy)(action.users, 'id')),
+        queries: (0, _objectSpread5.default)({}, state.queries, (0, _defineProperty2.default)({}, action.queryID, (0, _lodash.map)(action.users, function (user) {
+          return user.id;
+        })))
+      };
+  }
 
-	return state;
+  return state;
 }
-
 /**
  * Reducer managing taxonomies.
  *
@@ -108,18 +101,19 @@ function users() {
  *
  * @return {Object} Updated state.
  */
+
+
 function taxonomies() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	switch (action.type) {
-		case 'RECEIVE_TAXONOMIES':
-			return action.taxonomies;
-	}
+  switch (action.type) {
+    case 'RECEIVE_TAXONOMIES':
+      return action.taxonomies;
+  }
 
-	return state;
+  return state;
 }
-
 /**
  * Reducer managing theme supports data.
  *
@@ -128,18 +122,19 @@ function taxonomies() {
  *
  * @return {Object} Updated state.
  */
+
+
 function themeSupports() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	switch (action.type) {
-		case 'RECEIVE_THEME_SUPPORTS':
-			return (0, _extends6.default)({}, state, action.themeSupports);
-	}
+  switch (action.type) {
+    case 'RECEIVE_THEME_SUPPORTS':
+      return (0, _objectSpread5.default)({}, state, action.themeSupports);
+  }
 
-	return state;
+  return state;
 }
-
 /**
  * Higher Order Reducer for a given entity config. It supports:
  *
@@ -149,28 +144,31 @@ function themeSupports() {
  *
  * @return {Function} Reducer.
  */
+
+
 function entity(entityConfig) {
-	var key = entityConfig.key || 'id';
+  var key = entityConfig.key || 'id';
+  return function () {
+    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
+      byKey: {}
+    };
+    var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	return function () {
-		var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { byKey: {} };
-		var action = arguments[1];
+    if (!action.name || !action.kind || action.name !== entityConfig.name || action.kind !== entityConfig.kind) {
+      return state;
+    }
 
-		if (!action.name || !action.kind || action.name !== entityConfig.name || action.kind !== entityConfig.kind) {
-			return state;
-		}
+    switch (action.type) {
+      case 'RECEIVE_ENTITY_RECORDS':
+        return {
+          byKey: (0, _objectSpread5.default)({}, state.byKey, (0, _lodash.keyBy)(action.records, key))
+        };
 
-		switch (action.type) {
-			case 'RECEIVE_ENTITY_RECORDS':
-				return {
-					byKey: (0, _extends6.default)({}, state.byKey, (0, _lodash.keyBy)(action.records, key))
-				};
-			default:
-				return state;
-		}
-	};
+      default:
+        return state;
+    }
+  };
 }
-
 /**
  * Reducer keeping track of the registered entities.
  *
@@ -179,18 +177,19 @@ function entity(entityConfig) {
  *
  * @return {Object} Updated state.
  */
+
+
 function entitiesConfig() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _entities.defaultEntities;
-	var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _entities.defaultEntities;
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
-	switch (action.type) {
-		case 'ADD_ENTITIES':
-			return [].concat((0, _toConsumableArray3.default)(state), (0, _toConsumableArray3.default)(action.entities));
-	}
+  switch (action.type) {
+    case 'ADD_ENTITIES':
+      return (0, _toConsumableArray2.default)(state).concat((0, _toConsumableArray2.default)(action.entities));
+  }
 
-	return state;
+  return state;
 }
-
 /**
  * Reducer keeping track of the registered entities config and data.
  *
@@ -199,47 +198,51 @@ function entitiesConfig() {
  *
  * @return {Object} Updated state.
  */
-var entities = exports.entities = function entities() {
-	var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	var action = arguments[1];
 
-	var newConfig = entitiesConfig(state.config, action);
 
-	// Generates a dynamic reducer for the entities
-	var entitiesDataReducer = state.reducer;
-	if (!entitiesDataReducer || newConfig !== state.config) {
-		var entitiesByKind = (0, _lodash.groupBy)(newConfig, 'kind');
-		entitiesDataReducer = (0, _data.combineReducers)((0, _entries2.default)(entitiesByKind).reduce(function (memo, _ref) {
-			var _ref2 = (0, _slicedToArray3.default)(_ref, 2),
-			    kind = _ref2[0],
-			    subEntities = _ref2[1];
+var entities = function entities() {
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var action = arguments.length > 1 ? arguments[1] : undefined;
+  var newConfig = entitiesConfig(state.config, action); // Generates a dynamic reducer for the entities
 
-			var kindReducer = (0, _data.combineReducers)(subEntities.reduce(function (kindMemo, entityConfig) {
-				return (0, _extends6.default)({}, kindMemo, (0, _defineProperty3.default)({}, entityConfig.name, entity(entityConfig)));
-			}, {}));
+  var entitiesDataReducer = state.reducer;
 
-			memo[kind] = kindReducer;
-			return memo;
-		}, {}));
-	}
+  if (!entitiesDataReducer || newConfig !== state.config) {
+    var entitiesByKind = (0, _lodash.groupBy)(newConfig, 'kind');
+    entitiesDataReducer = (0, _data.combineReducers)((0, _entries.default)(entitiesByKind).reduce(function (memo, _ref) {
+      var _ref2 = (0, _slicedToArray2.default)(_ref, 2),
+          kind = _ref2[0],
+          subEntities = _ref2[1];
 
-	var newData = entitiesDataReducer(state.data, action);
+      var kindReducer = (0, _data.combineReducers)(subEntities.reduce(function (kindMemo, entityConfig) {
+        return (0, _objectSpread5.default)({}, kindMemo, (0, _defineProperty2.default)({}, entityConfig.name, entity(entityConfig)));
+      }, {}));
+      memo[kind] = kindReducer;
+      return memo;
+    }, {}));
+  }
 
-	if (newData === state.data && newConfig === state.config && entitiesDataReducer === state.reducer) {
-		return state;
-	}
+  var newData = entitiesDataReducer(state.data, action);
 
-	return {
-		reducer: entitiesDataReducer,
-		data: newData,
-		config: newConfig
-	};
+  if (newData === state.data && newConfig === state.config && entitiesDataReducer === state.reducer) {
+    return state;
+  }
+
+  return {
+    reducer: entitiesDataReducer,
+    data: newData,
+    config: newConfig
+  };
 };
 
-exports.default = (0, _data.combineReducers)({
-	terms: terms,
-	users: users,
-	taxonomies: taxonomies,
-	themeSupports: themeSupports,
-	entities: entities
+exports.entities = entities;
+
+var _default = (0, _data.combineReducers)({
+  terms: terms,
+  users: users,
+  taxonomies: taxonomies,
+  themeSupports: themeSupports,
+  entities: entities
 });
+
+exports.default = _default;

@@ -1,4 +1,6 @@
-'use strict';
+"use strict";
+
+require("core-js/modules/es6.array.find");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -6,7 +8,13 @@ Object.defineProperty(exports, "__esModule", {
 exports.isTabbableIndex = isTabbableIndex;
 exports.find = find;
 
-var _focusable = require('./focusable');
+require("core-js/modules/es6.array.sort");
+
+var _focusable = require("./focusable");
+
+/**
+ * Internal dependencies
+ */
 
 /**
  * Returns the tab index of the given element. In contrast with the tabIndex
@@ -24,7 +32,6 @@ function getTabIndex(element) {
   var tabIndex = element.getAttribute('tabindex');
   return tabIndex === null ? 0 : parseInt(tabIndex, 10);
 }
-
 /**
  * Returns true if the specified element is tabbable, or false otherwise.
  *
@@ -32,13 +39,11 @@ function getTabIndex(element) {
  *
  * @return {boolean} Whether element is tabbable.
  */
-/**
- * Internal dependencies
- */
+
+
 function isTabbableIndex(element) {
   return getTabIndex(element) !== -1;
 }
-
 /**
  * An array map callback, returning an object with the element value and its
  * array index location as properties. This is used to emulate a proper stable
@@ -50,10 +55,14 @@ function isTabbableIndex(element) {
  *
  * @return {Object} Mapped object with element, index.
  */
-function mapElementToObjectTabbable(element, index) {
-  return { element: element, index: index };
-}
 
+
+function mapElementToObjectTabbable(element, index) {
+  return {
+    element: element,
+    index: index
+  };
+}
 /**
  * An array map callback, returning an element of the given mapped object's
  * element value.
@@ -62,10 +71,11 @@ function mapElementToObjectTabbable(element, index) {
  *
  * @return {Element} Mapped object element.
  */
+
+
 function mapObjectTabbableToElement(object) {
   return object.element;
 }
-
 /**
  * A sort comparator function used in comparing two objects of mapped elements.
  *
@@ -76,6 +86,8 @@ function mapObjectTabbableToElement(object) {
  *
  * @return {number} Comparator result.
  */
+
+
 function compareObjectTabbables(a, b) {
   var aTabIndex = getTabIndex(a.element);
   var bTabIndex = getTabIndex(b.element);

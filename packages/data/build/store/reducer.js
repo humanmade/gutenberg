@@ -1,18 +1,25 @@
-'use strict';
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _lodash = require('lodash');
+var _lodash = require("lodash");
 
-var _equivalentKeyMap = require('equivalent-key-map');
+var _equivalentKeyMap = _interopRequireDefault(require("equivalent-key-map"));
 
-var _equivalentKeyMap2 = _interopRequireDefault(_equivalentKeyMap);
+var _utils = require("./utils");
 
-var _utils = require('./utils');
+/**
+ * External dependencies
+ */
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+/**
+ * Internal dependencies
+ */
 
 /**
  * Reducer function returning next state for selector resolution, object form:
@@ -25,25 +32,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns {Object} Next state.
  */
 var isResolved = (0, _lodash.flowRight)([(0, _utils.onSubKey)('reducerKey'), (0, _utils.onSubKey)('selectorName')])(function () {
-  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new _equivalentKeyMap2.default();
-  var action = arguments[1];
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new _equivalentKeyMap.default();
+  var action = arguments.length > 1 ? arguments[1] : undefined;
 
   switch (action.type) {
     case 'START_RESOLUTION':
     case 'FINISH_RESOLUTION':
       var isStarting = action.type === 'START_RESOLUTION';
-      var nextState = new _equivalentKeyMap2.default(state);
+      var nextState = new _equivalentKeyMap.default(state);
       nextState.set(action.args, isStarting);
       return nextState;
   }
 
   return state;
 });
-
-/**
- * Internal dependencies
- */
-/**
- * External dependencies
- */
-exports.default = isResolved;
+var _default = isResolved;
+exports.default = _default;

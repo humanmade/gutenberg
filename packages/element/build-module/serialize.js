@@ -1,8 +1,11 @@
-import _Object$assign from 'babel-runtime/core-js/object/assign';
-import _extends from 'babel-runtime/helpers/extends';
-import _objectWithoutProperties from 'babel-runtime/helpers/objectWithoutProperties';
-import _typeof from 'babel-runtime/helpers/typeof';
-import _Set from 'babel-runtime/core-js/set';
+import _Object$assign from "@babel/runtime/core-js/object/assign";
+import _objectSpread from "@babel/runtime/helpers/objectSpread";
+import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import "core-js/modules/es6.regexp.to-string";
+import _typeof from "@babel/runtime/helpers/typeof";
+import "core-js/modules/es6.regexp.replace";
+import _Set from "@babel/runtime/core-js/set";
+
 /**
  * Parts of this source were derived and modified from fast-react-render,
  * released under the MIT license.
@@ -33,32 +36,26 @@ import _Set from 'babel-runtime/core-js/set';
 /**
  * External dependencies
  */
-import { isEmpty, castArray, omit, kebabCase } from 'lodash';
-
-/**
- * WordPress dependencies
- */
-import deprecated from '@wordpress/deprecated';
-
+import { flowRight, isEmpty, castArray, omit, startsWith, kebabCase, isPlainObject } from 'lodash';
 /**
  * Internal dependencies
  */
-import { Fragment, RawHTML } from './';
 
+import { Fragment, RawHTML } from './';
 /**
  * Valid attribute types.
  *
  * @type {Set}
  */
-var ATTRIBUTES_TYPES = new _Set(['string', 'boolean', 'number']);
 
+var ATTRIBUTES_TYPES = new _Set(['string', 'boolean', 'number']);
 /**
  * Element tags which can be self-closing.
  *
  * @type {Set}
  */
-var SELF_CLOSING_TAGS = new _Set(['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
 
+var SELF_CLOSING_TAGS = new _Set(['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
 /**
  * Boolean attributes are attributes whose presence as being assigned is
  * meaningful, even if only empty.
@@ -74,8 +71,8 @@ var SELF_CLOSING_TAGS = new _Set(['area', 'base', 'br', 'col', 'command', 'embed
  *
  * @type {Set}
  */
-var BOOLEAN_ATTRIBUTES = new _Set(['allowfullscreen', 'allowpaymentrequest', 'allowusermedia', 'async', 'autofocus', 'autoplay', 'checked', 'controls', 'default', 'defer', 'disabled', 'formnovalidate', 'hidden', 'ismap', 'itemscope', 'loop', 'multiple', 'muted', 'nomodule', 'novalidate', 'open', 'playsinline', 'readonly', 'required', 'reversed', 'selected', 'typemustmatch']);
 
+var BOOLEAN_ATTRIBUTES = new _Set(['allowfullscreen', 'allowpaymentrequest', 'allowusermedia', 'async', 'autofocus', 'autoplay', 'checked', 'controls', 'default', 'defer', 'disabled', 'formnovalidate', 'hidden', 'ismap', 'itemscope', 'loop', 'multiple', 'muted', 'nomodule', 'novalidate', 'open', 'playsinline', 'readonly', 'required', 'reversed', 'selected', 'typemustmatch']);
 /**
  * Enumerated attributes are attributes which must be of a specific value form.
  * Like boolean attributes, these are meaningful if specified, even if not of a
@@ -96,8 +93,8 @@ var BOOLEAN_ATTRIBUTES = new _Set(['allowfullscreen', 'allowpaymentrequest', 'al
  *
  * @type {Set}
  */
-var ENUMERATED_ATTRIBUTES = new _Set(['autocapitalize', 'autocomplete', 'charset', 'contenteditable', 'crossorigin', 'decoding', 'dir', 'draggable', 'enctype', 'formenctype', 'formmethod', 'http-equiv', 'inputmode', 'kind', 'method', 'preload', 'scope', 'shape', 'spellcheck', 'translate', 'type', 'wrap']);
 
+var ENUMERATED_ATTRIBUTES = new _Set(['autocapitalize', 'autocomplete', 'charset', 'contenteditable', 'crossorigin', 'decoding', 'dir', 'draggable', 'enctype', 'formenctype', 'formmethod', 'http-equiv', 'inputmode', 'kind', 'method', 'preload', 'scope', 'shape', 'spellcheck', 'translate', 'type', 'wrap']);
 /**
  * Set of CSS style properties which support assignment of unitless numbers.
  * Used in rendering of style properties, where `px` unit is assumed unless
@@ -116,8 +113,48 @@ var ENUMERATED_ATTRIBUTES = new _Set(['autocapitalize', 'autocomplete', 'charset
  *
  * @type {Set}
  */
-var CSS_PROPERTIES_SUPPORTS_UNITLESS = new _Set(['animation', 'animationIterationCount', 'baselineShift', 'borderImageOutset', 'borderImageSlice', 'borderImageWidth', 'columnCount', 'cx', 'cy', 'fillOpacity', 'flexGrow', 'flexShrink', 'floodOpacity', 'fontWeight', 'gridColumnEnd', 'gridColumnStart', 'gridRowEnd', 'gridRowStart', 'lineHeight', 'opacity', 'order', 'orphans', 'r', 'rx', 'ry', 'shapeImageThreshold', 'stopOpacity', 'strokeDasharray', 'strokeDashoffset', 'strokeMiterlimit', 'strokeOpacity', 'strokeWidth', 'tabSize', 'widows', 'x', 'y', 'zIndex', 'zoom']);
 
+var CSS_PROPERTIES_SUPPORTS_UNITLESS = new _Set(['animation', 'animationIterationCount', 'baselineShift', 'borderImageOutset', 'borderImageSlice', 'borderImageWidth', 'columnCount', 'cx', 'cy', 'fillOpacity', 'flexGrow', 'flexShrink', 'floodOpacity', 'fontWeight', 'gridColumnEnd', 'gridColumnStart', 'gridRowEnd', 'gridRowStart', 'lineHeight', 'opacity', 'order', 'orphans', 'r', 'rx', 'ry', 'shapeImageThreshold', 'stopOpacity', 'strokeDasharray', 'strokeDashoffset', 'strokeMiterlimit', 'strokeOpacity', 'strokeWidth', 'tabSize', 'widows', 'x', 'y', 'zIndex', 'zoom']);
+/**
+ * Returns a string with ampersands escaped. Note that this is an imperfect
+ * implementation, where only ampersands which do not appear as a pattern of
+ * named, decimal, or hexadecimal character references are escaped. Invalid
+ * named references (i.e. ambiguous ampersand) are are still permitted.
+ *
+ * @link https://w3c.github.io/html/syntax.html#character-references
+ * @link https://w3c.github.io/html/syntax.html#ambiguous-ampersand
+ * @link https://w3c.github.io/html/syntax.html#named-character-references
+ *
+ * @param {string} value Original string.
+ *
+ * @return {string} Escaped string.
+ */
+
+export function escapeAmpersand(value) {
+  return value.replace(/&(?!([a-z0-9]+|#[0-9]+|#x[a-f0-9]+);)/gi, '&amp;');
+}
+/**
+ * Returns a string with quotation marks replaced.
+ *
+ * @param {string} value Original string.
+ *
+ * @return {string} Escaped string.
+ */
+
+export function escapeQuotationMark(value) {
+  return value.replace(/"/g, '&quot;');
+}
+/**
+ * Returns a string with less-than sign replaced.
+ *
+ * @param {string} value Original string.
+ *
+ * @return {string} Escaped string.
+ */
+
+export function escapeLessThan(value) {
+  return value.replace(/</g, '&lt;');
+}
 /**
  * Returns an escaped attribute value.
  *
@@ -130,15 +167,12 @@ var CSS_PROPERTIES_SUPPORTS_UNITLESS = new _Set(['animation', 'animationIteratio
  *
  * @return {string} Escaped attribute value.
  */
-function escapeAttribute(value) {
-	return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-}
 
+export var escapeAttribute = flowRight([escapeAmpersand, escapeQuotationMark]);
 /**
  * Returns an escaped HTML element value.
  *
  * @link https://w3c.github.io/html/syntax.html#writing-html-documents-elements
- * @link https://w3c.github.io/html/syntax.html#ambiguous-ampersand
  *
  * "the text must not contain the character U+003C LESS-THAN SIGN (<) or an
  * ambiguous ampersand."
@@ -147,10 +181,8 @@ function escapeAttribute(value) {
  *
  * @return {string} Escaped HTML element value.
  */
-function escapeHTML(value) {
-	return value.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-}
 
+export var escapeHTML = flowRight([escapeAmpersand, escapeLessThan]);
 /**
  * Returns true if the specified string is prefixed by one of an array of
  * possible prefixes.
@@ -160,12 +192,12 @@ function escapeHTML(value) {
  *
  * @return {boolean} Whether string has prefix.
  */
-export function hasPrefix(string, prefixes) {
-	return prefixes.some(function (prefix) {
-		return string.indexOf(prefix) === 0;
-	});
-}
 
+export function hasPrefix(string, prefixes) {
+  return prefixes.some(function (prefix) {
+    return string.indexOf(prefix) === 0;
+  });
+}
 /**
  * Returns true if the given prop name should be ignored in attributes
  * serialization, or false otherwise.
@@ -174,10 +206,10 @@ export function hasPrefix(string, prefixes) {
  *
  * @return {boolean} Whether attribute should be ignored.
  */
-function isInternalAttribute(attribute) {
-	return 'key' === attribute || 'children' === attribute;
-}
 
+function isInternalAttribute(attribute) {
+  return 'key' === attribute || 'children' === attribute;
+}
 /**
  * Returns the normal form of the element's attribute value for HTML.
  *
@@ -186,15 +218,16 @@ function isInternalAttribute(attribute) {
  *
  * @return {string} Normalized attribute value.
  */
+
+
 function getNormalAttributeValue(attribute, value) {
-	switch (attribute) {
-		case 'style':
-			return renderStyle(value);
-	}
+  switch (attribute) {
+    case 'style':
+      return renderStyle(value);
+  }
 
-	return value;
+  return value;
 }
-
 /**
  * Returns the normal form of the element's attribute name for HTML.
  *
@@ -202,45 +235,70 @@ function getNormalAttributeValue(attribute, value) {
  *
  * @return {string} Normalized attribute name.
  */
+
+
 function getNormalAttributeName(attribute) {
-	switch (attribute) {
-		case 'htmlFor':
-			return 'for';
+  switch (attribute) {
+    case 'htmlFor':
+      return 'for';
 
-		case 'className':
-			return 'class';
+    case 'className':
+      return 'class';
 
-		case 'xlinkHref':
-			return 'xlink:href';
+    case 'xlinkHref':
+      return 'xlink:href';
 
-		case 'xlinkActuate':
-			return 'xlink:actuate';
+    case 'xlinkActuate':
+      return 'xlink:actuate';
 
-		case 'xlinkArcrole':
-			return 'xlink:role';
+    case 'xlinkArcrole':
+      return 'xlink:role';
 
-		case 'xlinkShow':
-			return 'xlink:show';
+    case 'xlinkShow':
+      return 'xlink:show';
 
-		case 'xlinkTitle':
-			return 'xlink:title';
+    case 'xlinkTitle':
+      return 'xlink:title';
 
-		case 'xlinkType':
-			return 'xlink:type';
+    case 'xlinkType':
+      return 'xlink:type';
 
-		case 'xmlBase':
-			return 'xml:base';
+    case 'xmlBase':
+      return 'xml:base';
 
-		case 'xmlLang':
-			return 'xml:lang';
+    case 'xmlLang':
+      return 'xml:lang';
 
-		case 'xmlSpace':
-			return 'xml:space';
-	}
+    case 'xmlSpace':
+      return 'xml:space';
+  }
 
-	return attribute.toLowerCase();
+  return attribute.toLowerCase();
 }
+/**
+ * Returns the normal form of the style property name for HTML.
+ *
+ * - Converts property names to kebab-case, e.g. 'backgroundColor' → 'background-color'
+ * - Leaves custom attributes alone, e.g. '--myBackgroundColor' → '--myBackgroundColor'
+ * - Converts vendor-prefixed property names to -kebab-case, e.g. 'MozTransform' → '-moz-transform'
+ *
+ * @param {string} property Property name.
+ *
+ * @return {string} Normalized property name.
+ */
 
+
+function getNormalStylePropertyName(property) {
+  if (startsWith(property, '--')) {
+    return property;
+  }
+
+  if (hasPrefix(property, ['ms', 'O', 'Moz', 'Webkit'])) {
+    return '-' + kebabCase(property);
+  }
+
+  return kebabCase(property);
+}
 /**
  * Returns the normal form of the style property value for HTML. Appends a
  * default pixel unit if numeric, not a unitless property, and not zero.
@@ -250,14 +308,15 @@ function getNormalAttributeName(attribute) {
  *
  * @return {*} Normalized property value.
  */
-function getNormalStyleValue(property, value) {
-	if (typeof value === 'number' && 0 !== value && !CSS_PROPERTIES_SUPPORTS_UNITLESS.has(property)) {
-		return value + 'px';
-	}
 
-	return value;
+
+function getNormalStylePropertyValue(property, value) {
+  if (typeof value === 'number' && 0 !== value && !CSS_PROPERTIES_SUPPORTS_UNITLESS.has(property)) {
+    return value + 'px';
+  }
+
+  return value;
 }
-
 /**
  * Serializes a React element to string.
  *
@@ -266,57 +325,59 @@ function getNormalStyleValue(property, value) {
  *
  * @return {string} Serialized element.
  */
+
+
 export function renderElement(element) {
-	var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-	if (null === element || undefined === element || false === element) {
-		return '';
-	}
+  if (null === element || undefined === element || false === element) {
+    return '';
+  }
 
-	if (Array.isArray(element)) {
-		return renderChildren(element, context);
-	}
+  if (Array.isArray(element)) {
+    return renderChildren(element, context);
+  }
 
-	switch (typeof element === 'undefined' ? 'undefined' : _typeof(element)) {
-		case 'string':
-			return escapeHTML(element);
+  switch (_typeof(element)) {
+    case 'string':
+      return escapeHTML(element);
 
-		case 'number':
-			return element.toString();
-	}
+    case 'number':
+      return element.toString();
+  }
 
-	var tagName = element.type,
-	    props = element.props;
+  var tagName = element.type,
+      props = element.props;
 
+  switch (tagName) {
+    case Fragment:
+      return renderChildren(props.children, context);
 
-	switch (tagName) {
-		case Fragment:
-			return renderChildren(props.children, context);
+    case RawHTML:
+      var children = props.children,
+          wrapperProps = _objectWithoutProperties(props, ["children"]);
 
-		case RawHTML:
-			var children = props.children,
-			    wrapperProps = _objectWithoutProperties(props, ['children']);
+      return renderNativeComponent(isEmpty(wrapperProps) ? null : 'div', _objectSpread({}, wrapperProps, {
+        dangerouslySetInnerHTML: {
+          __html: children
+        }
+      }), context);
+  }
 
-			return renderNativeComponent(isEmpty(wrapperProps) ? null : 'div', _extends({}, wrapperProps, {
-				dangerouslySetInnerHTML: { __html: children }
-			}), context);
-	}
+  switch (_typeof(tagName)) {
+    case 'string':
+      return renderNativeComponent(tagName, props, context);
 
-	switch (typeof tagName === 'undefined' ? 'undefined' : _typeof(tagName)) {
-		case 'string':
-			return renderNativeComponent(tagName, props, context);
+    case 'function':
+      if (tagName.prototype && typeof tagName.prototype.render === 'function') {
+        return renderComponent(tagName, props, context);
+      }
 
-		case 'function':
-			if (tagName.prototype && typeof tagName.prototype.render === 'function') {
-				return renderComponent(tagName, props, context);
-			}
+      return renderElement(tagName(props, context), context);
+  }
 
-			return renderElement(tagName(props, context), context);
-	}
-
-	return '';
+  return '';
 }
-
 /**
  * Serializes a native component type to string.
  *
@@ -327,36 +388,36 @@ export function renderElement(element) {
  *
  * @return {string} Serialized element.
  */
+
 export function renderNativeComponent(type, props) {
-	var context = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var context = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var content = '';
 
-	var content = '';
-	if (type === 'textarea' && props.hasOwnProperty('value')) {
-		// Textarea children can be assigned as value prop. If it is, render in
-		// place of children. Ensure to omit so it is not assigned as attribute
-		// as well.
-		content = renderChildren(props.value, context);
-		props = omit(props, 'value');
-	} else if (props.dangerouslySetInnerHTML && typeof props.dangerouslySetInnerHTML.__html === 'string') {
-		// Dangerous content is left unescaped.
-		content = props.dangerouslySetInnerHTML.__html;
-	} else if (typeof props.children !== 'undefined') {
-		content = renderChildren(props.children, context);
-	}
+  if (type === 'textarea' && props.hasOwnProperty('value')) {
+    // Textarea children can be assigned as value prop. If it is, render in
+    // place of children. Ensure to omit so it is not assigned as attribute
+    // as well.
+    content = renderChildren(props.value, context);
+    props = omit(props, 'value');
+  } else if (props.dangerouslySetInnerHTML && typeof props.dangerouslySetInnerHTML.__html === 'string') {
+    // Dangerous content is left unescaped.
+    content = props.dangerouslySetInnerHTML.__html;
+  } else if (typeof props.children !== 'undefined') {
+    content = renderChildren(props.children, context);
+  }
 
-	if (!type) {
-		return content;
-	}
+  if (!type) {
+    return content;
+  }
 
-	var attributes = renderAttributes(props);
+  var attributes = renderAttributes(props);
 
-	if (SELF_CLOSING_TAGS.has(type)) {
-		return '<' + type + attributes + '/>';
-	}
+  if (SELF_CLOSING_TAGS.has(type)) {
+    return '<' + type + attributes + '/>';
+  }
 
-	return '<' + type + attributes + '>' + content + '</' + type + '>';
+  return '<' + type + attributes + '>' + content + '</' + type + '>';
 }
-
 /**
  * Serializes a non-native component type to string.
  *
@@ -366,29 +427,18 @@ export function renderNativeComponent(type, props) {
  *
  * @return {string} Serialized element
  */
+
 export function renderComponent(Component, props) {
-	var context = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var context = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var instance = new Component(props, context);
 
-	var instance = new Component(props, context);
+  if (typeof instance.getChildContext === 'function') {
+    _Object$assign(context, instance.getChildContext());
+  }
 
-	if (typeof instance.componentWillMount === 'function') {
-		instance.componentWillMount();
-		deprecated('componentWillMount', {
-			version: '3.3',
-			alternative: 'the constructor',
-			plugin: 'Gutenberg'
-		});
-	}
-
-	if (typeof instance.getChildContext === 'function') {
-		_Object$assign(context, instance.getChildContext());
-	}
-
-	var html = renderElement(instance.render(), context);
-
-	return html;
+  var html = renderElement(instance.render(), context);
+  return html;
 }
-
 /**
  * Serializes an array of children to string.
  *
@@ -397,22 +447,19 @@ export function renderComponent(Component, props) {
  *
  * @return {string} Serialized children.
  */
+
 function renderChildren(children) {
-	var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var result = '';
+  children = castArray(children);
 
-	var result = '';
+  for (var i = 0; i < children.length; i++) {
+    var child = children[i];
+    result += renderElement(child, context);
+  }
 
-	children = castArray(children);
-
-	for (var i = 0; i < children.length; i++) {
-		var child = children[i];
-
-		result += renderElement(child, context);
-	}
-
-	return result;
+  return result;
 }
-
 /**
  * Renders a props object as a string of HTML attributes.
  *
@@ -420,55 +467,52 @@ function renderChildren(children) {
  *
  * @return {string} Attributes string.
  */
+
+
 export function renderAttributes(props) {
-	var result = '';
+  var result = '';
 
-	for (var key in props) {
-		var attribute = getNormalAttributeName(key);
-		var value = getNormalAttributeValue(key, props[key]);
+  for (var key in props) {
+    var attribute = getNormalAttributeName(key);
+    var value = getNormalAttributeValue(key, props[key]); // If value is not of serializeable type, skip.
 
-		// If value is not of serializeable type, skip.
-		if (!ATTRIBUTES_TYPES.has(typeof value === 'undefined' ? 'undefined' : _typeof(value))) {
-			continue;
-		}
+    if (!ATTRIBUTES_TYPES.has(_typeof(value))) {
+      continue;
+    } // Don't render internal attribute names.
 
-		// Don't render internal attribute names.
-		if (isInternalAttribute(key)) {
-			continue;
-		}
 
-		var isBooleanAttribute = BOOLEAN_ATTRIBUTES.has(attribute);
+    if (isInternalAttribute(key)) {
+      continue;
+    }
 
-		// Boolean attribute should be omitted outright if its value is false.
-		if (isBooleanAttribute && value === false) {
-			continue;
-		}
+    var isBooleanAttribute = BOOLEAN_ATTRIBUTES.has(attribute); // Boolean attribute should be omitted outright if its value is false.
 
-		var isMeaningfulAttribute = isBooleanAttribute || hasPrefix(key, ['data-', 'aria-']) || ENUMERATED_ATTRIBUTES.has(attribute);
+    if (isBooleanAttribute && value === false) {
+      continue;
+    }
 
-		// Only write boolean value as attribute if meaningful.
-		if (typeof value === 'boolean' && !isMeaningfulAttribute) {
-			continue;
-		}
+    var isMeaningfulAttribute = isBooleanAttribute || hasPrefix(key, ['data-', 'aria-']) || ENUMERATED_ATTRIBUTES.has(attribute); // Only write boolean value as attribute if meaningful.
 
-		result += ' ' + attribute;
+    if (typeof value === 'boolean' && !isMeaningfulAttribute) {
+      continue;
+    }
 
-		// Boolean attributes should write attribute name, but without value.
-		// Mere presence of attribute name is effective truthiness.
-		if (isBooleanAttribute) {
-			continue;
-		}
+    result += ' ' + attribute; // Boolean attributes should write attribute name, but without value.
+    // Mere presence of attribute name is effective truthiness.
 
-		if (typeof value === 'string') {
-			value = escapeAttribute(value);
-		}
+    if (isBooleanAttribute) {
+      continue;
+    }
 
-		result += '="' + value + '"';
-	}
+    if (typeof value === 'string') {
+      value = escapeAttribute(value);
+    }
 
-	return result;
+    result += '="' + value + '"';
+  }
+
+  return result;
 }
-
 /**
  * Renders a style object as a string attribute value.
  *
@@ -476,25 +520,33 @@ export function renderAttributes(props) {
  *
  * @return {string} Style attribute value.
  */
+
 export function renderStyle(style) {
-	var result = void 0;
+  // Only generate from object, e.g. tolerate string value.
+  if (!isPlainObject(style)) {
+    return style;
+  }
 
-	for (var property in style) {
-		var value = style[property];
-		if (null === value || undefined === value) {
-			continue;
-		}
+  var result;
 
-		if (result) {
-			result += ';';
-		} else {
-			result = '';
-		}
+  for (var property in style) {
+    var value = style[property];
 
-		result += kebabCase(property) + ':' + getNormalStyleValue(property, value);
-	}
+    if (null === value || undefined === value) {
+      continue;
+    }
 
-	return result;
+    if (result) {
+      result += ';';
+    } else {
+      result = '';
+    }
+
+    var normalName = getNormalStylePropertyName(property);
+    var normalValue = getNormalStylePropertyValue(property, value);
+    result += normalName + ':' + normalValue;
+  }
+
+  return result;
 }
-
 export default renderElement;

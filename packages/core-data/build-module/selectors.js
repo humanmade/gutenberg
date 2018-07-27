@@ -1,20 +1,20 @@
-import _Object$values from 'babel-runtime/core-js/object/values';
+import _Object$values from "@babel/runtime/core-js/object/values";
+
 /**
  * External dependencies
  */
 import createSelector from 'rememo';
 import { map, find, get, filter } from 'lodash';
-
 /**
  * WordPress dependencies
  */
-import { select } from '@wordpress/data';
 
+import { select } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { REDUCER_KEY } from './name';
 
+import { REDUCER_KEY } from './name';
 /**
  * Returns true if resolution is in progress for the core selector of the given
  * name and arguments.
@@ -24,16 +24,16 @@ import { REDUCER_KEY } from './name';
  *
  * @return {boolean} Whether resolution is in progress.
  */
+
 function isResolving(selectorName) {
   var _select;
 
-  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+  for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
     args[_key - 1] = arguments[_key];
   }
 
   return (_select = select('core/data')).isResolving.apply(_select, [REDUCER_KEY, selectorName].concat(args));
 }
-
 /**
  * Returns all the available terms for the given taxonomy.
  *
@@ -42,10 +42,11 @@ function isResolving(selectorName) {
  *
  * @return {Array} Categories list.
  */
+
+
 export function getTerms(state, taxonomy) {
   return state.terms[taxonomy];
 }
-
 /**
  * Returns all the available categories.
  *
@@ -53,10 +54,10 @@ export function getTerms(state, taxonomy) {
  *
  * @return {Array} Categories list.
  */
+
 export function getCategories(state) {
   return getTerms(state, 'categories');
 }
-
 /**
  * Returns true if a request is in progress for terms data of a given taxonomy,
  * or false otherwise.
@@ -66,10 +67,10 @@ export function getCategories(state) {
  *
  * @return {boolean} Whether a request is in progress for taxonomy's terms.
  */
+
 export function isRequestingTerms(state, taxonomy) {
   return isResolving('getTerms', taxonomy);
 }
-
 /**
  * Returns true if a request is in progress for categories data, or false
  * otherwise.
@@ -78,10 +79,10 @@ export function isRequestingTerms(state, taxonomy) {
  *
  * @return {boolean} Whether a request is in progress for categories.
  */
+
 export function isRequestingCategories() {
   return isResolving('getCategories');
 }
-
 /**
  * Returns all available authors.
  *
@@ -89,10 +90,10 @@ export function isRequestingCategories() {
  *
  * @return {Array} Authors list.
  */
+
 export function getAuthors(state) {
   return getUserQueryResults(state, 'authors');
 }
-
 /**
  * Returns all the users returned by a query ID.
  *
@@ -101,16 +102,15 @@ export function getAuthors(state) {
  *
  * @return {Array} Users list.
  */
+
 export var getUserQueryResults = createSelector(function (state, queryID) {
   var queryResults = state.users.queries[queryID];
-
   return map(queryResults, function (id) {
     return state.users.byId[id];
   });
 }, function (state, queryID) {
   return [state.users.queries[queryID], state.users.byId];
 });
-
 /**
  * Returns whether the entities for the give kind are loaded.
  *
@@ -119,10 +119,12 @@ export var getUserQueryResults = createSelector(function (state, queryID) {
  *
  * @return {boolean} Whether the entities are loaded
  */
-export function getEntitiesByKind(state, kind) {
-  return filter(state.entities.config, { kind: kind });
-}
 
+export function getEntitiesByKind(state, kind) {
+  return filter(state.entities.config, {
+    kind: kind
+  });
+}
 /**
  * Returns the entity object given its kind and name.
  *
@@ -132,10 +134,13 @@ export function getEntitiesByKind(state, kind) {
  *
  * @return {Object} Entity
  */
-export function getEntity(state, kind, name) {
-  return find(state.entities.config, { kind: kind, name: name });
-}
 
+export function getEntity(state, kind, name) {
+  return find(state.entities.config, {
+    kind: kind,
+    name: name
+  });
+}
 /**
  * Returns the Entity's record object by key.
  *
@@ -146,10 +151,10 @@ export function getEntity(state, kind, name) {
  *
  * @return {Object?} Record.
  */
+
 export function getEntityRecord(state, kind, name, key) {
   return get(state.entities.data, [kind, name, 'byKey', key]);
 }
-
 /**
  * Returns the Entity's records.
  *
@@ -159,12 +164,12 @@ export function getEntityRecord(state, kind, name, key) {
  *
  * @return {Array} Records.
  */
+
 export var getEntityRecords = createSelector(function (state, kind, name) {
   return _Object$values(get(state.entities.data, [kind, name, 'byKey']));
 }, function (state, kind, name) {
   return [get(state.entities.data, [kind, name, 'byKey'])];
 });
-
 /**
  * Return theme supports data in the index.
  *
@@ -172,6 +177,7 @@ export var getEntityRecords = createSelector(function (state, kind, name) {
  *
  * @return {*}           Index data.
  */
+
 export function getThemeSupports(state) {
   return state.themeSupports;
 }
