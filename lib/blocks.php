@@ -108,19 +108,6 @@ function gutenberg_render_block( $block ) {
 		}
 	}
 
-	if ( isset( $block['innerBlocks'] ) && ! empty( $block['innerBlocks'] ) ) {
-		$inner_blocks = array_reduce( $block['innerBlocks'], function ( $content, $block ) {
-			return $content . gutenberg_render_block( $block );
-		}, '' );
-
-		if ( empty( trim( $raw_content ) ) ) {
-			$raw_content = $inner_blocks;
-		} else {
-			// Best guess at injection, newline with no preceding tabs.
-			$raw_content = str_replace( "\n\n", "\n$inner_blocks\n", $raw_content );
-		}
-	}
-
 	if ( $raw_content ) {
 		return $raw_content;
 	}
