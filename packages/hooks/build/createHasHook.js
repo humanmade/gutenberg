@@ -29,3 +29,4 @@ function createHasHook(hooks) {
 
 var _default = createHasHook;
 exports.default = _default;
+//# sourceMappingURL=createHasHook.js.map

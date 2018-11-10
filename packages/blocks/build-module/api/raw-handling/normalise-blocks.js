@@ -1,7 +1,8 @@
 /**
  * Internal dependencies
  */
-import { isPhrasingContent, isEmpty } from './utils';
+import { isEmpty } from './utils';
+import { isPhrasingContent } from './phrasing-content';
 /**
  * Browser dependencies
  */
@@ -67,3 +68,4 @@ export default function (HTML) {
 
   return accu.innerHTML;
 }
+//# sourceMappingURL=normalise-blocks.js.map

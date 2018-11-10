@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -16,9 +18,24 @@ var _i18n = require("@wordpress/i18n");
 
 var _data = require("@wordpress/data");
 
+var _deprecated = _interopRequireDefault(require("@wordpress/deprecated"));
+
 /**
  * WordPress dependencies
  */
+function getAnchorRect(anchor) {
+  // The default getAnchorRect() excludes an element's top and bottom padding
+  // from its calculation. We want tips to point to the outer margin of an
+  // element, so we override getAnchorRect() to include all padding.
+  return anchor.parentNode.getBoundingClientRect();
+}
+
+function onClick(event) {
+  // Tips are often nested within buttons. We stop propagation so that clicking
+  // on a tip doesn't result in the button being clicked.
+  event.stopPropagation();
+}
+
 function DotTip(_ref) {
   var children = _ref.children,
       isVisible = _ref.isVisible,
@@ -35,11 +52,10 @@ function DotTip(_ref) {
     position: "middle right",
     noArrow: true,
     focusOnMount: "container",
+    getAnchorRect: getAnchorRect,
     role: "dialog",
     "aria-label": (0, _i18n.__)('Gutenberg tips'),
-    onClick: function onClick(event) {
-      return event.stopPropagation();
-    }
+    onClick: onClick
   }, (0, _element.createElement)("p", null, children), (0, _element.createElement)("p", null, (0, _element.createElement)(_components.Button, {
     isLink: true,
     onClick: onDismiss
@@ -51,20 +67,31 @@ function DotTip(_ref) {
   }));
 }
 
-var _default = (0, _compose.compose)(_compose.withSafeTimeout, (0, _data.withSelect)(function (select, _ref2) {
-  var id = _ref2.id;
+var _default = (0, _compose.compose)((0, _data.withSelect)(function (select, _ref2) {
+  var tipId = _ref2.tipId,
+      id = _ref2.id;
+
+  if (id) {
+    tipId = id;
+    (0, _deprecated.default)('The id prop of wp.nux.DotTip', {
+      plugin: 'Gutenberg',
+      version: '4.4',
+      alternative: 'the tipId prop'
+    });
+  }
 
   var _select = select('core/nux'),
       isTipVisible = _select.isTipVisible,
       getAssociatedGuide = _select.getAssociatedGuide;
 
-  var associatedGuide = getAssociatedGuide(id);
+  var associatedGuide = getAssociatedGuide(tipId);
   return {
-    isVisible: isTipVisible(id),
+    isVisible: isTipVisible(tipId),
     hasNextTip: !!(associatedGuide && associatedGuide.nextTipId)
   };
 }), (0, _data.withDispatch)(function (dispatch, _ref3) {
-  var id = _ref3.id;
+  var tipId = _ref3.tipId,
+      id = _ref3.id;
 
   var _dispatch = dispatch('core/nux'),
       dismissTip = _dispatch.dismissTip,
@@ -72,7 +99,7 @@ var _default = (0, _compose.compose)(_compose.withSafeTimeout, (0, _data.withSel
 
   return {
     onDismiss: function onDismiss() {
-      dismissTip(id);
+      dismissTip(tipId || id);
     },
     onDisable: function onDisable() {
       disableTips();
@@ -81,3 +108,4 @@ var _default = (0, _compose.compose)(_compose.withSafeTimeout, (0, _data.withSel
 }))(DotTip);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

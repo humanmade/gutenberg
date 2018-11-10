@@ -1,10 +1,5 @@
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
-import "core-js/modules/es6.function.name";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
 
-/**
- * External dependencies
- */
-import 'element-closest';
 /**
  * References:
  *
@@ -23,7 +18,6 @@ import 'element-closest';
  * AREA elements associated with an IMG:
  *  - https://w3c.github.io/html/editing.html#data-model
  */
-
 var SELECTOR = ['[tabindex]', 'a[href]', 'button:not([disabled])', 'input:not([type="hidden"]):not([disabled])', 'select:not([disabled])', 'textarea:not([disabled])', 'iframe', 'object', 'embed', 'area[href]', '[contenteditable]:not([contenteditable=false])'].join(',');
 /**
  * Returns true if the specified element is visible (i.e. neither display: none
@@ -83,3 +77,4 @@ export function find(context) {
     return true;
   });
 }
+//# sourceMappingURL=focusable.js.map

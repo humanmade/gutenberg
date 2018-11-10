@@ -10,3 +10,4 @@ var clear = function clear() {
 };
 
 export default clear;
+//# sourceMappingURL=clear.js.map

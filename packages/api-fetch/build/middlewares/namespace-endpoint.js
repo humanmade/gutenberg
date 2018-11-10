@@ -9,8 +9,6 @@ exports.default = void 0;
 
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
-require("core-js/modules/es6.regexp.replace");
-
 var namespaceAndEndpointMiddleware = function namespaceAndEndpointMiddleware(options, next) {
   var path = options.path;
   var namespaceTrimmed, endpointTrimmed;
@@ -35,3 +33,4 @@ var namespaceAndEndpointMiddleware = function namespaceAndEndpointMiddleware(opt
 
 var _default = namespaceAndEndpointMiddleware;
 exports.default = _default;
+//# sourceMappingURL=namespace-endpoint.js.map

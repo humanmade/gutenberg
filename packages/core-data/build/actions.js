@@ -1,36 +1,31 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.receiveTerms = receiveTerms;
 exports.receiveUserQuery = receiveUserQuery;
 exports.addEntities = addEntities;
 exports.receiveEntityRecords = receiveEntityRecords;
-exports.receiveThemeSupportsFromIndex = receiveThemeSupportsFromIndex;
+exports.receiveThemeSupports = receiveThemeSupports;
+exports.receiveEmbedPreview = receiveEmbedPreview;
+exports.saveEntityRecord = saveEntityRecord;
+
+var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 var _lodash = require("lodash");
 
-/**
- * External dependencies
- */
+var _queriedData = require("./queried-data");
 
-/**
- * Returns an action object used in signalling that terms have been received
- * for a given taxonomy.
- *
- * @param {string}   taxonomy Taxonomy name.
- * @param {Object[]} terms    Terms received.
- *
- * @return {Object} Action object.
- */
-function receiveTerms(taxonomy, terms) {
-  return {
-    type: 'RECEIVE_TERMS',
-    taxonomy: taxonomy,
-    terms: terms
-  };
-}
+var _entities = require("./entities");
+
+var _controls = require("./controls");
+
+var _marked =
+/*#__PURE__*/
+regeneratorRuntime.mark(saveEntityRecord);
+
 /**
  * Returns an action object used in signalling that authors have been received.
  *
@@ -39,8 +34,6 @@ function receiveTerms(taxonomy, terms) {
  *
  * @return {Object} Action object.
  */
-
-
 function receiveUserQuery(queryID, users) {
   return {
     type: 'RECEIVE_USER_QUERY',
@@ -66,34 +59,122 @@ function addEntities(entities) {
 /**
  * Returns an action object used in signalling that entity records have been received.
  *
- * @param {string}       kind    Kind of the received entity.
- * @param {string}       name    Name of the received entity.
- * @param {Array|Object} records Records received.
+ * @param {string}       kind            Kind of the received entity.
+ * @param {string}       name            Name of the received entity.
+ * @param {Array|Object} records         Records received.
+ * @param {?Object}      query           Query Object.
+ * @param {?boolean}     invalidateCache Should invalidate query caches
  *
  * @return {Object} Action object.
  */
 
 
-function receiveEntityRecords(kind, name, records) {
-  return {
-    type: 'RECEIVE_ENTITY_RECORDS',
-    records: (0, _lodash.castArray)(records),
+function receiveEntityRecords(kind, name, records, query) {
+  var invalidateCache = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+  var action;
+
+  if (query) {
+    action = (0, _queriedData.receiveQueriedItems)(records, query);
+  } else {
+    action = (0, _queriedData.receiveItems)(records);
+  }
+
+  return (0, _objectSpread2.default)({}, action, {
     kind: kind,
-    name: name
-  };
+    name: name,
+    invalidateCache: invalidateCache
+  });
 }
 /**
  * Returns an action object used in signalling that the index has been received.
  *
- * @param {Object} index Index received.
+ * @param {Object} themeSupports Theme support for the current theme.
  *
  * @return {Object} Action object.
  */
 
 
-function receiveThemeSupportsFromIndex(index) {
+function receiveThemeSupports(themeSupports) {
   return {
     type: 'RECEIVE_THEME_SUPPORTS',
-    themeSupports: index.theme_supports
+    themeSupports: themeSupports
   };
 }
+/**
+ * Returns an action object used in signalling that the preview data for
+ * a given URl has been received.
+ *
+ * @param {string}  url      URL to preview the embed for.
+ * @param {Mixed}   preview  Preview data.
+ *
+ * @return {Object} Action object.
+ */
+
+
+function receiveEmbedPreview(url, preview) {
+  return {
+    type: 'RECEIVE_EMBED_PREVIEW',
+    url: url,
+    preview: preview
+  };
+}
+/**
+ * Action triggered to save an entity record.
+ *
+ * @param {string} kind    Kind of the received entity.
+ * @param {string} name    Name of the received entity.
+ * @param {Object} record  Record to be saved.
+ *
+ * @return {Object} Updated record.
+ */
+
+
+function saveEntityRecord(kind, name, record) {
+  var entities, entity, key, recordId, updatedRecord;
+  return regeneratorRuntime.wrap(function saveEntityRecord$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return (0, _entities.getKindEntities)(kind);
+
+        case 2:
+          entities = _context.sent;
+          entity = (0, _lodash.find)(entities, {
+            kind: kind,
+            name: name
+          });
+
+          if (entity) {
+            _context.next = 6;
+            break;
+          }
+
+          return _context.abrupt("return");
+
+        case 6:
+          key = entity.key || _entities.DEFAULT_ENTITY_KEY;
+          recordId = record[key];
+          _context.next = 10;
+          return (0, _controls.apiFetch)({
+            path: "".concat(entity.baseURL).concat(recordId ? '/' + recordId : ''),
+            method: recordId ? 'PUT' : 'POST',
+            data: record
+          });
+
+        case 10:
+          updatedRecord = _context.sent;
+          _context.next = 13;
+          return receiveEntityRecords(kind, name, updatedRecord, undefined, true);
+
+        case 13:
+          return _context.abrupt("return", updatedRecord);
+
+        case 14:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _marked, this);
+}
+//# sourceMappingURL=actions.js.map

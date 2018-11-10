@@ -1,9 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
-require("core-js/modules/web.dom.iterable");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -11,14 +7,12 @@ exports.hideApp = hideApp;
 exports.elementShouldBeHidden = elementShouldBeHidden;
 exports.showApp = showApp;
 
-var _set = _interopRequireDefault(require("@babel/runtime/core-js/set"));
-
 var _lodash = require("lodash");
 
 /**
  * External dependencies
  */
-var LIVE_REGION_ARIA_ROLES = new _set.default(['alert', 'status', 'log', 'marquee', 'timer']);
+var LIVE_REGION_ARIA_ROLES = new Set(['alert', 'status', 'log', 'marquee', 'timer']);
 var hiddenElements = [],
     isHidden = false;
 /**
@@ -82,3 +76,4 @@ function showApp() {
   hiddenElements = [];
   isHidden = false;
 }
+//# sourceMappingURL=aria-helper.js.map

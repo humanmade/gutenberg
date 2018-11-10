@@ -1,13 +1,11 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
-import "core-js/modules/es6.array.find";
-import "core-js/modules/web.dom.iterable";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -119,3 +117,4 @@ function (_Component) {
 
 Disabled.Consumer = Consumer;
 export default Disabled;
+//# sourceMappingURL=index.js.map

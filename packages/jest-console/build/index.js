@@ -2,8 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/web.dom.iterable");
-
 var _lodash = require("lodash");
 
 require("./matchers");
@@ -26,15 +24,32 @@ var _supportedMatchers = _interopRequireDefault(require("./supported-matchers"))
  */
 var setConsoleMethodSpy = function setConsoleMethodSpy(matcherName, methodName) {
   var spy = jest.spyOn(console, methodName).mockName("console.".concat(methodName));
-  beforeEach(function () {
+  /**
+   * Resets the spy to its initial state.
+   */
+
+  function resetSpy() {
     spy.mockReset();
     spy.assertionsNumber = 0;
-  });
-  afterEach(function () {
+  }
+  /**
+   * Verifies that the spy has only been called if expected.
+   */
+
+
+  function assertExpectedCalls() {
     if (spy.assertionsNumber === 0 && spy.mock.calls.length > 0) {
       expect(console).not[matcherName]();
     }
+  }
+
+  beforeAll(resetSpy);
+  beforeEach(function () {
+    assertExpectedCalls();
+    resetSpy();
   });
+  afterEach(assertExpectedCalls);
 };
 
 (0, _lodash.forEach)(_supportedMatchers.default, setConsoleMethodSpy);
+//# sourceMappingURL=index.js.map

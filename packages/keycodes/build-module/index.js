@@ -1,6 +1,5 @@
-import "core-js/modules/es6.regexp.replace";
-import _defineProperty from "@babel/runtime/helpers/defineProperty";
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
+import _defineProperty from "@babel/runtime/helpers/esm/defineProperty";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
 
 /**
  * Note: The order of the modifier keys in many of the [foo]Shortcut()
@@ -16,7 +15,17 @@ import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
 /**
  * External dependencies
  */
-import { get, mapValues, includes } from 'lodash';
+import { get, mapValues, includes, capitalize } from 'lodash';
+/**
+ * WordPress dependencies
+ */
+
+import { __ } from '@wordpress/i18n';
+/**
+ * Internal dependencies
+ */
+
+import { isAppleOS } from './platform';
 export var BACKSPACE = 8;
 export var TAB = 9;
 export var ENTER = 13;
@@ -33,31 +42,36 @@ export var CTRL = 'ctrl'; // Understood in both Mousetrap and TinyMCE.
 
 export var COMMAND = 'meta';
 export var SHIFT = 'shift';
-/**
- * Return true if platform is MacOS.
- *
- * @param {Object} _window   window object by default; used for DI testing.
- *
- * @return {boolean}         True if MacOS; false otherwise.
- */
-
-export function isMacOS() {
-  var _window = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
-
-  return _window.navigator.platform.indexOf('Mac') !== -1;
-}
 var modifiers = {
-  primary: function primary(_isMac) {
-    return _isMac() ? [COMMAND] : [CTRL];
+  primary: function primary(_isApple) {
+    return _isApple() ? [COMMAND] : [CTRL];
   },
-  primaryShift: function primaryShift(_isMac) {
-    return _isMac() ? [SHIFT, COMMAND] : [CTRL, SHIFT];
+  primaryShift: function primaryShift(_isApple) {
+    return _isApple() ? [SHIFT, COMMAND] : [CTRL, SHIFT];
   },
-  secondary: function secondary(_isMac) {
-    return _isMac() ? [SHIFT, ALT, COMMAND] : [CTRL, SHIFT, ALT];
+  primaryAlt: function primaryAlt(_isApple) {
+    return _isApple() ? [ALT, COMMAND] : [CTRL, ALT];
   },
-  access: function access(_isMac) {
-    return _isMac() ? [CTRL, ALT] : [SHIFT, ALT];
+  secondary: function secondary(_isApple) {
+    return _isApple() ? [SHIFT, ALT, COMMAND] : [CTRL, SHIFT, ALT];
+  },
+  access: function access(_isApple) {
+    return _isApple() ? [CTRL, ALT] : [SHIFT, ALT];
+  },
+  ctrl: function ctrl() {
+    return [CTRL];
+  },
+  alt: function alt() {
+    return [ALT];
+  },
+  ctrlShift: function ctrlShift() {
+    return [CTRL, SHIFT];
+  },
+  shift: function shift() {
+    return [SHIFT];
+  },
+  shiftAlt: function shiftAlt() {
+    return [SHIFT, ALT];
   }
 };
 /**
@@ -70,9 +84,38 @@ var modifiers = {
 
 export var rawShortcut = mapValues(modifiers, function (modifier) {
   return function (character) {
-    var _isMac = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : isMacOS;
+    var _isApple = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : isAppleOS;
 
-    return _toConsumableArray(modifier(_isMac)).concat([character.toLowerCase()]).join('+');
+    return _toConsumableArray(modifier(_isApple)).concat([character.toLowerCase()]).join('+');
+  };
+});
+/**
+ * Return an array of the parts of a keyboard shortcut chord for display
+ * E.g displayShortcutList.primary( 'm' ) will return [ '⌘', 'M' ] on Mac.
+ *
+ * @type {Object} keyed map of functions to shortcut sequences
+ */
+
+export var displayShortcutList = mapValues(modifiers, function (modifier) {
+  return function (character) {
+    var _replacementKeyMap;
+
+    var _isApple = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : isAppleOS;
+
+    var isApple = _isApple();
+
+    var replacementKeyMap = (_replacementKeyMap = {}, _defineProperty(_replacementKeyMap, ALT, isApple ? '⌥' : 'Alt'), _defineProperty(_replacementKeyMap, CTRL, isApple ? '^' : 'Ctrl'), _defineProperty(_replacementKeyMap, COMMAND, '⌘'), _defineProperty(_replacementKeyMap, SHIFT, isApple ? '⇧' : 'Shift'), _replacementKeyMap);
+    var modifierKeys = modifier(_isApple).reduce(function (accumulator, key) {
+      var replacementKey = get(replacementKeyMap, key, key); // If on the Mac, adhere to platform convention and don't show plus between keys.
+
+      if (isApple) {
+        return _toConsumableArray(accumulator).concat([replacementKey]);
+      }
+
+      return _toConsumableArray(accumulator).concat([replacementKey, '+']);
+    }, []);
+    var capitalizedCharacter = capitalize(character);
+    return _toConsumableArray(modifierKeys).concat([capitalizedCharacter]);
   };
 });
 /**
@@ -82,24 +125,30 @@ export var rawShortcut = mapValues(modifiers, function (modifier) {
  * @type {Object} Keyed map of functions to display shortcuts.
  */
 
-export var displayShortcut = mapValues(modifiers, function (modifier) {
+export var displayShortcut = mapValues(displayShortcutList, function (shortcutList) {
   return function (character) {
-    var _replacementKeyMap;
+    var _isApple = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : isAppleOS;
 
-    var _isMac = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : isMacOS;
+    return shortcutList(character, _isApple).join('');
+  };
+});
+/**
+ * An object that contains functions to return an aria label for a keyboard shortcut.
+ * E.g. shortcutAriaLabel.primary( '.' ) will return 'Command + Period' on Mac.
+ */
 
-    var isMac = _isMac();
+export var shortcutAriaLabel = mapValues(modifiers, function (modifier) {
+  return function (character) {
+    var _replacementKeyMap2;
 
-    var replacementKeyMap = (_replacementKeyMap = {}, _defineProperty(_replacementKeyMap, ALT, isMac ? 'Option' : 'Alt'), _defineProperty(_replacementKeyMap, CTRL, 'Ctrl'), _defineProperty(_replacementKeyMap, COMMAND, '⌘'), _defineProperty(_replacementKeyMap, SHIFT, 'Shift'), _replacementKeyMap);
+    var _isApple = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : isAppleOS;
 
-    var shortcut = _toConsumableArray(modifier(_isMac).map(function (key) {
-      return get(replacementKeyMap, key, key);
-    })).concat([character.toUpperCase()]).join('+'); // Because we use just the clover symbol for MacOS's "command" key, remove
-    // the key join character ("+") between it and the final character if that
-    // final character is alphanumeric. ⌘S looks nicer than ⌘+S.
+    var isApple = _isApple();
 
-
-    return shortcut.replace(/⌘\+([A-Z0-9])$/g, '⌘$1');
+    var replacementKeyMap = (_replacementKeyMap2 = {}, _defineProperty(_replacementKeyMap2, SHIFT, 'Shift'), _defineProperty(_replacementKeyMap2, COMMAND, isApple ? 'Command' : 'Control'), _defineProperty(_replacementKeyMap2, CTRL, 'Control'), _defineProperty(_replacementKeyMap2, ALT, isApple ? 'Option' : 'Alt'), _defineProperty(_replacementKeyMap2, ',', __('Comma')), _defineProperty(_replacementKeyMap2, '.', __('Period')), _defineProperty(_replacementKeyMap2, '`', __('Backtick')), _replacementKeyMap2);
+    return _toConsumableArray(modifier(_isApple)).concat([character]).map(function (key) {
+      return capitalize(get(replacementKeyMap, key, key));
+    }).join(isApple ? ' ' : ' + ');
   };
 });
 /**
@@ -113,9 +162,9 @@ export var displayShortcut = mapValues(modifiers, function (modifier) {
 
 export var isKeyboardEvent = mapValues(modifiers, function (getModifiers) {
   return function (event, character) {
-    var _isMac = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : isMacOS;
+    var _isApple = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : isAppleOS;
 
-    var mods = getModifiers(_isMac);
+    var mods = getModifiers(_isApple);
 
     if (!mods.every(function (key) {
       return event["".concat(key, "Key")];
@@ -130,3 +179,4 @@ export var isKeyboardEvent = mapValues(modifiers, function (getModifiers) {
     return event.key === character;
   };
 });
+//# sourceMappingURL=index.js.map

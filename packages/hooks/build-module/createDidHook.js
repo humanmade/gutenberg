@@ -26,3 +26,4 @@ function createDidHook(hooks) {
 }
 
 export default createDidHook;
+//# sourceMappingURL=createDidHook.js.map

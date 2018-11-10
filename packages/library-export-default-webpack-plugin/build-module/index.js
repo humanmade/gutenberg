@@ -1,8 +1,5 @@
-import "core-js/modules/es6.function.name";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import "core-js/modules/es7.array.includes";
-import "core-js/modules/es6.string.includes";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
 
 /**
  * External dependencies
@@ -56,3 +53,4 @@ function () {
 
   return LibraryExportDefaultPlugin;
 }();
+//# sourceMappingURL=index.js.map

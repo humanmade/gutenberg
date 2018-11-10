@@ -9,11 +9,17 @@ exports.default = void 0;
 
 var _element = require("@wordpress/element");
 
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
+
 var _classnames = _interopRequireDefault(require("classnames"));
 
 var _lodash = require("lodash");
 
-var _iconButton = _interopRequireDefault(require("../icon-button"));
+var _toolbarButton = _interopRequireDefault(require("../toolbar-button"));
+
+var _dropdownMenu = _interopRequireDefault(require("../dropdown-menu"));
+
+var _toolbarContainer = _interopRequireDefault(require("./toolbar-container"));
 
 /**
  * External dependencies
@@ -57,7 +63,10 @@ function Toolbar(_ref) {
   var _ref$controls = _ref.controls,
       controls = _ref$controls === void 0 ? [] : _ref$controls,
       children = _ref.children,
-      className = _ref.className;
+      className = _ref.className,
+      isCollapsed = _ref.isCollapsed,
+      icon = _ref.icon,
+      label = _ref.label;
 
   if ((!controls || !controls.length) && !children) {
     return null;
@@ -70,31 +79,27 @@ function Toolbar(_ref) {
     controlSets = [controlSets];
   }
 
-  return (0, _element.createElement)("div", {
+  if (isCollapsed) {
+    return (0, _element.createElement)(_dropdownMenu.default, {
+      icon: icon,
+      label: label,
+      controls: controlSets,
+      className: (0, _classnames.default)('components-toolbar', className)
+    });
+  }
+
+  return (0, _element.createElement)(_toolbarContainer.default, {
     className: (0, _classnames.default)('components-toolbar', className)
   }, (0, _lodash.flatMap)(controlSets, function (controlSet, indexOfSet) {
     return controlSet.map(function (control, indexOfControl) {
-      return (0, _element.createElement)("div", {
+      return (0, _element.createElement)(_toolbarButton.default, (0, _extends2.default)({
         key: [indexOfSet, indexOfControl].join(),
-        className: indexOfSet > 0 && indexOfControl === 0 ? 'has-left-divider' : null
-      }, (0, _element.createElement)(_iconButton.default, {
-        icon: control.icon,
-        label: control.title,
-        shortcut: control.shortcut,
-        "data-subscript": control.subscript,
-        onClick: function onClick(event) {
-          event.stopPropagation();
-          control.onClick();
-        },
-        className: (0, _classnames.default)('components-toolbar__control', {
-          'is-active': control.isActive
-        }),
-        "aria-pressed": control.isActive,
-        disabled: control.isDisabled
-      }), control.children);
+        containerClassName: indexOfSet > 0 && indexOfControl === 0 ? 'has-left-divider' : null
+      }, control));
     });
   }), children);
 }
 
 var _default = Toolbar;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

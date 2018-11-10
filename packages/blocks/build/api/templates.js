@@ -10,16 +10,22 @@ exports.synchronizeBlocksWithTemplate = synchronizeBlocksWithTemplate;
 
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
-require("core-js/modules/es6.function.name");
-
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
 var _lodash = require("lodash");
 
+var _element = require("@wordpress/element");
+
 var _factory = require("./factory");
+
+var _registration = require("./registration");
 
 /**
  * External dependencies
+ */
+
+/**
+ * WordPress dependencies
  */
 
 /**
@@ -83,8 +89,45 @@ function synchronizeBlocksWithTemplate() {
       return (0, _objectSpread2.default)({}, block, {
         innerBlocks: innerBlocks
       });
-    }
+    } // To support old templates that were using the "children" format
+    // for the attributes using "html" strings now, we normalize the template attributes
+    // before creating the blocks.
 
-    return (0, _factory.createBlock)(name, attributes, synchronizeBlocksWithTemplate([], innerBlocksTemplate));
+
+    var blockType = (0, _registration.getBlockType)(name);
+
+    var isHTMLAttribute = function isHTMLAttribute(attributeDefinition) {
+      return (0, _lodash.get)(attributeDefinition, ['source']) === 'html';
+    };
+
+    var isQueryAttribute = function isQueryAttribute(attributeDefinition) {
+      return (0, _lodash.get)(attributeDefinition, ['source']) === 'query';
+    };
+
+    var normalizeAttributes = function normalizeAttributes(schema, values) {
+      return (0, _lodash.mapValues)(values, function (value, key) {
+        return normalizeAttribute(schema[key], value);
+      });
+    };
+
+    var normalizeAttribute = function normalizeAttribute(definition, value) {
+      if (isHTMLAttribute(definition) && (0, _lodash.isArray)(value)) {
+        // Introduce a deprecated call at this point
+        // When we're confident that "children" format should be removed from the templates.
+        return (0, _element.renderToString)(value);
+      }
+
+      if (isQueryAttribute(definition) && value) {
+        return value.map(function (subValues) {
+          return normalizeAttributes(definition.query, subValues);
+        });
+      }
+
+      return value;
+    };
+
+    var normalizedAttributes = normalizeAttributes((0, _lodash.get)(blockType, ['attributes'], {}), attributes);
+    return (0, _factory.createBlock)(name, normalizedAttributes, synchronizeBlocksWithTemplate([], innerBlocksTemplate));
   });
 }
+//# sourceMappingURL=templates.js.map

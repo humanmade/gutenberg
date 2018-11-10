@@ -9,3 +9,4 @@ export default {
   actions: actions,
   selectors: selectors
 };
+//# sourceMappingURL=index.js.map

@@ -1,7 +1,5 @@
 "use strict";
 
-require("core-js/modules/es6.regexp.replace");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -89,3 +87,4 @@ function createNextpage(doc) {
   node.dataset.block = 'core/nextpage';
   return node;
 }
+//# sourceMappingURL=special-comment-converter.js.map

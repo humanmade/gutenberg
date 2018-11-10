@@ -10,18 +10,6 @@ exports.removep = removep;
 
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
-require("core-js/modules/web.dom.iterable");
-
-require("core-js/modules/es6.regexp.split");
-
-require("core-js/modules/es6.regexp.replace");
-
-var _keys = _interopRequireDefault(require("@babel/runtime/core-js/object/keys"));
-
-require("core-js/modules/es6.regexp.match");
-
-require("core-js/modules/es6.regexp.constructor");
-
 /**
  * The regular expression for an HTML element.
  *
@@ -96,7 +84,7 @@ function replaceInHtmlTags(haystack, replacePairs) {
   var textArr = htmlSplit(haystack);
   var changed = false; // Extract all needles.
 
-  var needles = (0, _keys.default)(replacePairs); // Loop through delimiters (elements) only.
+  var needles = Object.keys(replacePairs); // Loop through delimiters (elements) only.
 
   for (var i = 1; i < textArr.length; i += 2) {
     for (var j = 0; j < needles.length; j++) {
@@ -399,3 +387,4 @@ function removep(html) {
 
   return html;
 }
+//# sourceMappingURL=index.js.map

@@ -20,3 +20,4 @@ export { default as withState } from './with-state';
  */
 
 export { flowRight as compose };
+//# sourceMappingURL=index.js.map

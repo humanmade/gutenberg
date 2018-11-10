@@ -1,5 +1,5 @@
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 
 /**
  * External dependencies
@@ -10,17 +10,13 @@ import classnames from 'classnames';
  */
 
 import { createElement, forwardRef } from '@wordpress/element';
-/**
- * Internal dependencies
- */
-
-import './style.scss';
 export function Button(props, ref) {
   var href = props.href,
       target = props.target,
       isPrimary = props.isPrimary,
       isLarge = props.isLarge,
       isSmall = props.isSmall,
+      isTertiary = props.isTertiary,
       isToggled = props.isToggled,
       isBusy = props.isBusy,
       isDefault = props.isDefault,
@@ -28,8 +24,7 @@ export function Button(props, ref) {
       isDestructive = props.isDestructive,
       className = props.className,
       disabled = props.disabled,
-      focus = props.focus,
-      additionalProps = _objectWithoutProperties(props, ["href", "target", "isPrimary", "isLarge", "isSmall", "isToggled", "isBusy", "isDefault", "isLink", "isDestructive", "className", "disabled", "focus"]);
+      additionalProps = _objectWithoutProperties(props, ["href", "target", "isPrimary", "isLarge", "isSmall", "isTertiary", "isToggled", "isBusy", "isDefault", "isLink", "isDestructive", "className", "disabled"]);
 
   var classes = classnames('components-button', className, {
     'is-button': isDefault || isPrimary || isLarge || isSmall,
@@ -37,6 +32,7 @@ export function Button(props, ref) {
     'is-primary': isPrimary,
     'is-large': isLarge,
     'is-small': isSmall,
+    'is-tertiary': isTertiary,
     'is-toggled': isToggled,
     'is-busy': isBusy,
     'is-link': isLink,
@@ -52,8 +48,8 @@ export function Button(props, ref) {
   };
   return createElement(tag, _objectSpread({}, tagProps, additionalProps, {
     className: classes,
-    autoFocus: focus,
     ref: ref
   }));
 }
 export default forwardRef(Button);
+//# sourceMappingURL=index.js.map

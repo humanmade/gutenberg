@@ -4,9 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
-require("core-js/modules/es6.regexp.replace");
-
 var previousMessage = '';
 /**
  * Filter the message to be announced to the screenreader.
@@ -36,3 +33,4 @@ var filterMessage = function filterMessage(message) {
 
 var _default = filterMessage;
 exports.default = _default;
+//# sourceMappingURL=filterMessage.js.map

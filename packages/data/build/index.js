@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
+
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
@@ -8,19 +10,7 @@ Object.defineProperty(exports, "__esModule", {
 Object.defineProperty(exports, "combineReducers", {
   enumerable: true,
   get: function get() {
-    return _redux.combineReducers;
-  }
-});
-Object.defineProperty(exports, "restrictPersistence", {
-  enumerable: true,
-  get: function get() {
-    return _persist.restrictPersistence;
-  }
-});
-Object.defineProperty(exports, "setPersistenceStorage", {
-  enumerable: true,
-  get: function get() {
-    return _persist.setPersistenceStorage;
+    return _turboCombineReducers.default;
   }
 });
 Object.defineProperty(exports, "withSelect", {
@@ -41,41 +31,35 @@ Object.defineProperty(exports, "RegistryProvider", {
     return _registryProvider.default;
   }
 });
+Object.defineProperty(exports, "RegistryConsumer", {
+  enumerable: true,
+  get: function get() {
+    return _registryProvider.RegistryConsumer;
+  }
+});
 Object.defineProperty(exports, "createRegistry", {
   enumerable: true,
   get: function get() {
     return _registry.createRegistry;
   }
 });
-Object.defineProperty(exports, "withRehydration", {
-  enumerable: true,
-  get: function get() {
-    return _deprecated.withRehydration;
-  }
-});
-Object.defineProperty(exports, "loadAndPersist", {
-  enumerable: true,
-  get: function get() {
-    return _deprecated.loadAndPersist;
-  }
-});
-exports.setupPersistence = exports.registerResolvers = exports.registerSelectors = exports.registerActions = exports.registerReducer = exports.registerStore = exports.subscribe = exports.dispatch = exports.select = void 0;
+exports.plugins = exports.use = exports.registerResolvers = exports.registerSelectors = exports.registerActions = exports.registerReducer = exports.registerStore = exports.registerGenericStore = exports.subscribe = exports.dispatch = exports.select = void 0;
 
-var _redux = require("redux");
+var _turboCombineReducers = _interopRequireDefault(require("turbo-combine-reducers"));
 
 var _defaultRegistry = _interopRequireDefault(require("./default-registry"));
 
-var _persist = require("./persist");
+var plugins = _interopRequireWildcard(require("./plugins"));
+
+exports.plugins = plugins;
 
 var _withSelect = _interopRequireDefault(require("./components/with-select"));
 
 var _withDispatch = _interopRequireDefault(require("./components/with-dispatch"));
 
-var _registryProvider = _interopRequireDefault(require("./components/registry-provider"));
+var _registryProvider = _interopRequireWildcard(require("./components/registry-provider"));
 
 var _registry = require("./registry");
-
-var _deprecated = require("./deprecated");
 
 /**
  * External dependencies
@@ -101,6 +85,8 @@ var dispatch = _defaultRegistry.default.dispatch;
 exports.dispatch = dispatch;
 var subscribe = _defaultRegistry.default.subscribe;
 exports.subscribe = subscribe;
+var registerGenericStore = _defaultRegistry.default.registerGenericStore;
+exports.registerGenericStore = registerGenericStore;
 var registerStore = _defaultRegistry.default.registerStore;
 exports.registerStore = registerStore;
 var registerReducer = _defaultRegistry.default.registerReducer;
@@ -111,5 +97,6 @@ var registerSelectors = _defaultRegistry.default.registerSelectors;
 exports.registerSelectors = registerSelectors;
 var registerResolvers = _defaultRegistry.default.registerResolvers;
 exports.registerResolvers = registerResolvers;
-var setupPersistence = _defaultRegistry.default.setupPersistence;
-exports.setupPersistence = setupPersistence;
+var use = _defaultRegistry.default.use;
+exports.use = use;
+//# sourceMappingURL=index.js.map

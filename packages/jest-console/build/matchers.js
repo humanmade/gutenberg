@@ -67,3 +67,4 @@ expect.extend((0, _lodash.reduce)(_supportedMatchers.default, function (result, 
   var matcherNameWith = "".concat(matcherName, "With");
   return (0, _objectSpread3.default)({}, result, (_objectSpread2 = {}, (0, _defineProperty2.default)(_objectSpread2, matcherName, createToBeCalledMatcher(".".concat(matcherName), methodName)), (0, _defineProperty2.default)(_objectSpread2, matcherNameWith, createToBeCalledWithMatcher(".".concat(matcherNameWith), methodName)), _objectSpread2));
 }, {}));
+//# sourceMappingURL=matchers.js.map

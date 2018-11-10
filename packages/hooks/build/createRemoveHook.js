@@ -7,10 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-require("core-js/modules/es6.function.name");
-
-require("core-js/modules/web.dom.iterable");
-
 var _validateNamespace = _interopRequireDefault(require("./validateNamespace.js"));
 
 var _validateHookName = _interopRequireDefault(require("./validateHookName.js"));
@@ -94,3 +90,4 @@ function createRemoveHook(hooks, removeAll) {
 
 var _default = createRemoveHook;
 exports.default = _default;
+//# sourceMappingURL=createRemoveHook.js.map

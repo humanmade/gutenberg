@@ -35,3 +35,4 @@ export { render };
  */
 
 export { unmountComponentAtNode };
+//# sourceMappingURL=react-platform.js.map

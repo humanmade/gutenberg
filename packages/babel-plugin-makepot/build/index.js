@@ -1,21 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
-var _keys = _interopRequireDefault(require("@babel/runtime/core-js/object/keys"));
-
-require("core-js/modules/es6.array.sort");
-
-var _from = _interopRequireDefault(require("@babel/runtime/core-js/array/from"));
-
-require("core-js/modules/es6.function.name");
-
-require("core-js/modules/es6.regexp.split");
-
-require("core-js/modules/es6.regexp.match");
-
-require("core-js/modules/web.dom.iterable");
-
 /**
  * Credits:
  *
@@ -288,7 +272,7 @@ module.exports = function () {
 
 
         if (translation.msgid_plural) {
-          translation.msgstr = (0, _from.default)(Array(nplurals)).map(function () {
+          translation.msgstr = Array.from(Array(nplurals)).map(function () {
             return '';
           });
         } else {
@@ -333,7 +317,7 @@ module.exports = function () {
           } // Sort translations by filename for deterministic output
 
 
-          var files = (0, _keys.default)(strings).sort(); // Combine translations from each file grouped by context
+          var files = Object.keys(strings).sort(); // Combine translations from each file grouped by context
 
           var translations = reduce(files, function (memo, file) {
             for (var context in strings[file]) {
@@ -380,3 +364,4 @@ module.exports.getNodeAsString = getNodeAsString;
 module.exports.getTranslatorComment = getTranslatorComment;
 module.exports.isValidTranslationKey = isValidTranslationKey;
 module.exports.isSameTranslation = isSameTranslation;
+//# sourceMappingURL=index.js.map

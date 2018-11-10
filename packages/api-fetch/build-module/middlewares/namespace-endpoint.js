@@ -1,5 +1,4 @@
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import "core-js/modules/es6.regexp.replace";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 var namespaceAndEndpointMiddleware = function namespaceAndEndpointMiddleware(options, next) {
   var path = options.path;
@@ -24,3 +23,4 @@ var namespaceAndEndpointMiddleware = function namespaceAndEndpointMiddleware(opt
 };
 
 export default namespaceAndEndpointMiddleware;
+//# sourceMappingURL=namespace-endpoint.js.map

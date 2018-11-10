@@ -74,3 +74,4 @@ function Token(_ref) {
 }
 
 export default withInstanceId(Token);
+//# sourceMappingURL=token.js.map

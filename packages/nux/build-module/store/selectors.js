@@ -1,5 +1,4 @@
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
-import _getIterator from "@babel/runtime/core-js/get-iterator";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
 
 /**
  * External dependencies
@@ -31,7 +30,7 @@ export var getAssociatedGuide = createSelector(function (state, tipId) {
   var _iteratorError = undefined;
 
   try {
-    for (var _iterator = _getIterator(state.guides), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+    for (var _iterator = state.guides[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
       var tipIds = _step.value;
 
       if (includes(tipIds, tipId)) {
@@ -75,23 +74,23 @@ export var getAssociatedGuide = createSelector(function (state, tipId) {
  * guide that they have been added to.
  *
  * @param {Object} state Global application state.
- * @param {string} id    The tip to query.
+ * @param {string} tipId The tip to query.
  *
  * @return {boolean} Whether or not the given tip is showing.
  */
 
-export function isTipVisible(state, id) {
+export function isTipVisible(state, tipId) {
   if (!state.preferences.areTipsEnabled) {
     return false;
   }
 
-  if (state.preferences.dismissedTips[id]) {
+  if (state.preferences.dismissedTips[tipId]) {
     return false;
   }
 
-  var associatedGuide = getAssociatedGuide(state, id);
+  var associatedGuide = getAssociatedGuide(state, tipId);
 
-  if (associatedGuide && associatedGuide.currentTipId !== id) {
+  if (associatedGuide && associatedGuide.currentTipId !== tipId) {
     return false;
   }
 
@@ -108,3 +107,4 @@ export function isTipVisible(state, id) {
 export function areTipsEnabled(state) {
   return state.preferences.areTipsEnabled;
 }
+//# sourceMappingURL=selectors.js.map

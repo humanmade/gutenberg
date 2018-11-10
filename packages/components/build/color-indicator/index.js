@@ -15,14 +15,8 @@ var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/h
 
 var _classnames = _interopRequireDefault(require("classnames"));
 
-require("./style.scss");
-
 /**
  * External dependencies
- */
-
-/**
- * Internal dependencies
  */
 var ColorIndicator = function ColorIndicator(_ref) {
   var className = _ref.className,
@@ -38,3 +32,4 @@ var ColorIndicator = function ColorIndicator(_ref) {
 
 var _default = ColorIndicator;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

@@ -3,13 +3,18 @@ import { createElement } from "@wordpress/element";
 /**
  * External dependencies
  */
-import { isString, noop } from 'lodash';
+import { noop } from 'lodash';
 import classnames from 'classnames';
 /**
  * WordPress dependencies
  */
 
 import { __ } from '@wordpress/i18n';
+/**
+ * Internal dependencies
+ */
+
+import { Button, IconButton } from '../';
 
 function Notice(_ref) {
   var className = _ref.className,
@@ -18,19 +23,35 @@ function Notice(_ref) {
       _ref$onRemove = _ref.onRemove,
       onRemove = _ref$onRemove === void 0 ? noop : _ref$onRemove,
       _ref$isDismissible = _ref.isDismissible,
-      isDismissible = _ref$isDismissible === void 0 ? true : _ref$isDismissible;
-  var classNames = classnames(className, 'notice notice-alt notice-' + status, {
+      isDismissible = _ref$isDismissible === void 0 ? true : _ref$isDismissible,
+      _ref$actions = _ref.actions,
+      actions = _ref$actions === void 0 ? [] : _ref$actions;
+  var classes = classnames(className, 'components-notice', 'is-' + status, {
     'is-dismissible': isDismissible
   });
   return createElement("div", {
-    className: classNames
-  }, isString(children) ? createElement("p", null, children) : children, isDismissible && createElement("button", {
-    className: "notice-dismiss",
-    type: "button",
-    onClick: onRemove
-  }, createElement("span", {
-    className: "screen-reader-text"
-  }, __('Dismiss this notice'))));
+    className: classes
+  }, createElement("div", {
+    className: "components-notice__content"
+  }, children, actions.map(function (_ref2, index) {
+    var label = _ref2.label,
+        url = _ref2.url,
+        onClick = _ref2.onClick;
+    return createElement(Button, {
+      key: index,
+      href: url,
+      isLink: !!url,
+      onClick: onClick,
+      className: "components-notice__action"
+    }, label);
+  })), isDismissible && createElement(IconButton, {
+    className: "components-notice__dismiss",
+    icon: "no",
+    label: __('Dismiss this notice'),
+    onClick: onRemove,
+    tooltip: false
+  }));
 }
 
 export default Notice;
+//# sourceMappingURL=index.js.map

@@ -1,5 +1,4 @@
-import "core-js/modules/es6.regexp.split";
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -77,3 +76,4 @@ export default function QueryControls(_ref) {
     max: maxItems
   })];
 }
+//# sourceMappingURL=index.js.map

@@ -19,3 +19,4 @@ var addContainer = function addContainer(ariaLive) {
 };
 
 export default addContainer;
+//# sourceMappingURL=addContainer.js.map

@@ -24,9 +24,11 @@ function BaseControl(_ref) {
     className: (0, _classnames.default)('components-base-control', className)
   }, (0, _element.createElement)("div", {
     className: "components-base-control__field"
-  }, label && (0, _element.createElement)("label", {
+  }, label && id && (0, _element.createElement)("label", {
     className: "components-base-control__label",
     htmlFor: id
+  }, label), label && !id && (0, _element.createElement)("span", {
+    className: "components-base-control__label"
   }, label), children), !!help && (0, _element.createElement)("p", {
     id: id + '__help',
     className: "components-base-control__help"
@@ -35,3 +37,4 @@ function BaseControl(_ref) {
 
 var _default = BaseControl;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

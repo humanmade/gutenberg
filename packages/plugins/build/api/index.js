@@ -10,8 +10,6 @@ exports.unregisterPlugin = unregisterPlugin;
 exports.getPlugin = getPlugin;
 exports.getPlugins = getPlugins;
 
-var _values = _interopRequireDefault(require("@babel/runtime/core-js/object/values"));
-
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
@@ -122,5 +120,6 @@ function getPlugin(name) {
 
 
 function getPlugins() {
-  return (0, _values.default)(plugins);
+  return Object.values(plugins);
 }
+//# sourceMappingURL=index.js.map

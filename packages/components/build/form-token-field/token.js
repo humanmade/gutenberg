@@ -89,3 +89,4 @@ function Token(_ref) {
 var _default = (0, _compose.withInstanceId)(Token);
 
 exports.default = _default;
+//# sourceMappingURL=token.js.map

@@ -21,6 +21,8 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 
 var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
 
+var _classnames = _interopRequireDefault(require("classnames"));
+
 var _lodash = require("lodash");
 
 var _moment = _interopRequireDefault(require("moment"));
@@ -57,11 +59,20 @@ function (_Component) {
     (0, _classCallCheck2.default)(this, TimePicker);
     _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(TimePicker).apply(this, arguments));
     _this.state = {
+      day: '',
+      month: '',
+      year: '',
       hours: '',
       minutes: '',
       am: true,
       date: null
     };
+    _this.updateMonth = _this.updateMonth.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.onChangeMonth = _this.onChangeMonth.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.updateDay = _this.updateDay.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.onChangeDay = _this.onChangeDay.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.updateYear = _this.updateYear.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.onChangeYear = _this.onChangeYear.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.updateHours = _this.updateHours.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.updateMinutes = _this.updateMinutes.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.onChangeHours = _this.onChangeHours.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
@@ -86,16 +97,32 @@ function (_Component) {
       }
     }
   }, {
+    key: "getMaxHours",
+    value: function getMaxHours() {
+      return this.props.is12Hour ? 12 : 23;
+    }
+  }, {
+    key: "getMinHours",
+    value: function getMinHours() {
+      return this.props.is12Hour ? 1 : 0;
+    }
+  }, {
     key: "syncState",
     value: function syncState(_ref) {
       var currentTime = _ref.currentTime,
           is12Hour = _ref.is12Hour;
       var selected = currentTime ? (0, _moment.default)(currentTime) : (0, _moment.default)();
+      var day = selected.format('DD');
+      var month = selected.format('MM');
+      var year = selected.format('YYYY');
       var minutes = selected.format('mm');
       var am = selected.format('A');
       var hours = selected.format(is12Hour ? 'hh' : 'HH');
       var date = currentTime ? (0, _moment.default)(currentTime) : (0, _moment.default)();
       this.setState({
+        day: day,
+        month: month,
+        year: year,
         minutes: minutes,
         hours: hours,
         am: am,
@@ -123,8 +150,7 @@ function (_Component) {
       this.setState({
         date: newDate
       });
-      var formattedDate = newDate.format(TIMEZONELESS_FORMAT);
-      onChange(formattedDate);
+      onChange(newDate.format(TIMEZONELESS_FORMAT));
     }
   }, {
     key: "updateMinutes",
@@ -144,8 +170,67 @@ function (_Component) {
       this.setState({
         date: newDate
       });
-      var formattedDate = newDate.format(TIMEZONELESS_FORMAT);
-      onChange(formattedDate);
+      onChange(newDate.format(TIMEZONELESS_FORMAT));
+    }
+  }, {
+    key: "updateDay",
+    value: function updateDay() {
+      var onChange = this.props.onChange;
+      var _this$state3 = this.state,
+          day = _this$state3.day,
+          date = _this$state3.date;
+      var value = parseInt(day, 10);
+
+      if (!(0, _lodash.isInteger)(value) || value < 1 || value > 31) {
+        this.syncState(this.props);
+        return;
+      }
+
+      var newDate = date.clone().date(value);
+      this.setState({
+        date: newDate
+      });
+      onChange(newDate.format(TIMEZONELESS_FORMAT));
+    }
+  }, {
+    key: "updateMonth",
+    value: function updateMonth() {
+      var onChange = this.props.onChange;
+      var _this$state4 = this.state,
+          month = _this$state4.month,
+          date = _this$state4.date;
+      var value = parseInt(month, 10);
+
+      if (!(0, _lodash.isInteger)(value) || value < 1 || value > 12) {
+        this.syncState(this.props);
+        return;
+      }
+
+      var newDate = date.clone().month(value - 1);
+      this.setState({
+        date: newDate
+      });
+      onChange(newDate.format(TIMEZONELESS_FORMAT));
+    }
+  }, {
+    key: "updateYear",
+    value: function updateYear() {
+      var onChange = this.props.onChange;
+      var _this$state5 = this.state,
+          year = _this$state5.year,
+          date = _this$state5.date;
+      var value = parseInt(year, 10);
+
+      if (!(0, _lodash.isInteger)(value) || value < 1970 || value > 9999) {
+        this.syncState(this.props);
+        return;
+      }
+
+      var newDate = date.clone().year(value);
+      this.setState({
+        date: newDate
+      });
+      onChange(newDate.format(TIMEZONELESS_FORMAT));
     }
   }, {
     key: "updateAmPm",
@@ -175,9 +260,29 @@ function (_Component) {
           date: newDate
         });
 
-        var formattedDate = newDate.format(TIMEZONELESS_FORMAT);
-        onChange(formattedDate);
+        onChange(newDate.format(TIMEZONELESS_FORMAT));
       };
+    }
+  }, {
+    key: "onChangeDay",
+    value: function onChangeDay(event) {
+      this.setState({
+        day: event.target.value
+      });
+    }
+  }, {
+    key: "onChangeMonth",
+    value: function onChangeMonth(event) {
+      this.setState({
+        month: event.target.value
+      });
+    }
+  }, {
+    key: "onChangeYear",
+    value: function onChangeYear(event) {
+      this.setState({
+        year: event.target.value
+      });
     }
   }, {
     key: "onChangeHours",
@@ -197,37 +302,118 @@ function (_Component) {
     key: "render",
     value: function render() {
       var is12Hour = this.props.is12Hour;
-      var _this$state3 = this.state,
-          minutes = _this$state3.minutes,
-          hours = _this$state3.hours,
-          am = _this$state3.am;
+      var _this$state6 = this.state,
+          day = _this$state6.day,
+          month = _this$state6.month,
+          year = _this$state6.year,
+          minutes = _this$state6.minutes,
+          hours = _this$state6.hours,
+          am = _this$state6.am;
       return (0, _element.createElement)("div", {
-        className: "components-time-picker"
+        className: (0, _classnames.default)('components-datetime__time', {
+          'is-12-hour': is12Hour,
+          'is-24-hour': !is12Hour
+        })
+      }, (0, _element.createElement)("fieldset", null, (0, _element.createElement)("legend", {
+        className: "components-datetime__time-legend invisible"
+      }, (0, _i18n.__)('Date')), (0, _element.createElement)("div", {
+        className: "components-datetime__time-wrapper"
+      }, (0, _element.createElement)("div", {
+        className: "components-datetime__time-field components-datetime__time-field-month"
+      }, (0, _element.createElement)("select", {
+        "aria-label": (0, _i18n.__)('Month'),
+        className: "components-datetime__time-field-month-select",
+        value: month,
+        onChange: this.onChangeMonth,
+        onBlur: this.updateMonth
+      }, (0, _element.createElement)("option", {
+        value: "01"
+      }, (0, _i18n.__)('January')), (0, _element.createElement)("option", {
+        value: "02"
+      }, (0, _i18n.__)('February')), (0, _element.createElement)("option", {
+        value: "03"
+      }, (0, _i18n.__)('March')), (0, _element.createElement)("option", {
+        value: "04"
+      }, (0, _i18n.__)('April')), (0, _element.createElement)("option", {
+        value: "05"
+      }, (0, _i18n.__)('May')), (0, _element.createElement)("option", {
+        value: "06"
+      }, (0, _i18n.__)('June')), (0, _element.createElement)("option", {
+        value: "07"
+      }, (0, _i18n.__)('July')), (0, _element.createElement)("option", {
+        value: "08"
+      }, (0, _i18n.__)('August')), (0, _element.createElement)("option", {
+        value: "09"
+      }, (0, _i18n.__)('September')), (0, _element.createElement)("option", {
+        value: "10"
+      }, (0, _i18n.__)('October')), (0, _element.createElement)("option", {
+        value: "11"
+      }, (0, _i18n.__)('November')), (0, _element.createElement)("option", {
+        value: "12"
+      }, (0, _i18n.__)('December')))), (0, _element.createElement)("div", {
+        className: "components-datetime__time-field components-datetime__time-field-day"
       }, (0, _element.createElement)("input", {
-        className: "components-time-picker__input",
-        type: "text",
+        "aria-label": (0, _i18n.__)('Day'),
+        className: "components-datetime__time-field-day-input",
+        type: "number",
+        value: day,
+        step: 1,
+        min: 1,
+        onChange: this.onChangeDay,
+        onBlur: this.updateDay
+      })), (0, _element.createElement)("div", {
+        className: "components-datetime__time-field components-datetime__time-field-year"
+      }, (0, _element.createElement)("input", {
+        "aria-label": (0, _i18n.__)('Year'),
+        className: "components-datetime__time-field-year-input",
+        type: "number",
+        step: 1,
+        value: year,
+        onChange: this.onChangeYear,
+        onBlur: this.updateYear
+      })))), (0, _element.createElement)("fieldset", null, (0, _element.createElement)("legend", {
+        className: "components-datetime__time-legend invisible"
+      }, (0, _i18n.__)('Time')), (0, _element.createElement)("div", {
+        className: "components-datetime__time-wrapper"
+      }, (0, _element.createElement)("div", {
+        className: "components-datetime__time-field components-datetime__time-field-time"
+      }, (0, _element.createElement)("input", {
+        "aria-label": (0, _i18n.__)('Hours'),
+        className: "components-datetime__time-field-hours-input",
+        type: "number",
+        step: 1,
+        min: this.getMinHours(),
+        max: this.getMaxHours(),
         value: hours,
         onChange: this.onChangeHours,
         onBlur: this.updateHours
       }), (0, _element.createElement)("span", {
-        className: "components-time-picker__separator"
+        className: "components-datetime__time-separator",
+        "aria-hidden": "true"
       }, ":"), (0, _element.createElement)("input", {
-        className: "components-time-picker__input",
-        type: "text",
+        "aria-label": (0, _i18n.__)('Minutes'),
+        className: "components-datetime__time-field-minutes-input",
+        type: "number",
+        min: 0,
+        max: 59,
         value: minutes,
         onChange: this.onChangeMinutes,
         onBlur: this.updateMinutes
-      }), is12Hour && (0, _element.createElement)("div", null, (0, _element.createElement)(_button.default, {
+      })), is12Hour && (0, _element.createElement)("div", {
+        className: "components-datetime__time-field components-datetime__time-field-am-pm"
+      }, (0, _element.createElement)(_button.default, {
+        "aria-pressed": am === 'AM',
         isDefault: true,
-        className: "components-time-picker__am-button",
+        className: "components-datetime__time-am-button",
         isToggled: am === 'AM',
         onClick: this.updateAmPm('AM')
       }, (0, _i18n.__)('AM')), (0, _element.createElement)(_button.default, {
+        "aria-pressed": am === 'PM',
         isDefault: true,
-        className: "components-time-picker__pm-button",
+        className: "components-datetime__time-pm-button",
         isToggled: am === 'PM',
         onClick: this.updateAmPm('PM')
-      }, (0, _i18n.__)('PM'))));
+      }, (0, _i18n.__)('PM'))))));
     }
   }]);
   return TimePicker;
@@ -235,3 +421,4 @@ function (_Component) {
 
 var _default = TimePicker;
 exports.default = _default;
+//# sourceMappingURL=time.js.map

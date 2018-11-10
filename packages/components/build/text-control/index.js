@@ -58,3 +58,4 @@ function TextControl(_ref) {
 var _default = (0, _compose.withInstanceId)(TextControl);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

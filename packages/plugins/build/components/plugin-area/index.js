@@ -9,8 +9,6 @@ exports.default = void 0;
 
 var _element = require("@wordpress/element");
 
-require("core-js/modules/es6.function.name");
-
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -120,3 +118,4 @@ function (_Component) {
 
 var _default = PluginArea;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

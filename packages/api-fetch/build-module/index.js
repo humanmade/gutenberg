@@ -1,7 +1,5 @@
-import _Promise from "@babel/runtime/core-js/promise";
-import _JSON$stringify from "@babel/runtime/core-js/json/stringify";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 
 /**
  * WordPress dependencies
@@ -14,8 +12,34 @@ import { __ } from '@wordpress/i18n';
 import createNonceMiddleware from './middlewares/nonce';
 import createRootURLMiddleware from './middlewares/root-url';
 import createPreloadingMiddleware from './middlewares/preloading';
+import fetchAllMiddleware from './middlewares/fetch-all-middleware';
 import namespaceEndpointMiddleware from './middlewares/namespace-endpoint';
 import httpV1Middleware from './middlewares/http-v1';
+import userLocaleMiddleware from './middlewares/user-locale';
+/**
+ * Default set of header values which should be sent with every request unless
+ * explicitly provided through apiFetch options.
+ *
+ * @type {Object}
+ */
+
+var DEFAULT_HEADERS = {
+  // The backend uses the Accept header as a condition for considering an
+  // incoming request as a REST request.
+  //
+  // See: https://core.trac.wordpress.org/ticket/44534
+  Accept: 'application/json, */*;q=0.1'
+};
+/**
+ * Default set of fetch option values which should be sent with every request
+ * unless explicitly provided through apiFetch options.
+ *
+ * @type {Object}
+ */
+
+var DEFAULT_OPTIONS = {
+  credentials: 'include'
+};
 var middlewares = [];
 
 function registerMiddleware(middleware) {
@@ -26,21 +50,23 @@ function apiFetch(options) {
   var raw = function raw(nextOptions) {
     var url = nextOptions.url,
         path = nextOptions.path,
-        body = nextOptions.body,
         data = nextOptions.data,
         _nextOptions$parse = nextOptions.parse,
         parse = _nextOptions$parse === void 0 ? true : _nextOptions$parse,
-        remainingOptions = _objectWithoutProperties(nextOptions, ["url", "path", "body", "data", "parse"]);
+        remainingOptions = _objectWithoutProperties(nextOptions, ["url", "path", "data", "parse"]);
 
-    var headers = remainingOptions.headers || {};
+    var body = nextOptions.body,
+        headers = nextOptions.headers; // Merge explicitly-provided headers with default values.
 
-    if (!headers['Content-Type'] && data) {
+    headers = _objectSpread({}, DEFAULT_HEADERS, headers); // The `data` property is a shorthand for sending a JSON body.
+
+    if (data) {
+      body = JSON.stringify(data);
       headers['Content-Type'] = 'application/json';
     }
 
-    var responsePromise = window.fetch(url || path, _objectSpread({}, remainingOptions, {
-      credentials: 'include',
-      body: body || _JSON$stringify(data),
+    var responsePromise = window.fetch(url || path, _objectSpread({}, DEFAULT_OPTIONS, remainingOptions, {
+      body: body,
       headers: headers
     }));
 
@@ -54,7 +80,11 @@ function apiFetch(options) {
 
     var parseResponse = function parseResponse(response) {
       if (parse) {
-        return response.json ? response.json() : _Promise.reject(response);
+        if (response.status === 204) {
+          return null;
+        }
+
+        return response.json ? response.json() : Promise.reject(response);
       }
 
       return response;
@@ -86,18 +116,23 @@ function apiFetch(options) {
     });
   };
 
-  var steps = [raw, httpV1Middleware, namespaceEndpointMiddleware].concat(middlewares);
+  var steps = [raw, fetchAllMiddleware, httpV1Middleware, namespaceEndpointMiddleware, userLocaleMiddleware].concat(middlewares).reverse();
 
-  var next = function next(nextOptions) {
-    var nextMiddleware = steps.pop();
-    return nextMiddleware(nextOptions, next);
+  var runMiddleware = function runMiddleware(index) {
+    return function (nextOptions) {
+      var nextMiddleware = steps[index];
+      var next = runMiddleware(index + 1);
+      return nextMiddleware(nextOptions, next);
+    };
   };
 
-  return next(options);
+  return runMiddleware(0)(options);
 }
 
 apiFetch.use = registerMiddleware;
 apiFetch.createNonceMiddleware = createNonceMiddleware;
 apiFetch.createPreloadingMiddleware = createPreloadingMiddleware;
 apiFetch.createRootURLMiddleware = createRootURLMiddleware;
+apiFetch.fetchAllMiddleware = fetchAllMiddleware;
 export default apiFetch;
+//# sourceMappingURL=index.js.map

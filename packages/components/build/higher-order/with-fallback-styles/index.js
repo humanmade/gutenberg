@@ -108,3 +108,4 @@ var _default = function _default(mapNodeToProps) {
 };
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

@@ -23,13 +23,15 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 
 var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
 
-var _classnames2 = _interopRequireDefault(require("classnames"));
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 
-var _lodash = require("lodash");
+var _classnames2 = _interopRequireDefault(require("classnames"));
 
 var _i18n = require("@wordpress/i18n");
 
 var _dashicon = _interopRequireDefault(require("../dashicon"));
+
+var _provider = require("./provider");
 
 /**
  * External dependencies
@@ -42,17 +44,35 @@ var _dashicon = _interopRequireDefault(require("../dashicon"));
 /**
  * Internal dependencies
  */
-var DropZone =
+var DropZone = function DropZone(props) {
+  return (0, _element.createElement)(_provider.DropZoneConsumer, null, function (_ref) {
+    var addDropZone = _ref.addDropZone,
+        removeDropZone = _ref.removeDropZone;
+    return (0, _element.createElement)(DropZoneComponent, (0, _extends2.default)({
+      addDropZone: addDropZone,
+      removeDropZone: removeDropZone
+    }, props));
+  });
+};
+
+var DropZoneComponent =
 /*#__PURE__*/
 function (_Component) {
-  (0, _inherits2.default)(DropZone, _Component);
+  (0, _inherits2.default)(DropZoneComponent, _Component);
 
-  function DropZone() {
+  function DropZoneComponent() {
     var _this;
 
-    (0, _classCallCheck2.default)(this, DropZone);
-    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(DropZone).apply(this, arguments));
-    _this.setZoneNode = _this.setZoneNode.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    (0, _classCallCheck2.default)(this, DropZoneComponent);
+    _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(DropZoneComponent).apply(this, arguments));
+    _this.dropZoneElement = (0, _element.createRef)();
+    _this.dropZone = {
+      element: null,
+      onDrop: _this.props.onDrop,
+      onFilesDrop: _this.props.onFilesDrop,
+      onHTMLDrop: _this.props.onHTMLDrop,
+      setState: _this.setState.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)))
+    };
     _this.state = {
       isDraggingOverDocument: false,
       isDraggingOverElement: false,
@@ -62,26 +82,17 @@ function (_Component) {
     return _this;
   }
 
-  (0, _createClass2.default)(DropZone, [{
+  (0, _createClass2.default)(DropZoneComponent, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      this.context.dropzones.add({
-        element: this.zone,
-        updateState: this.setState.bind(this),
-        onDrop: this.props.onDrop,
-        onFilesDrop: this.props.onFilesDrop,
-        onHTMLDrop: this.props.onHTMLDrop
-      });
+      // Set element after the component has a node assigned in the DOM
+      this.dropZone.element = this.dropZoneElement.current;
+      this.props.addDropZone(this.dropZone);
     }
   }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
-      this.context.dropzones.remove(this.zone);
-    }
-  }, {
-    key: "setZoneNode",
-    value: function setZoneNode(node) {
-      this.zone = node;
+      this.props.removeDropZone(this.dropZone);
     }
   }, {
     key: "render",
@@ -104,7 +115,7 @@ function (_Component) {
         'is-close-to-right': position && position.x === 'right'
       }, "is-dragging-".concat(type), !!type));
       return (0, _element.createElement)("div", {
-        ref: this.setZoneNode,
+        ref: this.dropZoneElement,
         className: classes
       }, (0, _element.createElement)("div", {
         className: "components-drop-zone__content"
@@ -119,11 +130,9 @@ function (_Component) {
       }, label ? label : (0, _i18n.__)('Drop files to upload'))]));
     }
   }]);
-  return DropZone;
+  return DropZoneComponent;
 }(_element.Component);
 
-DropZone.contextTypes = {
-  dropzones: _lodash.noop
-};
 var _default = DropZone;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

@@ -6,13 +6,16 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.blockTypes = blockTypes;
+exports.blockStyles = blockStyles;
 exports.createBlockNameSetterReducer = createBlockNameSetterReducer;
 exports.categories = categories;
-exports.default = exports.fallbackBlockName = exports.defaultBlockName = exports.DEFAULT_CATEGORIES = void 0;
+exports.default = exports.unregisteredFallbackBlockName = exports.freeformFallbackBlockName = exports.defaultBlockName = exports.DEFAULT_CATEGORIES = void 0;
 
-require("core-js/modules/es6.function.name");
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
-var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
+var _objectSpread4 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 var _lodash = require("lodash");
 
@@ -67,10 +70,47 @@ function blockTypes() {
 
   switch (action.type) {
     case 'ADD_BLOCK_TYPES':
-      return (0, _objectSpread2.default)({}, state, (0, _lodash.keyBy)(action.blockTypes, 'name'));
+      return (0, _objectSpread4.default)({}, state, (0, _lodash.keyBy)((0, _lodash.map)(action.blockTypes, function (blockType) {
+        return (0, _lodash.omit)(blockType, 'styles ');
+      }), 'name'));
 
     case 'REMOVE_BLOCK_TYPES':
       return (0, _lodash.omit)(state, action.names);
+  }
+
+  return state;
+}
+/**
+ * Reducer managing the block style variations.
+ *
+ * @param {Object} state  Current state.
+ * @param {Object} action Dispatched action.
+ *
+ * @return {Object} Updated state.
+ */
+
+
+function blockStyles() {
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var action = arguments.length > 1 ? arguments[1] : undefined;
+
+  switch (action.type) {
+    case 'ADD_BLOCK_TYPES':
+      return (0, _objectSpread4.default)({}, state, (0, _lodash.mapValues)((0, _lodash.keyBy)(action.blockTypes, 'name'), function (blockType) {
+        return (0, _lodash.uniqBy)((0, _toConsumableArray2.default)((0, _lodash.get)(blockType, ['styles'], [])).concat((0, _toConsumableArray2.default)((0, _lodash.get)(state, [blockType.name], []))), function (style) {
+          return style.name;
+        });
+      }));
+
+    case 'ADD_BLOCK_STYLES':
+      return (0, _objectSpread4.default)({}, state, (0, _defineProperty2.default)({}, action.blockName, (0, _lodash.uniqBy)((0, _toConsumableArray2.default)((0, _lodash.get)(state, [action.blockName], [])).concat((0, _toConsumableArray2.default)(action.styles)), function (style) {
+        return style.name;
+      })));
+
+    case 'REMOVE_BLOCK_STYLES':
+      return (0, _objectSpread4.default)({}, state, (0, _defineProperty2.default)({}, action.blockName, (0, _lodash.filter)((0, _lodash.get)(state, [action.blockName], []), function (style) {
+        return action.styleNames.indexOf(style.name) === -1;
+      })));
   }
 
   return state;
@@ -107,7 +147,9 @@ function createBlockNameSetterReducer(setActionType) {
 
 var defaultBlockName = createBlockNameSetterReducer('SET_DEFAULT_BLOCK_NAME');
 exports.defaultBlockName = defaultBlockName;
-var fallbackBlockName = createBlockNameSetterReducer('SET_FALLBACK_BLOCK_NAME');
+var freeformFallbackBlockName = createBlockNameSetterReducer('SET_FREEFORM_FALLBACK_BLOCK_NAME');
+exports.freeformFallbackBlockName = freeformFallbackBlockName;
+var unregisteredFallbackBlockName = createBlockNameSetterReducer('SET_UNREGISTERED_FALLBACK_BLOCK_NAME');
 /**
  * Reducer managing the categories
  *
@@ -117,7 +159,7 @@ var fallbackBlockName = createBlockNameSetterReducer('SET_FALLBACK_BLOCK_NAME');
  * @return {Object} Updated state.
  */
 
-exports.fallbackBlockName = fallbackBlockName;
+exports.unregisteredFallbackBlockName = unregisteredFallbackBlockName;
 
 function categories() {
   var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : DEFAULT_CATEGORIES;
@@ -132,9 +174,12 @@ function categories() {
 
 var _default = (0, _data.combineReducers)({
   blockTypes: blockTypes,
+  blockStyles: blockStyles,
   defaultBlockName: defaultBlockName,
-  fallbackBlockName: fallbackBlockName,
+  freeformFallbackBlockName: freeformFallbackBlockName,
+  unregisteredFallbackBlockName: unregisteredFallbackBlockName,
   categories: categories
 });
 
 exports.default = _default;
+//# sourceMappingURL=reducer.js.map

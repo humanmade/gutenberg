@@ -1,5 +1,3 @@
-import "core-js/modules/es6.regexp.replace";
-
 /**
  * Removes items matched in the regex.
  *
@@ -15,3 +13,4 @@ export default function (settings, text) {
 
   return text;
 }
+//# sourceMappingURL=stripRemovables.js.map

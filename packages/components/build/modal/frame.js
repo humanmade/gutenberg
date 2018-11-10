@@ -9,8 +9,6 @@ exports.default = void 0;
 
 var _element = require("@wordpress/element");
 
-require("core-js/modules/es6.array.find");
-
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -170,7 +168,8 @@ function (_Component) {
         role: role,
         "aria-label": contentLabel,
         "aria-labelledby": contentLabel ? null : labelledby,
-        "aria-describedby": describedby
+        "aria-describedby": describedby,
+        tabIndex: "-1"
       }, children);
     }
   }]);
@@ -182,3 +181,4 @@ var _default = (0, _compose.compose)([_withFocusReturn.default, _withConstrained
 })])(ModalFrame);
 
 exports.default = _default;
+//# sourceMappingURL=frame.js.map

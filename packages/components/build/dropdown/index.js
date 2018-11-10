@@ -21,6 +21,8 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 
 var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
 
+var _deprecated = _interopRequireDefault(require("@wordpress/deprecated"));
+
 var _popover = _interopRequireDefault(require("../popover"));
 
 /**
@@ -42,8 +44,9 @@ function (_Component) {
     _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(Dropdown).apply(this, arguments));
     _this.toggle = _this.toggle.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.close = _this.close.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
-    _this.clickOutside = _this.clickOutside.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
-    _this.bindContainer = _this.bindContainer.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.closeIfClickOutside = _this.closeIfClickOutside.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.refresh = _this.refresh.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.containerRef = (0, _element.createRef)();
     _this.state = {
       isOpen: false
     };
@@ -70,10 +73,21 @@ function (_Component) {
         onToggle(isOpen);
       }
     }
+    /**
+     * When contents change height due to user interaction,
+     * `refresh` can be called to re-render Popover with correct
+     * attributes which allow scroll, if need be.
+     * @deprecated
+     */
+
   }, {
-    key: "bindContainer",
-    value: function bindContainer(ref) {
-      this.container = ref;
+    key: "refresh",
+    value: function refresh() {
+      (0, _deprecated.default)('Dropdown.refresh()', {
+        plugin: 'Gutenberg',
+        version: '4.5',
+        hint: 'Popover is now automatically re-rendered without needing to execute "refresh"'
+      });
     }
   }, {
     key: "toggle",
@@ -84,10 +98,19 @@ function (_Component) {
         };
       });
     }
+    /**
+     * Closes the dropdown if a click occurs outside the dropdown wrapper. This
+     * is intentionally distinct from `onClose` in that a click outside the
+     * popover may occur in the toggling of the dropdown via its toggle button.
+     * The correct behavior is to keep the dropdown closed.
+     *
+     * @param {MouseEvent} event Click event triggering `onClickOutside`.
+     */
+
   }, {
-    key: "clickOutside",
-    value: function clickOutside(event) {
-      if (!this.container.contains(event.target)) {
+    key: "closeIfClickOutside",
+    value: function closeIfClickOutside(event) {
+      if (!this.containerRef.current.contains(event.target)) {
         this.close();
       }
     }
@@ -118,15 +141,15 @@ function (_Component) {
       };
       return (0, _element.createElement)("div", {
         className: className,
-        ref: this.bindContainer
-      }, (0, _element.createElement)("div", null, renderToggle(args), isOpen && (0, _element.createElement)(_popover.default, {
+        ref: this.containerRef
+      }, renderToggle(args), isOpen && (0, _element.createElement)(_popover.default, {
         className: contentClassName,
         position: position,
         onClose: this.close,
-        onClickOutside: this.clickOutside,
+        onClickOutside: this.closeIfClickOutside,
         expandOnMobile: expandOnMobile,
         headerTitle: headerTitle
-      }, renderContent(args))));
+      }, renderContent(args)));
     }
   }]);
   return Dropdown;
@@ -134,3 +157,4 @@ function (_Component) {
 
 var _default = Dropdown;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

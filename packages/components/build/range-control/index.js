@@ -11,8 +11,6 @@ var _element = require("@wordpress/element");
 
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 
-require("core-js/modules/es6.number.constructor");
-
 var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
 
 var _lodash = require("lodash");
@@ -50,8 +48,19 @@ function RangeControl(_ref) {
       props = (0, _objectWithoutProperties2.default)(_ref, ["className", "label", "value", "instanceId", "onChange", "beforeIcon", "afterIcon", "help", "allowReset", "initialPosition"]);
   var id = "inspector-range-control-".concat(instanceId);
 
+  var resetValue = function resetValue() {
+    return onChange();
+  };
+
   var onChangeValue = function onChangeValue(event) {
-    return onChange(Number(event.target.value));
+    var newValue = event.target.value;
+
+    if (newValue === '') {
+      resetValue();
+      return;
+    }
+
+    onChange(Number(newValue));
   };
 
   var initialSliderValue = (0, _lodash.isFinite)(value) ? value : initialPosition || '';
@@ -78,9 +87,7 @@ function RangeControl(_ref) {
     "aria-label": label,
     value: value
   }, props)), allowReset && (0, _element.createElement)(_.Button, {
-    onClick: function onClick() {
-      return onChange();
-    },
+    onClick: resetValue,
     disabled: value === undefined
   }, (0, _i18n.__)('Reset')));
 }
@@ -88,3 +95,4 @@ function RangeControl(_ref) {
 var _default = (0, _compose.withInstanceId)(RangeControl);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

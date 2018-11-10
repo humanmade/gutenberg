@@ -5,6 +5,9 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.isOfType = isOfType;
+exports.isOfTypes = isOfTypes;
+exports.isAmbiguousStringSource = isAmbiguousStringSource;
 exports.asType = asType;
 exports.matcherFromSource = matcherFromSource;
 exports.parseWithAttributeSchema = parseWithAttributeSchema;
@@ -18,14 +21,6 @@ var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/sli
 
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
-var _assign = _interopRequireDefault(require("@babel/runtime/core-js/object/assign"));
-
-require("core-js/modules/es6.function.name");
-
-require("core-js/modules/es6.number.constructor");
-
-var _from = _interopRequireDefault(require("@babel/runtime/core-js/array/from"));
-
 var _hpq = require("hpq");
 
 var _lodash = require("lodash");
@@ -34,9 +29,7 @@ var _autop = require("@wordpress/autop");
 
 var _hooks = require("@wordpress/hooks");
 
-var _deprecated = _interopRequireDefault(require("@wordpress/deprecated"));
-
-var _blockSerializationSpecParser = require("@wordpress/block-serialization-spec-parser");
+var _blockSerializationDefaultParser = require("@wordpress/block-serialization-default-parser");
 
 var _registration = require("./registration");
 
@@ -47,6 +40,8 @@ var _validation = require("./validation");
 var _serializer = require("./serializer");
 
 var _matchers = require("./matchers");
+
+var _utils = require("./utils");
 
 /**
  * External dependencies
@@ -61,6 +56,12 @@ var _matchers = require("./matchers");
  */
 
 /**
+ * Sources which are guaranteed to return a string value.
+ *
+ * @type {Set}
+ */
+var STRING_SOURCES = new Set(['attribute', 'html', 'text', 'tag']);
+/**
  * Higher-order hpq matcher which enhances an attribute matcher to return true
  * or false depending on whether the original matcher returns undefined. This
  * is useful for boolean attributes (e.g. disabled) whose attribute values may
@@ -71,6 +72,7 @@ var _matchers = require("./matchers");
  *
  * @return {Function} Enhanced hpq matcher.
  */
+
 var toBooleanAttributeMatcher = function toBooleanAttributeMatcher(matcher) {
   return (0, _lodash.flow)([matcher, // Expected values from `attr( 'disabled' )`:
   //
@@ -90,6 +92,85 @@ var toBooleanAttributeMatcher = function toBooleanAttributeMatcher(matcher) {
   }]);
 };
 /**
+ * Returns true if value is of the given JSON schema type, or false otherwise.
+ *
+ * @see http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.25
+ *
+ * @param {*}      value Value to test.
+ * @param {string} type  Type to test.
+ *
+ * @return {boolean} Whether value is of type.
+ */
+
+
+exports.toBooleanAttributeMatcher = toBooleanAttributeMatcher;
+
+function isOfType(value, type) {
+  switch (type) {
+    case 'string':
+      return typeof value === 'string';
+
+    case 'boolean':
+      return typeof value === 'boolean';
+
+    case 'object':
+      return !!value && value.constructor === Object;
+
+    case 'null':
+      return value === null;
+
+    case 'array':
+      return Array.isArray(value);
+
+    case 'integer':
+    case 'number':
+      return typeof value === 'number';
+  }
+
+  return true;
+}
+/**
+ * Returns true if value is of an array of given JSON schema types, or false
+ * otherwise.
+ *
+ * @see http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.25
+ *
+ * @param {*}        value Value to test.
+ * @param {string[]} types Types to test.
+ *
+ * @return {boolean} Whether value is of types.
+ */
+
+
+function isOfTypes(value, types) {
+  return types.some(function (type) {
+    return isOfType(value, type);
+  });
+}
+/**
+ * Returns true if the given attribute schema describes a value which may be
+ * an ambiguous string.
+ *
+ * Some sources are ambiguously serialized as strings, for which value casting
+ * is enabled. This is only possible when a singular type is assigned to the
+ * attribute schema, since the string ambiguity makes it impossible to know the
+ * correct type of multiple to which to cast.
+ *
+ * @param {Object} attributeSchema Attribute's schema.
+ *
+ * @return {boolean} Whether attribute schema defines an ambiguous string
+ *                   source.
+ */
+
+
+function isAmbiguousStringSource(attributeSchema) {
+  var source = attributeSchema.source,
+      type = attributeSchema.type;
+  var isStringSource = STRING_SOURCES.has(source);
+  var isSingleType = typeof type === 'string';
+  return isStringSource && isSingleType;
+}
+/**
  * Returns value coerced to the specified JSON schema type string.
  *
  * @see http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.25
@@ -100,8 +181,6 @@ var toBooleanAttributeMatcher = function toBooleanAttributeMatcher(matcher) {
  * @return {*} Coerced value.
  */
 
-
-exports.toBooleanAttributeMatcher = toBooleanAttributeMatcher;
 
 function asType(value, type) {
   switch (type) {
@@ -122,7 +201,7 @@ function asType(value, type) {
         return value;
       }
 
-      return (0, _from.default)(value);
+      return Array.from(value);
 
     case 'integer':
     case 'number':
@@ -151,16 +230,8 @@ function matcherFromSource(sourceConfig) {
 
       return matcher;
 
-    case 'property':
-      (0, _deprecated.default)('`property` source', {
-        version: '3.4',
-        alternative: 'equivalent `text`, `html`, or `attribute` source, or comment attribute',
-        plugin: 'Gutenberg'
-      });
-      return (0, _matchers.prop)(sourceConfig.selector, sourceConfig.property);
-
     case 'html':
-      return (0, _matchers.html)(sourceConfig.selector);
+      return (0, _matchers.html)(sourceConfig.selector, sourceConfig.multiline);
 
     case 'text':
       return (0, _matchers.text)(sourceConfig.selector);
@@ -174,6 +245,11 @@ function matcherFromSource(sourceConfig) {
     case 'query':
       var subMatchers = (0, _lodash.mapValues)(sourceConfig.query, matcherFromSource);
       return (0, _matchers.query)(sourceConfig.selector, subMatchers);
+
+    case 'tag':
+      return (0, _lodash.flow)([(0, _matchers.prop)(sourceConfig.selector, 'nodeName'), function (value) {
+        return value.toLowerCase();
+      }]);
 
     default:
       // eslint-disable-next-line no-console
@@ -209,6 +285,7 @@ function parseWithAttributeSchema(innerHTML, attributeSchema) {
 
 
 function getBlockAttribute(attributeKey, attributeSchema, innerHTML, commentAttributes) {
+  var type = attributeSchema.type;
   var value;
 
   switch (attributeSchema.source) {
@@ -224,24 +301,37 @@ function getBlockAttribute(attributeKey, attributeSchema, innerHTML, commentAttr
     case 'children':
     case 'node':
     case 'query':
+    case 'tag':
       value = parseWithAttributeSchema(innerHTML, attributeSchema);
       break;
   }
 
-  return value === undefined ? attributeSchema.default : asType(value, attributeSchema.type);
+  if (type !== undefined && !isOfTypes(value, (0, _lodash.castArray)(type))) {
+    // Reject the value if it is not valid of type. Reverting to the
+    // undefined value ensures the default is restored, if applicable.
+    value = undefined;
+  }
+
+  if (value === undefined) {
+    return attributeSchema.default;
+  }
+
+  return value;
 }
 /**
  * Returns the block attributes of a registered block node given its type.
  *
- * @param {?Object} blockType  Block type.
- * @param {string}  innerHTML  Raw block content.
- * @param {?Object} attributes Known block attributes (from delimiters).
+ * @param {string|Object} blockTypeOrName Block type or name.
+ * @param {string}        innerHTML       Raw block content.
+ * @param {?Object}       attributes      Known block attributes (from delimiters).
  *
  * @return {Object} All block attributes.
  */
 
 
-function getBlockAttributes(blockType, innerHTML, attributes) {
+function getBlockAttributes(blockTypeOrName, innerHTML) {
+  var attributes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var blockType = (0, _utils.normalizeBlockType)(blockTypeOrName);
   var blockAttributes = (0, _lodash.mapValues)(blockType.attributes, function (attributeSchema, attributeKey) {
     return getBlockAttribute(attributeKey, attributeSchema, innerHTML, attributes);
   });
@@ -285,10 +375,10 @@ function getMigratedBlock(block) {
     // and must be explicitly provided.
 
 
-    var deprecatedBlockType = (0, _assign.default)((0, _lodash.omit)(blockType, ['attributes', 'save', 'supports']), deprecatedDefinitions[i]);
+    var deprecatedBlockType = Object.assign((0, _lodash.omit)(blockType, ['attributes', 'save', 'supports']), deprecatedDefinitions[i]);
     var migratedAttributes = getBlockAttributes(deprecatedBlockType, originalContent, attributes); // Ignore the deprecation if it produces a block which is not valid.
 
-    var isValid = (0, _validation.isValidBlock)(originalContent, deprecatedBlockType, migratedAttributes);
+    var isValid = (0, _validation.isValidBlockContent)(deprecatedBlockType, migratedAttributes, originalContent);
 
     if (!isValid) {
       continue;
@@ -329,46 +419,61 @@ function getMigratedBlock(block) {
 
 
 function createBlockWithFallback(blockNode) {
-  var name = blockNode.blockName,
-      attributes = blockNode.attrs,
+  var originalName = blockNode.blockName;
+  var attributes = blockNode.attrs,
       _blockNode$innerBlock = blockNode.innerBlocks,
       innerBlocks = _blockNode$innerBlock === void 0 ? [] : _blockNode$innerBlock,
       innerHTML = blockNode.innerHTML;
+  var freeformContentFallbackBlock = (0, _registration.getFreeformContentHandlerName)();
+  var unregisteredFallbackBlock = (0, _registration.getUnregisteredTypeHandlerName)() || freeformContentFallbackBlock;
   attributes = attributes || {}; // Trim content to avoid creation of intermediary freeform segments.
 
-  innerHTML = innerHTML.trim(); // Use type from block content, otherwise find unknown handler.
+  innerHTML = innerHTML.trim(); // Use type from block content if available. Otherwise, default to the
+  // freeform content fallback.
 
-  name = name || (0, _registration.getUnknownTypeHandlerName)(); // Convert 'core/text' blocks in existing content to 'core/paragraph'.
+  var name = originalName || freeformContentFallbackBlock; // Convert 'core/cover-image' block in existing content to 'core/cover'.
+
+  if ('core/cover-image' === name) {
+    name = 'core/cover';
+  } // Convert 'core/text' blocks in existing content to 'core/paragraph'.
+
 
   if ('core/text' === name || 'core/cover-text' === name) {
     name = 'core/paragraph';
+  } // Fallback content may be upgraded from classic editor expecting implicit
+  // automatic paragraphs, so preserve them. Assumes wpautop is idempotent,
+  // meaning there are no negative consequences to repeated autop calls.
+
+
+  if (name === freeformContentFallbackBlock) {
+    innerHTML = (0, _autop.autop)(innerHTML).trim();
   } // Try finding the type for known block name, else fall back again.
 
 
   var blockType = (0, _registration.getBlockType)(name);
-  var fallbackBlock = (0, _registration.getUnknownTypeHandlerName)(); // Fallback content may be upgraded from classic editor expecting implicit
-  // automatic paragraphs, so preserve them. Assumes wpautop is idempotent,
-  // meaning there are no negative consequences to repeated autop calls.
-
-  if (name === fallbackBlock) {
-    innerHTML = (0, _autop.autop)(innerHTML).trim();
-  }
 
   if (!blockType) {
-    // If detected as a block which is not registered, preserve comment
-    // delimiters in content of unknown type handler.
+    // Preserve undelimited content for use by the unregistered type handler.
+    var originalUndelimitedContent = innerHTML; // If detected as a block which is not registered, preserve comment
+    // delimiters in content of unregistered type handler.
+
     if (name) {
       innerHTML = (0, _serializer.getCommentDelimitedContent)(name, attributes, innerHTML);
     }
 
-    name = fallbackBlock;
+    name = unregisteredFallbackBlock;
+    attributes = {
+      originalName: originalName,
+      originalUndelimitedContent: originalUndelimitedContent
+    };
     blockType = (0, _registration.getBlockType)(name);
   } // Coerce inner blocks from parsed form to canonical form.
 
 
-  innerBlocks = innerBlocks.map(createBlockWithFallback); // Include in set only if type were determined.
+  innerBlocks = innerBlocks.map(createBlockWithFallback);
+  var isFallbackBlock = name === freeformContentFallbackBlock || name === unregisteredFallbackBlock; // Include in set only if type was determined.
 
-  if (!blockType || !innerHTML && name === fallbackBlock) {
+  if (!blockType || !innerHTML && isFallbackBlock) {
     return;
   }
 
@@ -377,8 +482,8 @@ function createBlockWithFallback(blockNode) {
   // provided source value with the serialized output before there are any modifications to
   // the block. When both match, the block is marked as valid.
 
-  if (name !== fallbackBlock) {
-    block.isValid = (0, _validation.isValidBlock)(innerHTML, blockType, block.attributes);
+  if (!isFallbackBlock) {
+    block.isValid = (0, _validation.isValidBlockContent)(blockType, block.attributes, innerHTML);
   } // Preserve original content for future use in case the block is parsed as
   // invalid, or future serialization attempt results in an error.
 
@@ -418,7 +523,8 @@ var createParse = function createParse(parseImplementation) {
  */
 
 
-var parseWithGrammar = createParse(_blockSerializationSpecParser.parse);
+var parseWithGrammar = createParse(_blockSerializationDefaultParser.parse);
 exports.parseWithGrammar = parseWithGrammar;
 var _default = parseWithGrammar;
 exports.default = _default;
+//# sourceMappingURL=parser.js.map

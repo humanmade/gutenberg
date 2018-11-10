@@ -1,14 +1,10 @@
 "use strict";
 
-require("core-js/modules/es6.array.find");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.isTabbableIndex = isTabbableIndex;
 exports.find = find;
-
-require("core-js/modules/es6.array.sort");
 
 var _focusable = require("./focusable");
 
@@ -102,3 +98,4 @@ function compareObjectTabbables(a, b) {
 function find(context) {
   return (0, _focusable.find)(context).filter(isTabbableIndex).map(mapElementToObjectTabbable).sort(compareObjectTabbables).map(mapObjectTabbableToElement);
 }
+//# sourceMappingURL=tabbable.js.map

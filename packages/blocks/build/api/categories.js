@@ -30,3 +30,4 @@ function getCategories() {
 function setCategories(categories) {
   (0, _data.dispatch)('core/blocks').setCategories(categories);
 }
+//# sourceMappingURL=categories.js.map

@@ -72,8 +72,6 @@ var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/obje
 
 var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
 
-require("core-js/modules/web.dom.iterable");
-
 var _react = require("react");
 
 var _lodash = require("lodash");
@@ -200,3 +198,4 @@ function switchChildrenNodeName(children, nodeName) {
     }, props), childrenProp);
   });
 }
+//# sourceMappingURL=react.js.map

@@ -11,8 +11,6 @@ exports.computePopoverPosition = computePopoverPosition;
 
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
-require("core-js/modules/es6.regexp.split");
-
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
 /**
@@ -175,3 +173,4 @@ function computePopoverPosition(anchorRect, contentSize) {
     isMobile: isMobileViewport() && expandOnMobile
   }, xAxisPosition, yAxisPosition);
 }
+//# sourceMappingURL=utils.js.map

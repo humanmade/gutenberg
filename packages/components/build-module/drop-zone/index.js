@@ -1,41 +1,60 @@
-import _defineProperty from "@babel/runtime/helpers/defineProperty";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _defineProperty from "@babel/runtime/helpers/esm/defineProperty";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/esm/extends";
 import { createElement } from "@wordpress/element";
 
 /**
  * External dependencies
  */
 import classnames from 'classnames';
-import { noop } from 'lodash';
 /**
  * WordPress dependencies
  */
 
 import { __ } from '@wordpress/i18n';
-import { Component } from '@wordpress/element';
+import { Component, createRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
 
 import Dashicon from '../dashicon';
+import { DropZoneConsumer } from './provider';
 
-var DropZone =
+var DropZone = function DropZone(props) {
+  return createElement(DropZoneConsumer, null, function (_ref) {
+    var addDropZone = _ref.addDropZone,
+        removeDropZone = _ref.removeDropZone;
+    return createElement(DropZoneComponent, _extends({
+      addDropZone: addDropZone,
+      removeDropZone: removeDropZone
+    }, props));
+  });
+};
+
+var DropZoneComponent =
 /*#__PURE__*/
 function (_Component) {
-  _inherits(DropZone, _Component);
+  _inherits(DropZoneComponent, _Component);
 
-  function DropZone() {
+  function DropZoneComponent() {
     var _this;
 
-    _classCallCheck(this, DropZone);
+    _classCallCheck(this, DropZoneComponent);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(DropZone).apply(this, arguments));
-    _this.setZoneNode = _this.setZoneNode.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(DropZoneComponent).apply(this, arguments));
+    _this.dropZoneElement = createRef();
+    _this.dropZone = {
+      element: null,
+      onDrop: _this.props.onDrop,
+      onFilesDrop: _this.props.onFilesDrop,
+      onHTMLDrop: _this.props.onHTMLDrop,
+      setState: _this.setState.bind(_assertThisInitialized(_assertThisInitialized(_this)))
+    };
     _this.state = {
       isDraggingOverDocument: false,
       isDraggingOverElement: false,
@@ -45,26 +64,17 @@ function (_Component) {
     return _this;
   }
 
-  _createClass(DropZone, [{
+  _createClass(DropZoneComponent, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      this.context.dropzones.add({
-        element: this.zone,
-        updateState: this.setState.bind(this),
-        onDrop: this.props.onDrop,
-        onFilesDrop: this.props.onFilesDrop,
-        onHTMLDrop: this.props.onHTMLDrop
-      });
+      // Set element after the component has a node assigned in the DOM
+      this.dropZone.element = this.dropZoneElement.current;
+      this.props.addDropZone(this.dropZone);
     }
   }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
-      this.context.dropzones.remove(this.zone);
-    }
-  }, {
-    key: "setZoneNode",
-    value: function setZoneNode(node) {
-      this.zone = node;
+      this.props.removeDropZone(this.dropZone);
     }
   }, {
     key: "render",
@@ -87,7 +97,7 @@ function (_Component) {
         'is-close-to-right': position && position.x === 'right'
       }, "is-dragging-".concat(type), !!type));
       return createElement("div", {
-        ref: this.setZoneNode,
+        ref: this.dropZoneElement,
         className: classes
       }, createElement("div", {
         className: "components-drop-zone__content"
@@ -103,10 +113,8 @@ function (_Component) {
     }
   }]);
 
-  return DropZone;
+  return DropZoneComponent;
 }(Component);
 
-DropZone.contextTypes = {
-  dropzones: noop
-};
 export default DropZone;
+//# sourceMappingURL=index.js.map

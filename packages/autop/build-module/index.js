@@ -1,10 +1,4 @@
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
-import "core-js/modules/web.dom.iterable";
-import "core-js/modules/es6.regexp.split";
-import "core-js/modules/es6.regexp.replace";
-import _Object$keys from "@babel/runtime/core-js/object/keys";
-import "core-js/modules/es6.regexp.match";
-import "core-js/modules/es6.regexp.constructor";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
 
 /**
  * The regular expression for an HTML element.
@@ -80,8 +74,7 @@ function replaceInHtmlTags(haystack, replacePairs) {
   var textArr = htmlSplit(haystack);
   var changed = false; // Extract all needles.
 
-  var needles = _Object$keys(replacePairs); // Loop through delimiters (elements) only.
-
+  var needles = Object.keys(replacePairs); // Loop through delimiters (elements) only.
 
   for (var i = 1; i < textArr.length; i += 2) {
     for (var j = 0; j < needles.length; j++) {
@@ -383,3 +376,4 @@ export function removep(html) {
 
   return html;
 }
+//# sourceMappingURL=index.js.map

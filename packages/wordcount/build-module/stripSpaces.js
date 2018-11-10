@@ -1,5 +1,3 @@
-import "core-js/modules/es6.regexp.replace";
-
 /**
  * Replaces items matched in the regex with spaces.
  *
@@ -13,3 +11,4 @@ export default function (settings, text) {
     return text.replace(settings.spaceRegExp, ' ');
   }
 }
+//# sourceMappingURL=stripSpaces.js.map

@@ -3,10 +3,25 @@ import { createElement } from "@wordpress/element";
 /**
  * WordPress dependencies
  */
-import { compose, withSafeTimeout } from '@wordpress/compose';
+import { compose } from '@wordpress/compose';
 import { Popover, Button, IconButton } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { withSelect, withDispatch } from '@wordpress/data';
+import deprecated from '@wordpress/deprecated';
+
+function getAnchorRect(anchor) {
+  // The default getAnchorRect() excludes an element's top and bottom padding
+  // from its calculation. We want tips to point to the outer margin of an
+  // element, so we override getAnchorRect() to include all padding.
+  return anchor.parentNode.getBoundingClientRect();
+}
+
+function onClick(event) {
+  // Tips are often nested within buttons. We stop propagation so that clicking
+  // on a tip doesn't result in the button being clicked.
+  event.stopPropagation();
+}
+
 export function DotTip(_ref) {
   var children = _ref.children,
       isVisible = _ref.isVisible,
@@ -23,11 +38,10 @@ export function DotTip(_ref) {
     position: "middle right",
     noArrow: true,
     focusOnMount: "container",
+    getAnchorRect: getAnchorRect,
     role: "dialog",
     "aria-label": __('Gutenberg tips'),
-    onClick: function onClick(event) {
-      return event.stopPropagation();
-    }
+    onClick: onClick
   }, createElement("p", null, children), createElement("p", null, createElement(Button, {
     isLink: true,
     onClick: onDismiss
@@ -38,20 +52,31 @@ export function DotTip(_ref) {
     onClick: onDisable
   }));
 }
-export default compose(withSafeTimeout, withSelect(function (select, _ref2) {
-  var id = _ref2.id;
+export default compose(withSelect(function (select, _ref2) {
+  var tipId = _ref2.tipId,
+      id = _ref2.id;
+
+  if (id) {
+    tipId = id;
+    deprecated('The id prop of wp.nux.DotTip', {
+      plugin: 'Gutenberg',
+      version: '4.4',
+      alternative: 'the tipId prop'
+    });
+  }
 
   var _select = select('core/nux'),
       isTipVisible = _select.isTipVisible,
       getAssociatedGuide = _select.getAssociatedGuide;
 
-  var associatedGuide = getAssociatedGuide(id);
+  var associatedGuide = getAssociatedGuide(tipId);
   return {
-    isVisible: isTipVisible(id),
+    isVisible: isTipVisible(tipId),
     hasNextTip: !!(associatedGuide && associatedGuide.nextTipId)
   };
 }), withDispatch(function (dispatch, _ref3) {
-  var id = _ref3.id;
+  var tipId = _ref3.tipId,
+      id = _ref3.id;
 
   var _dispatch = dispatch('core/nux'),
       dismissTip = _dispatch.dismissTip,
@@ -59,10 +84,11 @@ export default compose(withSafeTimeout, withSelect(function (select, _ref2) {
 
   return {
     onDismiss: function onDismiss() {
-      dismissTip(id);
+      dismissTip(tipId || id);
     },
     onDisable: function onDisable() {
       disableTips();
     }
   };
 }))(DotTip);
+//# sourceMappingURL=index.js.map

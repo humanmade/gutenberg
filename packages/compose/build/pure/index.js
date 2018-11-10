@@ -92,3 +92,4 @@ var pure = (0, _createHigherOrderComponent.default)(function (Wrapped) {
 }, 'pure');
 var _default = pure;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

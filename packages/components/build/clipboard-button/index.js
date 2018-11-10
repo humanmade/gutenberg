@@ -156,3 +156,4 @@ function (_Component) {
 
 var _default = ClipboardButton;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

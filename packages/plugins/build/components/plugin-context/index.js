@@ -46,3 +46,4 @@ var withPluginContext = function withPluginContext(mapContextToProps) {
 };
 
 exports.withPluginContext = withPluginContext;
+//# sourceMappingURL=index.js.map

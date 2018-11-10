@@ -1,10 +1,11 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -43,6 +44,7 @@ function (_Component) {
 
     _this.prepareDOM();
 
+    _this.stopEventPropagationOutsideModal = _this.stopEventPropagationOutsideModal.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     return _this;
   }
   /**
@@ -133,6 +135,16 @@ function (_Component) {
       ariaHelper.showApp();
     }
     /**
+     * Stop all onMouseDown events propagating further - they should only go to the modal
+    	 * @param {string} event Event object
+     */
+
+  }, {
+    key: "stopEventPropagationOutsideModal",
+    value: function stopEventPropagationOutsideModal(event) {
+      event.stopPropagation();
+    }
+    /**
      * Renders the modal.
      *
      * @return {WPElement} The modal element.
@@ -151,11 +163,17 @@ function (_Component) {
           children = _this$props.children,
           aria = _this$props.aria,
           instanceId = _this$props.instanceId,
-          otherProps = _objectWithoutProperties(_this$props, ["overlayClassName", "className", "onRequestClose", "title", "icon", "closeButtonLabel", "children", "aria", "instanceId"]);
+          isDismissable = _this$props.isDismissable,
+          otherProps = _objectWithoutProperties(_this$props, ["overlayClassName", "className", "onRequestClose", "title", "icon", "closeButtonLabel", "children", "aria", "instanceId", "isDismissable"]);
 
-      var headingId = aria.labelledby || 'components-modal-header-' + instanceId;
+      var headingId = aria.labelledby || "components-modal-header-".concat(instanceId); // Disable reason: this stops mouse events from triggering tooltips and
+      // other elements underneath the modal overlay.
+
+      /* eslint-disable jsx-a11y/no-static-element-interactions */
+
       return createPortal(createElement("div", {
-        className: classnames('components-modal__screen-overlay', overlayClassName)
+        className: classnames('components-modal__screen-overlay', overlayClassName),
+        onMouseDown: this.stopEventPropagationOutsideModal
       }, createElement(ModalFrame, _extends({
         className: classnames('components-modal__frame', className),
         onRequestClose: onRequestClose,
@@ -163,15 +181,18 @@ function (_Component) {
           labelledby: title ? headingId : null,
           describedby: aria.describedby
         }
-      }, otherProps), createElement(ModalHeader, {
+      }, otherProps), createElement("div", {
+        className: 'components-modal__content',
+        tabIndex: "0"
+      }, createElement(ModalHeader, {
         closeLabel: closeButtonLabel,
-        onClose: onRequestClose,
-        title: title,
         headingId: headingId,
-        icon: icon
-      }), createElement("div", {
-        className: 'components-modal__content'
-      }, children))), this.node);
+        icon: icon,
+        isDismissable: isDismissable,
+        onClose: onRequestClose,
+        title: title
+      }), children))), this.node);
+      /* eslint-enable jsx-a11y/no-static-element-interactions */
     }
   }]);
 
@@ -186,6 +207,7 @@ Modal.defaultProps = {
   focusOnMount: true,
   shouldCloseOnEsc: true,
   shouldCloseOnClickOutside: true,
+  isDismissable: true,
 
   /* accessibility */
   aria: {
@@ -194,3 +216,4 @@ Modal.defaultProps = {
   }
 };
 export default withInstanceId(Modal);
+//# sourceMappingURL=index.js.map

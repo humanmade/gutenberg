@@ -53,16 +53,16 @@ var _registryProvider = require("../registry-provider");
  */
 var withDispatch = function withDispatch(mapDispatchToProps) {
   return (0, _compose.createHigherOrderComponent)((0, _compose.compose)([_compose.pure, function (WrappedComponent) {
-    var ComponentWithDispatch = (0, _compose.remountOnPropChange)('registry')(
+    var ComponentWithDispatch =
     /*#__PURE__*/
     function (_Component) {
-      (0, _inherits2.default)(_class, _Component);
+      (0, _inherits2.default)(ComponentWithDispatch, _Component);
 
-      function _class(props) {
+      function ComponentWithDispatch(props) {
         var _this;
 
-        (0, _classCallCheck2.default)(this, _class);
-        _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(_class).apply(this, arguments));
+        (0, _classCallCheck2.default)(this, ComponentWithDispatch);
+        _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(ComponentWithDispatch).apply(this, arguments));
         _this.proxyProps = {};
 
         _this.setProxyProps(props);
@@ -70,7 +70,7 @@ var withDispatch = function withDispatch(mapDispatchToProps) {
         return _this;
       }
 
-      (0, _createClass2.default)(_class, [{
+      (0, _createClass2.default)(ComponentWithDispatch, [{
         key: "componentDidUpdate",
         value: function componentDidUpdate() {
           this.setProxyProps(this.props);
@@ -92,8 +92,12 @@ var withDispatch = function withDispatch(mapDispatchToProps) {
         value: function setProxyProps(props) {
           var _this2 = this;
 
-          // Assign as instance property so that in reconciling subsequent
-          // renders, the assigned prop values are referentially equal.
+          // Assign as instance property so that in subsequent render
+          // reconciliation, the prop values are referentially equal.
+          // Importantly, note that while `mapDispatchToProps` is
+          // called, it is done only to determine the keys for which
+          // proxy functions should be created. The actual registry
+          // dispatch does not occur until the function is called.
           var propsToDispatchers = mapDispatchToProps(this.props.registry.dispatch, props.ownProps);
           this.proxyProps = (0, _lodash.mapValues)(propsToDispatchers, function (dispatcher, propName) {
             // Prebind with prop name so we have reference to the original
@@ -112,8 +116,9 @@ var withDispatch = function withDispatch(mapDispatchToProps) {
           return (0, _element.createElement)(WrappedComponent, (0, _extends2.default)({}, this.props.ownProps, this.proxyProps));
         }
       }]);
-      return _class;
-    }(_element.Component));
+      return ComponentWithDispatch;
+    }(_element.Component);
+
     return function (ownProps) {
       return (0, _element.createElement)(_registryProvider.RegistryConsumer, null, function (registry) {
         return (0, _element.createElement)(ComponentWithDispatch, {
@@ -127,3 +132,4 @@ var withDispatch = function withDispatch(mapDispatchToProps) {
 
 var _default = withDispatch;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

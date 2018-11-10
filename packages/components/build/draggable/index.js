@@ -7,14 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _element = require("@wordpress/element");
-
-var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
-
-require("core-js/modules/web.dom.iterable");
-
-var _stringify = _interopRequireDefault(require("@babel/runtime/core-js/json/stringify"));
-
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -27,9 +19,11 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 
 var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
 
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
 var _lodash = require("lodash");
 
-var _classnames = _interopRequireDefault(require("classnames"));
+var _element = require("@wordpress/element");
 
 var _compose = require("@wordpress/compose");
 
@@ -45,6 +39,14 @@ var cloneWrapperClass = 'components-draggable__clone';
 var cloneHeightTransformationBreakpoint = 700;
 var clonePadding = 20;
 
+var isChromeUA = function isChromeUA() {
+  return /Chrome/i.test(window.navigator.userAgent);
+};
+
+var documentHasIframes = function documentHasIframes() {
+  return (0, _toConsumableArray2.default)(document.getElementById('editor').querySelectorAll('iframe')).length > 0;
+};
+
 var Draggable =
 /*#__PURE__*/
 function (_Component) {
@@ -57,8 +59,10 @@ function (_Component) {
     _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(Draggable).apply(this, arguments));
     _this.onDragStart = _this.onDragStart.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.onDragOver = _this.onDragOver.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.onDrop = _this.onDrop.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.onDragEnd = _this.onDragEnd.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.resetDragState = _this.resetDragState.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.isChromeAndHasIframes = false;
     return _this;
   }
 
@@ -77,7 +81,11 @@ function (_Component) {
     value: function onDragEnd(event) {
       var _this$props$onDragEnd = this.props.onDragEnd,
           onDragEnd = _this$props$onDragEnd === void 0 ? _lodash.noop : _this$props$onDragEnd;
-      event.preventDefault();
+
+      if (event) {
+        event.preventDefault();
+      }
+
       this.resetDragState();
       this.props.setTimeout(onDragEnd);
     }
@@ -94,6 +102,14 @@ function (_Component) {
 
       this.cursorLeft = event.clientX;
       this.cursorTop = event.clientY;
+    }
+  }, {
+    key: "onDrop",
+    value: function onDrop() {
+      // As per https://html.spec.whatwg.org/multipage/dnd.html#dndevents
+      // the target node for the dragend is the source node that started the drag operation,
+      // while drop event's target is the current target element.
+      this.onDragEnd(null);
     }
     /**
      *  - Clones the current element and spawns clone over original element.
@@ -134,7 +150,7 @@ function (_Component) {
         });
       }
 
-      event.dataTransfer.setData('text', (0, _stringify.default)(transferData)); // Prepare element clone and append to element wrapper.
+      event.dataTransfer.setData('text', JSON.stringify(transferData)); // Prepare element clone and append to element wrapper.
 
       var elementRect = element.getBoundingClientRect();
       var elementWrapper = element.parentNode;
@@ -170,7 +186,18 @@ function (_Component) {
       this.cursorTop = event.clientY; // Update cursor to 'grabbing', document wide.
 
       document.body.classList.add('is-dragging-components-draggable');
-      document.addEventListener('dragover', this.onDragOver);
+      document.addEventListener('dragover', this.onDragOver); // Fixes https://bugs.chromium.org/p/chromium/issues/detail?id=737691#c8
+      // dragend event won't be dispatched in the chrome browser
+      // when iframes are affected by the drag operation. So, in that case,
+      // we use the drop event to wrap up the dragging operation.
+      // This way the hack is contained to a specific use case and the external API
+      // still relies mostly on the dragend event.
+
+      if (isChromeUA() && documentHasIframes()) {
+        this.isChromeAndHasIframes = true;
+        document.addEventListener('drop', this.onDrop);
+      }
+
       this.props.setTimeout(onDragStart);
     }
     /**
@@ -187,6 +214,11 @@ function (_Component) {
       if (this.cloneWrapper && this.cloneWrapper.parentNode) {
         this.cloneWrapper.parentNode.removeChild(this.cloneWrapper);
         this.cloneWrapper = null;
+      }
+
+      if (this.isChromeAndHasIframes) {
+        this.isChromeAndHasIframes = false;
+        document.removeEventListener('drop', this.onDrop);
       } // Reset cursor.
 
 
@@ -195,15 +227,11 @@ function (_Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this$props2 = this.props,
-          children = _this$props2.children,
-          className = _this$props2.className;
-      return (0, _element.createElement)("div", {
-        className: (0, _classnames.default)('components-draggable', className),
-        onDragStart: this.onDragStart,
-        onDragEnd: this.onDragEnd,
-        draggable: true
-      }, children);
+      var children = this.props.children;
+      return children({
+        onDraggableStart: this.onDragStart,
+        onDraggableEnd: this.onDragEnd
+      });
     }
   }]);
   return Draggable;
@@ -212,3 +240,4 @@ function (_Component) {
 var _default = (0, _compose.withSafeTimeout)(Draggable);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

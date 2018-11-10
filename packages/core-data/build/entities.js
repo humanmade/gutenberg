@@ -1,44 +1,29 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
-require("core-js/modules/es6.array.find");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getKindEntities = getKindEntities;
-exports.getMethodName = exports.kinds = exports.defaultEntities = void 0;
-
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-
-require("regenerator-runtime/runtime");
-
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-
-var _awaitAsyncGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/awaitAsyncGenerator"));
-
-var _wrapAsyncGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapAsyncGenerator"));
+exports.getMethodName = exports.kinds = exports.defaultEntities = exports.DEFAULT_ENTITY_KEY = void 0;
 
 var _lodash = require("lodash");
 
-var _apiFetch = _interopRequireDefault(require("@wordpress/api-fetch"));
-
-var _selectors = require("./selectors");
-
 var _actions = require("./actions");
 
-/**
- * External dependencies
- */
+var _controls = require("./controls");
 
-/**
- * WordPress dependencies
- */
+var _marked =
+/*#__PURE__*/
+regeneratorRuntime.mark(loadPostTypeEntities),
+    _marked2 =
+/*#__PURE__*/
+regeneratorRuntime.mark(loadTaxonomyEntities),
+    _marked3 =
+/*#__PURE__*/
+regeneratorRuntime.mark(getKindEntities);
 
-/**
- * Internal dependencies
- */
+var DEFAULT_ENTITY_KEY = 'id';
+exports.DEFAULT_ENTITY_KEY = DEFAULT_ENTITY_KEY;
 var defaultEntities = [{
   name: 'postType',
   kind: 'root',
@@ -60,6 +45,9 @@ exports.defaultEntities = defaultEntities;
 var kinds = [{
   name: 'postType',
   loadEntities: loadPostTypeEntities
+}, {
+  name: 'taxonomy',
+  loadEntities: loadTaxonomyEntities
 }];
 /**
  * Returns the list of post type entities.
@@ -70,7 +58,67 @@ var kinds = [{
 exports.kinds = kinds;
 
 function loadPostTypeEntities() {
-  return _loadPostTypeEntities.apply(this, arguments);
+  var postTypes;
+  return regeneratorRuntime.wrap(function loadPostTypeEntities$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return (0, _controls.apiFetch)({
+            path: '/wp/v2/types?context=edit'
+          });
+
+        case 2:
+          postTypes = _context.sent;
+          return _context.abrupt("return", (0, _lodash.map)(postTypes, function (postType, name) {
+            return {
+              kind: 'postType',
+              baseURL: '/wp/v2/' + postType.rest_base,
+              name: name
+            };
+          }));
+
+        case 4:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _marked, this);
+}
+/**
+ * Returns the list of the taxonomies entities.
+ *
+ * @return {Promise} Entities promise
+ */
+
+
+function loadTaxonomyEntities() {
+  var taxonomies;
+  return regeneratorRuntime.wrap(function loadTaxonomyEntities$(_context2) {
+    while (1) {
+      switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.next = 2;
+          return (0, _controls.apiFetch)({
+            path: '/wp/v2/taxonomies?context=edit'
+          });
+
+        case 2:
+          taxonomies = _context2.sent;
+          return _context2.abrupt("return", (0, _lodash.map)(taxonomies, function (taxonomy, name) {
+            return {
+              kind: 'taxonomy',
+              baseURL: '/wp/v2/' + taxonomy.rest_base,
+              name: name
+            };
+          }));
+
+        case 4:
+        case "end":
+          return _context2.stop();
+      }
+    }
+  }, _marked2, this);
 }
 /**
  * Returns the entity's getter method name given its kind and name.
@@ -83,40 +131,6 @@ function loadPostTypeEntities() {
  * @return {string} Method name
  */
 
-
-function _loadPostTypeEntities() {
-  _loadPostTypeEntities = (0, _asyncToGenerator2.default)(
-  /*#__PURE__*/
-  _regenerator.default.mark(function _callee2() {
-    var postTypes;
-    return _regenerator.default.wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            _context2.next = 2;
-            return (0, _apiFetch.default)({
-              path: '/wp/v2/types?context=edit'
-            });
-
-          case 2:
-            postTypes = _context2.sent;
-            return _context2.abrupt("return", (0, _lodash.map)(postTypes, function (postType, name) {
-              return {
-                kind: 'postType',
-                baseURL: '/wp/v2/' + postType.rest_base,
-                name: name
-              };
-            }));
-
-          case 4:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2, this);
-  }));
-  return _loadPostTypeEntities.apply(this, arguments);
-}
 
 var getMethodName = function getMethodName(kind, name) {
   var prefix = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'get';
@@ -133,7 +147,6 @@ var getMethodName = function getMethodName(kind, name) {
 /**
  * Loads the kind entities into the store.
  *
- * @param {Object} state Global state
  * @param {string} kind  Kind
  *
  * @return {Array} Entities
@@ -142,58 +155,54 @@ var getMethodName = function getMethodName(kind, name) {
 
 exports.getMethodName = getMethodName;
 
-function getKindEntities(_x, _x2) {
-  return _getKindEntities.apply(this, arguments);
-}
+function getKindEntities(kind) {
+  var entities, kindConfig;
+  return regeneratorRuntime.wrap(function getKindEntities$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.next = 2;
+          return (0, _controls.select)('getEntitiesByKind', kind);
 
-function _getKindEntities() {
-  _getKindEntities = (0, _wrapAsyncGenerator2.default)(
-  /*#__PURE__*/
-  _regenerator.default.mark(function _callee(state, kind) {
-    var entities, kindConfig;
-    return _regenerator.default.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            entities = (0, _selectors.getEntitiesByKind)(state, kind);
+        case 2:
+          entities = _context3.sent;
 
-            if (!(entities && entities.length !== 0)) {
-              _context.next = 3;
-              break;
-            }
+          if (!(entities && entities.length !== 0)) {
+            _context3.next = 5;
+            break;
+          }
 
-            return _context.abrupt("return", entities);
+          return _context3.abrupt("return", entities);
 
-          case 3:
-            kindConfig = (0, _lodash.find)(kinds, {
-              name: kind
-            });
+        case 5:
+          kindConfig = (0, _lodash.find)(kinds, {
+            name: kind
+          });
 
-            if (kindConfig) {
-              _context.next = 6;
-              break;
-            }
+          if (kindConfig) {
+            _context3.next = 8;
+            break;
+          }
 
-            return _context.abrupt("return", []);
+          return _context3.abrupt("return", []);
 
-          case 6:
-            _context.next = 8;
-            return (0, _awaitAsyncGenerator2.default)(kindConfig.loadEntities());
+        case 8:
+          _context3.next = 10;
+          return kindConfig.loadEntities();
 
-          case 8:
-            entities = _context.sent;
-            _context.next = 11;
-            return (0, _actions.addEntities)(entities);
+        case 10:
+          entities = _context3.sent;
+          _context3.next = 13;
+          return (0, _actions.addEntities)(entities);
 
-          case 11:
-            return _context.abrupt("return", entities);
+        case 13:
+          return _context3.abrupt("return", entities);
 
-          case 12:
-          case "end":
-            return _context.stop();
-        }
+        case 14:
+        case "end":
+          return _context3.stop();
       }
-    }, _callee, this);
-  }));
-  return _getKindEntities.apply(this, arguments);
+    }
+  }, _marked3, this);
 }
+//# sourceMappingURL=entities.js.map

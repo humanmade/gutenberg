@@ -4,9 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.defaultSettings = void 0;
-
-require("core-js/modules/es6.regexp.constructor");
-
 var defaultSettings = {
   HTMLRegExp: /<\/?[a-z][^>]*?>/gi,
   HTMLcommentRegExp: /<!--[\s\S]*?-->/g,
@@ -69,3 +66,4 @@ var defaultSettings = {
   }
 };
 exports.defaultSettings = defaultSettings;
+//# sourceMappingURL=defaultSettings.js.map

@@ -63,3 +63,4 @@ function enableTips() {
     type: 'ENABLE_TIPS'
   };
 }
+//# sourceMappingURL=actions.js.map

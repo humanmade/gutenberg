@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.html = html;
 Object.defineProperty(exports, "attr", {
   enumerable: true,
   get: function get() {
@@ -13,12 +14,6 @@ Object.defineProperty(exports, "prop", {
   enumerable: true,
   get: function get() {
     return _hpq.prop;
-  }
-});
-Object.defineProperty(exports, "html", {
-  enumerable: true,
-  get: function get() {
-    return _hpq.html;
   }
 });
 Object.defineProperty(exports, "text", {
@@ -51,3 +46,44 @@ var _hpq = require("hpq");
 var _node = require("./node");
 
 var _children = require("./children");
+
+/**
+ * External dependencies
+ */
+
+/**
+ * Internal dependencies
+ */
+function html(selector, multilineTag) {
+  return function (domNode) {
+    var match = domNode;
+
+    if (selector) {
+      match = domNode.querySelector(selector);
+    }
+
+    if (!match) {
+      return '';
+    }
+
+    if (multilineTag) {
+      var value = '';
+      var length = match.children.length;
+
+      for (var index = 0; index < length; index++) {
+        var child = match.children[index];
+
+        if (child.nodeName.toLowerCase() !== multilineTag) {
+          continue;
+        }
+
+        value += child.outerHTML;
+      }
+
+      return value;
+    }
+
+    return match.innerHTML;
+  };
+}
+//# sourceMappingURL=matchers.js.map

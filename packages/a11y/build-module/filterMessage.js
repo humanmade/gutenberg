@@ -1,4 +1,3 @@
-import "core-js/modules/es6.regexp.replace";
 var previousMessage = '';
 /**
  * Filter the message to be announced to the screenreader.
@@ -27,3 +26,4 @@ var filterMessage = function filterMessage(message) {
 };
 
 export default filterMessage;
+//# sourceMappingURL=filterMessage.js.map

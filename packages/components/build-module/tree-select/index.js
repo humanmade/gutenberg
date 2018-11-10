@@ -1,7 +1,6 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
-import "core-js/modules/es6.function.name";
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -44,3 +43,4 @@ export default function TreeSelect(_ref) {
     value: selectedId
   }, props));
 }
+//# sourceMappingURL=index.js.map

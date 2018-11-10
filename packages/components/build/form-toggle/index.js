@@ -17,8 +17,14 @@ var _classnames = _interopRequireDefault(require("classnames"));
 
 var _lodash = require("lodash");
 
+var _primitives = require("../primitives");
+
 /**
  * External dependencies
+ */
+
+/**
+ * Internal dependencies
  */
 function FormToggle(_ref) {
   var className = _ref.className,
@@ -42,18 +48,15 @@ function FormToggle(_ref) {
     className: "components-form-toggle__track"
   }), (0, _element.createElement)("span", {
     className: "components-form-toggle__thumb"
-  }), checked ? (0, _element.createElement)("svg", {
+  }), checked ? (0, _element.createElement)(_primitives.SVG, {
     className: "components-form-toggle__on",
     width: "2",
     height: "6",
-    "aria-hidden": "true",
-    role: "img",
-    focusable: "false",
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: "0 0 2 6"
-  }, (0, _element.createElement)("path", {
+  }, (0, _element.createElement)(_primitives.Path, {
     d: "M0 0h2v6H0z"
-  })) : (0, _element.createElement)("svg", {
+  })) : (0, _element.createElement)(_primitives.SVG, {
     className: "components-form-toggle__off",
     width: "6",
     height: "6",
@@ -62,10 +65,11 @@ function FormToggle(_ref) {
     focusable: "false",
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: "0 0 6 6"
-  }, (0, _element.createElement)("path", {
+  }, (0, _element.createElement)(_primitives.Path, {
     d: "M3 1.5c.8 0 1.5.7 1.5 1.5S3.8 4.5 3 4.5 1.5 3.8 1.5 3 2.2 1.5 3 1.5M3 0C1.3 0 0 1.3 0 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z"
   })));
 }
 
 var _default = FormToggle;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

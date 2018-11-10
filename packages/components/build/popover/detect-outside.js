@@ -59,3 +59,4 @@ function (_Component) {
 var _default = (0, _reactClickOutside.default)(PopoverDetectOutside);
 
 exports.default = _default;
+//# sourceMappingURL=detect-outside.js.map

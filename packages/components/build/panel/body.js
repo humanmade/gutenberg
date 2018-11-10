@@ -5,9 +5,11 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.default = exports.PanelBody = void 0;
 
 var _element = require("@wordpress/element");
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
@@ -25,7 +27,9 @@ var _classnames = _interopRequireDefault(require("classnames"));
 
 var _button = _interopRequireDefault(require("../button"));
 
-var _dashicon = _interopRequireDefault(require("../dashicon"));
+var _icon = _interopRequireDefault(require("../icon"));
+
+var _primitives = require("../primitives");
 
 /**
  * External dependencies
@@ -80,31 +84,64 @@ function (_Component) {
           children = _this$props.children,
           opened = _this$props.opened,
           className = _this$props.className,
-          icon = _this$props.icon;
+          icon = _this$props.icon,
+          forwardedRef = _this$props.forwardedRef;
       var isOpened = opened === undefined ? this.state.opened : opened;
-      var arrow = "arrow-".concat(isOpened ? 'up' : 'down');
       var classes = (0, _classnames.default)('components-panel__body', className, {
         'is-opened': isOpened
       });
       return (0, _element.createElement)("div", {
-        className: classes
+        className: classes,
+        ref: forwardedRef
       }, !!title && (0, _element.createElement)("h2", {
         className: "components-panel__body-title"
       }, (0, _element.createElement)(_button.default, {
         className: "components-panel__body-toggle",
         onClick: this.toggle,
         "aria-expanded": isOpened
-      }, (0, _element.createElement)(_dashicon.default, {
-        icon: arrow,
-        className: "components-panel__arrow"
-      }), icon && (0, _element.createElement)(_dashicon.default, {
+      }, isOpened ? (0, _element.createElement)(_primitives.SVG, {
+        className: "components-panel__arrow",
+        width: "24px",
+        height: "24px",
+        viewBox: "0 0 24 24",
+        xmlns: "http://www.w3.org/2000/svg"
+      }, (0, _element.createElement)(_primitives.G, null, (0, _element.createElement)(_primitives.Path, {
+        fill: "none",
+        d: "M0,0h24v24H0V0z"
+      })), (0, _element.createElement)(_primitives.G, null, (0, _element.createElement)(_primitives.Path, {
+        d: "M12,8l-6,6l1.41,1.41L12,10.83l4.59,4.58L18,14L12,8z"
+      }))) : (0, _element.createElement)(_primitives.SVG, {
+        className: "components-panel__arrow",
+        width: "24px",
+        height: "24px",
+        viewBox: "0 0 24 24",
+        xmlns: "http://www.w3.org/2000/svg"
+      }, (0, _element.createElement)(_primitives.G, null, (0, _element.createElement)(_primitives.Path, {
+        fill: "none",
+        d: "M0,0h24v24H0V0z"
+      })), (0, _element.createElement)(_primitives.G, null, (0, _element.createElement)(_primitives.Path, {
+        d: "M7.41,8.59L12,13.17l4.59-4.58L18,10l-6,6l-6-6L7.41,8.59z"
+      }))), title, icon && (0, _element.createElement)(_icon.default, {
         icon: icon,
-        className: "components-panel__icon"
-      }), title)), isOpened && children);
+        className: "components-panel__icon",
+        size: 20
+      }))), isOpened && children);
     }
   }]);
   return PanelBody;
 }(_element.Component);
 
-var _default = PanelBody;
+exports.PanelBody = PanelBody;
+
+var forwardedPanelBody = function forwardedPanelBody(props, ref) {
+  return (0, _element.createElement)(PanelBody, (0, _extends2.default)({}, props, {
+    forwardedRef: ref
+  }));
+};
+
+forwardedPanelBody.displayName = 'PanelBody';
+
+var _default = (0, _element.forwardRef)(forwardedPanelBody);
+
 exports.default = _default;
+//# sourceMappingURL=body.js.map

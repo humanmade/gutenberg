@@ -27,3 +27,4 @@ function decodeEntities(html) {
   _decodeTextArea.innerHTML = '';
   return decoded;
 }
+//# sourceMappingURL=index.js.map

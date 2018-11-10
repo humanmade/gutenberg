@@ -1,5 +1,5 @@
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
 
 /**
  * External dependencies
@@ -56,3 +56,4 @@ function () {
 }();
 
 export default Listener;
+//# sourceMappingURL=listener.js.map

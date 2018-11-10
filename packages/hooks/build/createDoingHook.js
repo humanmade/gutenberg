@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-require("core-js/modules/es6.function.name");
-
 /**
  * Returns a function which, when invoked, will return whether a hook is
  * currently being executed.
@@ -38,3 +36,4 @@ function createDoingHook(hooks) {
 
 var _default = createDoingHook;
 exports.default = _default;
+//# sourceMappingURL=createDoingHook.js.map

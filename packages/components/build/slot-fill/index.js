@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
+
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
@@ -21,7 +23,13 @@ Object.defineProperty(exports, "Fill", {
 Object.defineProperty(exports, "Provider", {
   enumerable: true,
   get: function get() {
-    return _provider.default;
+    return _context.default;
+  }
+});
+Object.defineProperty(exports, "Consumer", {
+  enumerable: true,
+  get: function get() {
+    return _context.Consumer;
   }
 });
 
@@ -29,34 +37,28 @@ var _element = require("@wordpress/element");
 
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 
-var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
-
 var _slot = _interopRequireDefault(require("./slot"));
 
 var _fill = _interopRequireDefault(require("./fill"));
 
-var _provider = _interopRequireDefault(require("./provider"));
+var _context = _interopRequireWildcard(require("./context"));
 
 /**
  * Internal dependencies
  */
 function createSlotFill(name) {
-  var FillComponent = function FillComponent(_ref) {
-    var children = _ref.children,
-        props = (0, _objectWithoutProperties2.default)(_ref, ["children"]);
+  var FillComponent = function FillComponent(props) {
     return (0, _element.createElement)(_fill.default, (0, _extends2.default)({
       name: name
-    }, props), children);
+    }, props));
   };
 
   FillComponent.displayName = name + 'Fill';
 
-  var SlotComponent = function SlotComponent(_ref2) {
-    var children = _ref2.children,
-        props = (0, _objectWithoutProperties2.default)(_ref2, ["children"]);
+  var SlotComponent = function SlotComponent(props) {
     return (0, _element.createElement)(_slot.default, (0, _extends2.default)({
       name: name
-    }, props), children);
+    }, props));
   };
 
   SlotComponent.displayName = name + 'Slot';
@@ -65,3 +67,4 @@ function createSlotFill(name) {
     Slot: SlotComponent
   };
 }
+//# sourceMappingURL=index.js.map

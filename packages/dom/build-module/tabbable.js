@@ -1,5 +1,3 @@
-import "core-js/modules/es6.array.sort";
-
 /**
  * Internal dependencies
  */
@@ -90,3 +88,4 @@ function compareObjectTabbables(a, b) {
 export function find(context) {
   return findFocusable(context).filter(isTabbableIndex).map(mapElementToObjectTabbable).sort(compareObjectTabbables).map(mapObjectTabbableToElement);
 }
+//# sourceMappingURL=tabbable.js.map

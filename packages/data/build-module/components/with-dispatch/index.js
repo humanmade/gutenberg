@@ -1,9 +1,9 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -15,7 +15,7 @@ import { mapValues } from 'lodash';
  */
 
 import { Component } from '@wordpress/element';
-import { pure, compose, remountOnPropChange, createHigherOrderComponent } from '@wordpress/compose';
+import { pure, compose, createHigherOrderComponent } from '@wordpress/compose';
 /**
  * Internal dependencies
  */
@@ -36,17 +36,17 @@ import { RegistryConsumer } from '../registry-provider';
 
 var withDispatch = function withDispatch(mapDispatchToProps) {
   return createHigherOrderComponent(compose([pure, function (WrappedComponent) {
-    var ComponentWithDispatch = remountOnPropChange('registry')(
+    var ComponentWithDispatch =
     /*#__PURE__*/
     function (_Component) {
-      _inherits(_class, _Component);
+      _inherits(ComponentWithDispatch, _Component);
 
-      function _class(props) {
+      function ComponentWithDispatch(props) {
         var _this;
 
-        _classCallCheck(this, _class);
+        _classCallCheck(this, ComponentWithDispatch);
 
-        _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).apply(this, arguments));
+        _this = _possibleConstructorReturn(this, _getPrototypeOf(ComponentWithDispatch).apply(this, arguments));
         _this.proxyProps = {};
 
         _this.setProxyProps(props);
@@ -54,7 +54,7 @@ var withDispatch = function withDispatch(mapDispatchToProps) {
         return _this;
       }
 
-      _createClass(_class, [{
+      _createClass(ComponentWithDispatch, [{
         key: "componentDidUpdate",
         value: function componentDidUpdate() {
           this.setProxyProps(this.props);
@@ -76,8 +76,12 @@ var withDispatch = function withDispatch(mapDispatchToProps) {
         value: function setProxyProps(props) {
           var _this2 = this;
 
-          // Assign as instance property so that in reconciling subsequent
-          // renders, the assigned prop values are referentially equal.
+          // Assign as instance property so that in subsequent render
+          // reconciliation, the prop values are referentially equal.
+          // Importantly, note that while `mapDispatchToProps` is
+          // called, it is done only to determine the keys for which
+          // proxy functions should be created. The actual registry
+          // dispatch does not occur until the function is called.
           var propsToDispatchers = mapDispatchToProps(this.props.registry.dispatch, props.ownProps);
           this.proxyProps = mapValues(propsToDispatchers, function (dispatcher, propName) {
             // Prebind with prop name so we have reference to the original
@@ -97,8 +101,9 @@ var withDispatch = function withDispatch(mapDispatchToProps) {
         }
       }]);
 
-      return _class;
-    }(Component));
+      return ComponentWithDispatch;
+    }(Component);
+
     return function (ownProps) {
       return createElement(RegistryConsumer, null, function (registry) {
         return createElement(ComponentWithDispatch, {
@@ -111,3 +116,4 @@ var withDispatch = function withDispatch(mapDispatchToProps) {
 };
 
 export default withDispatch;
+//# sourceMappingURL=index.js.map

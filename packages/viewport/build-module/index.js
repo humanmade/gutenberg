@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { reduce, forEach, debounce, mapValues, property } from 'lodash';
+import { reduce, forEach, debounce, mapValues } from 'lodash';
 /**
  * WordPress dependencies
  */
@@ -46,7 +46,9 @@ var OPERATORS = {
  */
 
 var setIsMatching = debounce(function () {
-  var values = mapValues(queries, property('matches'));
+  var values = mapValues(queries, function (query) {
+    return query.matches;
+  });
   dispatch('core/viewport').setIsMatching(values);
 }, {
   leading: true
@@ -73,3 +75,4 @@ var queries = reduce(BREAKPOINTS, function (result, width, name) {
 window.addEventListener('orientationchange', setIsMatching); // Set initial values
 
 setIsMatching();
+//# sourceMappingURL=index.js.map

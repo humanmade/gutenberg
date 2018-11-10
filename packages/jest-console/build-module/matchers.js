@@ -1,5 +1,5 @@
-import _defineProperty from "@babel/runtime/helpers/defineProperty";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
+import _defineProperty from "@babel/runtime/helpers/esm/defineProperty";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 /**
  * External dependencies
@@ -60,3 +60,4 @@ expect.extend(reduce(supportedMatchers, function (result, matcherName, methodNam
   var matcherNameWith = "".concat(matcherName, "With");
   return _objectSpread({}, result, (_objectSpread2 = {}, _defineProperty(_objectSpread2, matcherName, createToBeCalledMatcher(".".concat(matcherName), methodName)), _defineProperty(_objectSpread2, matcherNameWith, createToBeCalledWithMatcher(".".concat(matcherNameWith), methodName)), _objectSpread2));
 }, {}));
+//# sourceMappingURL=matchers.js.map

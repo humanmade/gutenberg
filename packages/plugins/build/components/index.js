@@ -21,3 +21,4 @@ Object.defineProperty(exports, "withPluginContext", {
 var _pluginArea = _interopRequireDefault(require("./plugin-area"));
 
 var _pluginContext = require("./plugin-context");
+//# sourceMappingURL=index.js.map

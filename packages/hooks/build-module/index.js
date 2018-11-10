@@ -21,3 +21,4 @@ var _createHooks = createHooks(),
     filters = _createHooks.filters;
 
 export { createHooks, addAction, addFilter, removeAction, removeFilter, hasAction, hasFilter, removeAllActions, removeAllFilters, doAction, applyFilters, currentAction, currentFilter, doingAction, doingFilter, didAction, didFilter, actions, filters };
+//# sourceMappingURL=index.js.map

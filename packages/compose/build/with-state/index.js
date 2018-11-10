@@ -72,3 +72,4 @@ function withState() {
     );
   }, 'withState');
 }
+//# sourceMappingURL=index.js.map

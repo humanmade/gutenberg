@@ -39,13 +39,13 @@ var _registryProvider = require("../registry-provider");
  * Higher-order component used to inject state-derived props using registered
  * selectors.
  *
- * @param {Function} mapStateToProps Function called on every state change,
+ * @param {Function} mapSelectToProps Function called on every state change,
  *                                   expected to return object of props to
  *                                   merge with the component's own props.
  *
  * @return {Component} Enhanced component with merged state data props.
  */
-var withSelect = function withSelect(mapStateToProps) {
+var withSelect = function withSelect(mapSelectToProps) {
   return (0, _compose.createHigherOrderComponent)(function (WrappedComponent) {
     /**
      * Default merge props. A constant value is used as the fallback since it
@@ -56,35 +56,35 @@ var withSelect = function withSelect(mapStateToProps) {
      */
     var DEFAULT_MERGE_PROPS = {};
     /**
-     * Given a props object, returns the next merge props by mapStateToProps.
+     * Given a props object, returns the next merge props by mapSelectToProps.
      *
-     * @param {Object} props Props to pass as argument to mapStateToProps.
+     * @param {Object} props Props to pass as argument to mapSelectToProps.
      *
      * @return {Object} Props to merge into rendered wrapped element.
      */
 
     function getNextMergeProps(props) {
-      return mapStateToProps(props.registry.select, props.ownProps) || DEFAULT_MERGE_PROPS;
+      return mapSelectToProps(props.registry.select, props.ownProps) || DEFAULT_MERGE_PROPS;
     }
 
-    var ComponentWithSelect = (0, _compose.remountOnPropChange)('registry')(
+    var ComponentWithSelect =
     /*#__PURE__*/
     function (_Component) {
-      (0, _inherits2.default)(_class, _Component);
+      (0, _inherits2.default)(ComponentWithSelect, _Component);
 
-      function _class(props) {
+      function ComponentWithSelect(props) {
         var _this;
 
-        (0, _classCallCheck2.default)(this, _class);
-        _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(_class).call(this, props));
+        (0, _classCallCheck2.default)(this, ComponentWithSelect);
+        _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(ComponentWithSelect).call(this, props));
 
-        _this.subscribe();
+        _this.subscribe(props.registry);
 
         _this.mergeProps = getNextMergeProps(props);
         return _this;
       }
 
-      (0, _createClass2.default)(_class, [{
+      (0, _createClass2.default)(ComponentWithSelect, [{
         key: "componentDidMount",
         value: function componentDidMount() {
           this.canRunSelection = true;
@@ -98,37 +98,48 @@ var withSelect = function withSelect(mapStateToProps) {
       }, {
         key: "shouldComponentUpdate",
         value: function shouldComponentUpdate(nextProps, nextState) {
-          var hasPropsChanged = !(0, _isShallowEqual.default)(this.props.ownProps, nextProps.ownProps); // Only render if props have changed or merge props have been updated
+          // Cycle subscription if registry changes.
+          var hasRegistryChanged = nextProps.registry !== this.props.registry;
+
+          if (hasRegistryChanged) {
+            this.unsubscribe();
+            this.subscribe(nextProps.registry);
+          } // Treat a registry change as equivalent to `ownProps`, to reflect
+          // `mergeProps` to rendered component if and only if updated.
+
+
+          var hasPropsChanged = hasRegistryChanged || !(0, _isShallowEqual.default)(this.props.ownProps, nextProps.ownProps); // Only render if props have changed or merge props have been updated
           // from the store subscriber.
 
           if (this.state === nextState && !hasPropsChanged) {
             return false;
-          } // If merge props change as a result of the incoming props, they
-          // should be reflected as such in the upcoming render.
-
+          }
 
           if (hasPropsChanged) {
             var nextMergeProps = getNextMergeProps(nextProps);
 
             if (!(0, _isShallowEqual.default)(this.mergeProps, nextMergeProps)) {
-              // Side effects are typically discouraged in lifecycle methods, but
-              // this component is heavily used and this is the most performant
-              // code we've found thus far.
-              // Prior efforts to use `getDerivedStateFromProps` have demonstrated
-              // miserable performance.
+              // If merge props change as a result of the incoming props,
+              // they should be reflected as such in the upcoming render.
+              // While side effects are discouraged in lifecycle methods,
+              // this component is used heavily, and prior efforts to use
+              // `getDerivedStateFromProps` had demonstrated miserable
+              // performance.
               this.mergeProps = nextMergeProps;
-            }
+            } // Regardless whether merge props are changing, fall through to
+            // incur the render since the component will need to receive
+            // the changed `ownProps`.
+
           }
 
           return true;
         }
       }, {
         key: "subscribe",
-        value: function subscribe() {
+        value: function subscribe(registry) {
           var _this2 = this;
 
-          var subscribe = this.props.registry.subscribe;
-          this.unsubscribe = subscribe(function () {
+          this.unsubscribe = registry.subscribe(function () {
             if (!_this2.canRunSelection) {
               return;
             }
@@ -157,8 +168,9 @@ var withSelect = function withSelect(mapStateToProps) {
           return (0, _element.createElement)(WrappedComponent, (0, _extends2.default)({}, this.props.ownProps, this.mergeProps));
         }
       }]);
-      return _class;
-    }(_element.Component));
+      return ComponentWithSelect;
+    }(_element.Component);
+
     return function (ownProps) {
       return (0, _element.createElement)(_registryProvider.RegistryConsumer, null, function (registry) {
         return (0, _element.createElement)(ComponentWithSelect, {
@@ -172,3 +184,4 @@ var withSelect = function withSelect(mapStateToProps) {
 
 var _default = withSelect;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

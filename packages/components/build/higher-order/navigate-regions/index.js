@@ -114,7 +114,9 @@ var _default = (0, _compose.createHigherOrderComponent)(function (WrappedCompone
             bindGlobal: true,
             shortcuts: {
               'ctrl+`': this.focusNextRegion,
-              'ctrl+shift+`': this.focusPreviousRegion
+              'shift+alt+n': this.focusNextRegion,
+              'ctrl+shift+`': this.focusPreviousRegion,
+              'shift+alt+p': this.focusPreviousRegion
             }
           }), (0, _element.createElement)(WrappedComponent, this.props));
           /* eslint-enable jsx-a11y/no-static-element-interactions, jsx-a11y/onclick-has-role, jsx-a11y/click-events-have-key-events */
@@ -126,3 +128,4 @@ var _default = (0, _compose.createHigherOrderComponent)(function (WrappedCompone
 }, 'navigateRegions');
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

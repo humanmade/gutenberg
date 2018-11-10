@@ -102,3 +102,4 @@ var _default = (0, _compose.withGlobalEvents)({
 })(FocusableIframe);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

@@ -1,14 +1,8 @@
-import "core-js/modules/es6.regexp.split";
-import _Object$entries from "@babel/runtime/core-js/object/entries";
-import "core-js/modules/es6.regexp.replace";
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
-import _Object$keys from "@babel/runtime/core-js/object/keys";
-import "core-js/modules/web.dom.iterable";
-import "core-js/modules/es6.regexp.match";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
 
 var postcss = require('postcss');
 
-module.exports = postcss.plugin('postcss-test-plugin', function (options) {
+module.exports = postcss.plugin('postcss-themes', function (options) {
   return function (root) {
     root.walkRules(function (rule) {
       var themeDecls = {};
@@ -39,8 +33,7 @@ module.exports = postcss.plugin('postcss-test-plugin', function (options) {
           var colorKey = color.trim();
           var defaultColor = options.defaults[colorKey];
           value = value.replace(whole, defaultColor);
-
-          _Object$entries(options.themes).forEach(function (_ref) {
+          Object.entries(options.themes).forEach(function (_ref) {
             var _ref2 = _slicedToArray(_ref, 2),
                 key = _ref2[0],
                 colors = _ref2[1];
@@ -56,8 +49,7 @@ module.exports = postcss.plugin('postcss-test-plugin', function (options) {
 
         hasThemeDecls = true;
         decl.value = value;
-
-        _Object$keys(options.themes).forEach(function (key) {
+        Object.keys(options.themes).forEach(function (key) {
           var themeDecl = decl.clone();
           themeDecl.value = themeValues[key];
 
@@ -70,7 +62,7 @@ module.exports = postcss.plugin('postcss-test-plugin', function (options) {
       });
 
       if (hasThemeDecls) {
-        _Object$keys(options.themes).forEach(function (key) {
+        Object.keys(options.themes).forEach(function (key) {
           var newRule = postcss.rule({
             selector: rule.selector.split(',').map(function (subselector) {
               return 'body.' + key + ' ' + subselector.trim();
@@ -85,3 +77,4 @@ module.exports = postcss.plugin('postcss-test-plugin', function (options) {
     });
   };
 });
+//# sourceMappingURL=index.js.map

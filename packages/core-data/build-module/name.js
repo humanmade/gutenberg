@@ -5,3 +5,4 @@
  * @type {string}
  */
 export var REDUCER_KEY = 'core';
+//# sourceMappingURL=name.js.map

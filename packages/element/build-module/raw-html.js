@@ -1,5 +1,5 @@
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 
 /**
  * External dependencies
@@ -28,3 +28,4 @@ export default function RawHTML(_ref) {
     }
   }, props));
 }
+//# sourceMappingURL=raw-html.js.map

@@ -21,6 +21,8 @@ var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/ge
 
 var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
 
+var _deprecated = _interopRequireDefault(require("@wordpress/deprecated"));
+
 var _createHigherOrderComponent = _interopRequireDefault(require("../create-higher-order-component"));
 
 /**
@@ -41,6 +43,10 @@ var _createHigherOrderComponent = _interopRequireDefault(require("../create-high
  */
 var remountOnPropChange = function remountOnPropChange(propName) {
   return (0, _createHigherOrderComponent.default)(function (WrappedComponent) {
+    (0, _deprecated.default)('remountOnPropChange', {
+      plugin: 'Gutenberg',
+      version: '4.4.0'
+    });
     return (
       /*#__PURE__*/
       function (_Component) {
@@ -86,3 +92,4 @@ var remountOnPropChange = function remountOnPropChange(propName) {
 
 var _default = remountOnPropChange;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

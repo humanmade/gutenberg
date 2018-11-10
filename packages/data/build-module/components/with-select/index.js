@@ -1,9 +1,9 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -11,7 +11,7 @@ import { createElement } from "@wordpress/element";
  */
 import { Component } from '@wordpress/element';
 import isShallowEqual from '@wordpress/is-shallow-equal';
-import { remountOnPropChange, createHigherOrderComponent } from '@wordpress/compose';
+import { createHigherOrderComponent } from '@wordpress/compose';
 /**
  * Internal dependencies
  */
@@ -21,14 +21,14 @@ import { RegistryConsumer } from '../registry-provider';
  * Higher-order component used to inject state-derived props using registered
  * selectors.
  *
- * @param {Function} mapStateToProps Function called on every state change,
+ * @param {Function} mapSelectToProps Function called on every state change,
  *                                   expected to return object of props to
  *                                   merge with the component's own props.
  *
  * @return {Component} Enhanced component with merged state data props.
  */
 
-var withSelect = function withSelect(mapStateToProps) {
+var withSelect = function withSelect(mapSelectToProps) {
   return createHigherOrderComponent(function (WrappedComponent) {
     /**
      * Default merge props. A constant value is used as the fallback since it
@@ -39,36 +39,36 @@ var withSelect = function withSelect(mapStateToProps) {
      */
     var DEFAULT_MERGE_PROPS = {};
     /**
-     * Given a props object, returns the next merge props by mapStateToProps.
+     * Given a props object, returns the next merge props by mapSelectToProps.
      *
-     * @param {Object} props Props to pass as argument to mapStateToProps.
+     * @param {Object} props Props to pass as argument to mapSelectToProps.
      *
      * @return {Object} Props to merge into rendered wrapped element.
      */
 
     function getNextMergeProps(props) {
-      return mapStateToProps(props.registry.select, props.ownProps) || DEFAULT_MERGE_PROPS;
+      return mapSelectToProps(props.registry.select, props.ownProps) || DEFAULT_MERGE_PROPS;
     }
 
-    var ComponentWithSelect = remountOnPropChange('registry')(
+    var ComponentWithSelect =
     /*#__PURE__*/
     function (_Component) {
-      _inherits(_class, _Component);
+      _inherits(ComponentWithSelect, _Component);
 
-      function _class(props) {
+      function ComponentWithSelect(props) {
         var _this;
 
-        _classCallCheck(this, _class);
+        _classCallCheck(this, ComponentWithSelect);
 
-        _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this, props));
+        _this = _possibleConstructorReturn(this, _getPrototypeOf(ComponentWithSelect).call(this, props));
 
-        _this.subscribe();
+        _this.subscribe(props.registry);
 
         _this.mergeProps = getNextMergeProps(props);
         return _this;
       }
 
-      _createClass(_class, [{
+      _createClass(ComponentWithSelect, [{
         key: "componentDidMount",
         value: function componentDidMount() {
           this.canRunSelection = true;
@@ -82,37 +82,48 @@ var withSelect = function withSelect(mapStateToProps) {
       }, {
         key: "shouldComponentUpdate",
         value: function shouldComponentUpdate(nextProps, nextState) {
-          var hasPropsChanged = !isShallowEqual(this.props.ownProps, nextProps.ownProps); // Only render if props have changed or merge props have been updated
+          // Cycle subscription if registry changes.
+          var hasRegistryChanged = nextProps.registry !== this.props.registry;
+
+          if (hasRegistryChanged) {
+            this.unsubscribe();
+            this.subscribe(nextProps.registry);
+          } // Treat a registry change as equivalent to `ownProps`, to reflect
+          // `mergeProps` to rendered component if and only if updated.
+
+
+          var hasPropsChanged = hasRegistryChanged || !isShallowEqual(this.props.ownProps, nextProps.ownProps); // Only render if props have changed or merge props have been updated
           // from the store subscriber.
 
           if (this.state === nextState && !hasPropsChanged) {
             return false;
-          } // If merge props change as a result of the incoming props, they
-          // should be reflected as such in the upcoming render.
-
+          }
 
           if (hasPropsChanged) {
             var nextMergeProps = getNextMergeProps(nextProps);
 
             if (!isShallowEqual(this.mergeProps, nextMergeProps)) {
-              // Side effects are typically discouraged in lifecycle methods, but
-              // this component is heavily used and this is the most performant
-              // code we've found thus far.
-              // Prior efforts to use `getDerivedStateFromProps` have demonstrated
-              // miserable performance.
+              // If merge props change as a result of the incoming props,
+              // they should be reflected as such in the upcoming render.
+              // While side effects are discouraged in lifecycle methods,
+              // this component is used heavily, and prior efforts to use
+              // `getDerivedStateFromProps` had demonstrated miserable
+              // performance.
               this.mergeProps = nextMergeProps;
-            }
+            } // Regardless whether merge props are changing, fall through to
+            // incur the render since the component will need to receive
+            // the changed `ownProps`.
+
           }
 
           return true;
         }
       }, {
         key: "subscribe",
-        value: function subscribe() {
+        value: function subscribe(registry) {
           var _this2 = this;
 
-          var subscribe = this.props.registry.subscribe;
-          this.unsubscribe = subscribe(function () {
+          this.unsubscribe = registry.subscribe(function () {
             if (!_this2.canRunSelection) {
               return;
             }
@@ -142,8 +153,9 @@ var withSelect = function withSelect(mapStateToProps) {
         }
       }]);
 
-      return _class;
-    }(Component));
+      return ComponentWithSelect;
+    }(Component);
+
     return function (ownProps) {
       return createElement(RegistryConsumer, null, function (registry) {
         return createElement(ComponentWithSelect, {
@@ -156,3 +168,4 @@ var withSelect = function withSelect(mapStateToProps) {
 };
 
 export default withSelect;
+//# sourceMappingURL=index.js.map

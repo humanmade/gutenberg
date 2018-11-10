@@ -1,11 +1,9 @@
-import "core-js/modules/es6.function.name";
 import { createElement } from "@wordpress/element";
 
 /**
  * External dependencies
  */
 import classnames from 'classnames';
-import { ChromePicker } from 'react-color';
 import { map } from 'lodash';
 /**
  * WordPress dependencies
@@ -19,6 +17,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import Button from '../button';
 import Dropdown from '../dropdown';
 import Tooltip from '../tooltip';
+import ColorPicker from '../color-picker';
 export default function ColorPalette(_ref) {
   var colors = _ref.colors,
       _ref$disableCustomCol = _ref.disableCustomColors,
@@ -82,7 +81,7 @@ export default function ColorPalette(_ref) {
       })));
     },
     renderContent: function renderContent() {
-      return createElement(ChromePicker, {
+      return createElement(ColorPicker, {
         color: value,
         onChangeComplete: function onChangeComplete(color) {
           return onChange(color.hex);
@@ -96,6 +95,8 @@ export default function ColorPalette(_ref) {
     onClick: function onClick() {
       return onChange(undefined);
     },
-    isLink: true
+    isSmall: true,
+    isDefault: true
   }, __('Clear')));
 }
+//# sourceMappingURL=index.js.map

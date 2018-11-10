@@ -1,5 +1,3 @@
-import "core-js/modules/es6.function.name";
-import "core-js/modules/web.dom.iterable";
 import validateNamespace from './validateNamespace.js';
 import validateHookName from './validateHookName.js';
 import { doAction } from './';
@@ -89,3 +87,4 @@ function createAddHook(hooks) {
 }
 
 export default createAddHook;
+//# sourceMappingURL=createAddHook.js.map

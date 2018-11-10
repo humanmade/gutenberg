@@ -32,3 +32,4 @@ function ResponsiveWrapper(_ref) {
 }
 
 export default ResponsiveWrapper;
+//# sourceMappingURL=index.js.map

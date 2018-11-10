@@ -1,3 +1,4 @@
+import _extends from "@babel/runtime/helpers/esm/extends";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -9,7 +10,9 @@ import { flatMap } from 'lodash';
  * Internal dependencies
  */
 
-import IconButton from '../icon-button';
+import ToolbarButton from '../toolbar-button';
+import DropdownMenu from '../dropdown-menu';
+import ToolbarContainer from './toolbar-container';
 /**
  * Renders a toolbar with controls.
  *
@@ -45,7 +48,10 @@ function Toolbar(_ref) {
   var _ref$controls = _ref.controls,
       controls = _ref$controls === void 0 ? [] : _ref$controls,
       children = _ref.children,
-      className = _ref.className;
+      className = _ref.className,
+      isCollapsed = _ref.isCollapsed,
+      icon = _ref.icon,
+      label = _ref.label;
 
   if ((!controls || !controls.length) && !children) {
     return null;
@@ -58,30 +64,26 @@ function Toolbar(_ref) {
     controlSets = [controlSets];
   }
 
-  return createElement("div", {
+  if (isCollapsed) {
+    return createElement(DropdownMenu, {
+      icon: icon,
+      label: label,
+      controls: controlSets,
+      className: classnames('components-toolbar', className)
+    });
+  }
+
+  return createElement(ToolbarContainer, {
     className: classnames('components-toolbar', className)
   }, flatMap(controlSets, function (controlSet, indexOfSet) {
     return controlSet.map(function (control, indexOfControl) {
-      return createElement("div", {
+      return createElement(ToolbarButton, _extends({
         key: [indexOfSet, indexOfControl].join(),
-        className: indexOfSet > 0 && indexOfControl === 0 ? 'has-left-divider' : null
-      }, createElement(IconButton, {
-        icon: control.icon,
-        label: control.title,
-        shortcut: control.shortcut,
-        "data-subscript": control.subscript,
-        onClick: function onClick(event) {
-          event.stopPropagation();
-          control.onClick();
-        },
-        className: classnames('components-toolbar__control', {
-          'is-active': control.isActive
-        }),
-        "aria-pressed": control.isActive,
-        disabled: control.isDisabled
-      }), control.children);
+        containerClassName: indexOfSet > 0 && indexOfControl === 0 ? 'has-left-divider' : null
+      }, control));
     });
   }), children);
 }
 
 export default Toolbar;
+//# sourceMappingURL=index.js.map

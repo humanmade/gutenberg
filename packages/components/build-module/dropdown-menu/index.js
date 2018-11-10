@@ -4,6 +4,7 @@ import { createElement } from "@wordpress/element";
  * External dependencies
  */
 import classnames from 'classnames';
+import { flatMap } from 'lodash';
 /**
  * WordPress dependencies
  */
@@ -14,7 +15,6 @@ import { DOWN } from '@wordpress/keycodes';
  */
 
 import IconButton from '../icon-button';
-import Dashicon from '../dashicon';
 import Dropdown from '../dropdown';
 import { NavigableMenu } from '../navigable-container';
 
@@ -23,14 +23,22 @@ function DropdownMenu(_ref) {
       icon = _ref$icon === void 0 ? 'menu' : _ref$icon,
       label = _ref.label,
       menuLabel = _ref.menuLabel,
-      controls = _ref.controls;
+      controls = _ref.controls,
+      className = _ref.className;
 
   if (!controls || !controls.length) {
     return null;
+  } // Normalize controls to nested array of objects (sets of controls)
+
+
+  var controlSets = controls;
+
+  if (!Array.isArray(controlSets[0])) {
+    controlSets = [controlSets];
   }
 
   return createElement(Dropdown, {
-    className: "components-dropdown-menu",
+    className: classnames('components-dropdown-menu', className),
     contentClassName: "components-dropdown-menu__popover",
     renderToggle: function renderToggle(_ref2) {
       var isOpen = _ref2.isOpen,
@@ -45,9 +53,7 @@ function DropdownMenu(_ref) {
       };
 
       return createElement(IconButton, {
-        className: classnames('components-dropdown-menu__toggle', {
-          'is-active': isOpen
-        }),
+        className: "components-dropdown-menu__toggle",
         icon: icon,
         onClick: onToggle,
         onKeyDown: openOnArrowDown,
@@ -55,8 +61,8 @@ function DropdownMenu(_ref) {
         "aria-expanded": isOpen,
         label: label,
         tooltip: label
-      }, createElement(Dashicon, {
-        icon: "arrow-down"
+      }, createElement("span", {
+        className: "components-dropdown-menu__indicator"
       }));
     },
     renderContent: function renderContent(_ref3) {
@@ -65,24 +71,31 @@ function DropdownMenu(_ref) {
         className: "components-dropdown-menu__menu",
         role: "menu",
         "aria-label": menuLabel
-      }, controls.map(function (control, index) {
-        return createElement(IconButton, {
-          key: index,
-          onClick: function onClick(event) {
-            event.stopPropagation();
-            onClose();
+      }, flatMap(controlSets, function (controlSet, indexOfSet) {
+        return controlSet.map(function (control, indexOfControl) {
+          return createElement(IconButton, {
+            key: [indexOfSet, indexOfControl].join(),
+            onClick: function onClick(event) {
+              event.stopPropagation();
+              onClose();
 
-            if (control.onClick) {
-              control.onClick();
-            }
-          },
-          className: "components-dropdown-menu__menu-item",
-          icon: control.icon,
-          role: "menuitem"
-        }, control.title);
+              if (control.onClick) {
+                control.onClick();
+              }
+            },
+            className: classnames('components-dropdown-menu__menu-item', {
+              'has-separator': indexOfSet > 0 && indexOfControl === 0,
+              'is-active': control.isActive
+            }),
+            icon: control.icon,
+            role: "menuitem",
+            disabled: control.isDisabled
+          }, control.title);
+        });
       }));
     }
   });
 }
 
 export default DropdownMenu;
+//# sourceMappingURL=index.js.map

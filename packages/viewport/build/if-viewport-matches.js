@@ -39,3 +39,4 @@ var ifViewportMatches = function ifViewportMatches(query) {
 
 var _default = ifViewportMatches;
 exports.default = _default;
+//# sourceMappingURL=if-viewport-matches.js.map

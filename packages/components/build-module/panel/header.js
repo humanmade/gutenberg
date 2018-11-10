@@ -9,3 +9,4 @@ function PanelHeader(_ref) {
 }
 
 export default PanelHeader;
+//# sourceMappingURL=header.js.map

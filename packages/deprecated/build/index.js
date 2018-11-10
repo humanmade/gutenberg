@@ -1,16 +1,16 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = deprecated;
 exports.logged = void 0;
 
-require("core-js/modules/es6.string.link");
+var _hooks = require("@wordpress/hooks");
 
-var _create = _interopRequireDefault(require("@babel/runtime/core-js/object/create"));
+/**
+ * WordPress dependencies
+ */
 
 /**
  * Object map tracking messages which have been logged, for use in ensuring a
@@ -18,7 +18,7 @@ var _create = _interopRequireDefault(require("@babel/runtime/core-js/object/crea
  *
  * @type {Object}
  */
-var logged = (0, _create.default)(null);
+var logged = Object.create(null);
 /**
  * Logs a message to notify developers about a deprecated feature.
  *
@@ -34,13 +34,12 @@ var logged = (0, _create.default)(null);
 exports.logged = logged;
 
 function deprecated(feature) {
-  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-      version = _ref.version,
-      alternative = _ref.alternative,
-      plugin = _ref.plugin,
-      link = _ref.link,
-      hint = _ref.hint;
-
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var version = options.version,
+      alternative = options.alternative,
+      plugin = options.plugin,
+      link = options.link,
+      hint = options.hint;
   var pluginMessage = plugin ? " from ".concat(plugin) : '';
   var versionMessage = version ? "".concat(pluginMessage, " in ").concat(version) : '';
   var useInsteadMessage = alternative ? " Please use ".concat(alternative, " instead.") : '';
@@ -50,9 +49,24 @@ function deprecated(feature) {
 
   if (message in logged) {
     return;
-  } // eslint-disable-next-line no-console
+  }
+  /**
+   * Fires whenever a deprecated feature is encountered
+   *
+   * @param {string}  feature             Name of the deprecated feature.
+   * @param {?Object} options             Personalisation options
+   * @param {?string} options.version     Version in which the feature will be removed.
+   * @param {?string} options.alternative Feature to use instead
+   * @param {?string} options.plugin      Plugin name if it's a plugin feature
+   * @param {?string} options.link        Link to documentation
+   * @param {?string} options.hint        Additional message to help transition away from the deprecated feature.
+   * @param {?string} message             Message sent to console.warn
+   */
 
+
+  (0, _hooks.doAction)('deprecated', feature, options, message); // eslint-disable-next-line no-console
 
   console.warn(message);
   logged[message] = true;
 }
+//# sourceMappingURL=index.js.map

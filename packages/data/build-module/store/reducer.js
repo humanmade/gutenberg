@@ -26,12 +26,24 @@ var isResolved = flowRight([onSubKey('reducerKey'), onSubKey('selectorName')])(f
   switch (action.type) {
     case 'START_RESOLUTION':
     case 'FINISH_RESOLUTION':
-      var isStarting = action.type === 'START_RESOLUTION';
-      var nextState = new EquivalentKeyMap(state);
-      nextState.set(action.args, isStarting);
-      return nextState;
+      {
+        var isStarting = action.type === 'START_RESOLUTION';
+        var nextState = new EquivalentKeyMap(state);
+        nextState.set(action.args, isStarting);
+        return nextState;
+      }
+
+    case 'INVALIDATE_RESOLUTION':
+      {
+        var _nextState = new EquivalentKeyMap(state);
+
+        _nextState.delete(action.args);
+
+        return _nextState;
+      }
   }
 
   return state;
 });
 export default isResolved;
+//# sourceMappingURL=reducer.js.map

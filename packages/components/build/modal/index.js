@@ -25,6 +25,8 @@ var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/ge
 
 var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
 
+var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
+
 var _classnames = _interopRequireDefault(require("classnames"));
 
 var _lodash = require("lodash");
@@ -65,6 +67,7 @@ function (_Component) {
 
     _this.prepareDOM();
 
+    _this.stopEventPropagationOutsideModal = _this.stopEventPropagationOutsideModal.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     return _this;
   }
   /**
@@ -155,6 +158,16 @@ function (_Component) {
       ariaHelper.showApp();
     }
     /**
+     * Stop all onMouseDown events propagating further - they should only go to the modal
+    	 * @param {string} event Event object
+     */
+
+  }, {
+    key: "stopEventPropagationOutsideModal",
+    value: function stopEventPropagationOutsideModal(event) {
+      event.stopPropagation();
+    }
+    /**
      * Renders the modal.
      *
      * @return {WPElement} The modal element.
@@ -173,10 +186,16 @@ function (_Component) {
           children = _this$props.children,
           aria = _this$props.aria,
           instanceId = _this$props.instanceId,
-          otherProps = (0, _objectWithoutProperties2.default)(_this$props, ["overlayClassName", "className", "onRequestClose", "title", "icon", "closeButtonLabel", "children", "aria", "instanceId"]);
-      var headingId = aria.labelledby || 'components-modal-header-' + instanceId;
+          isDismissable = _this$props.isDismissable,
+          otherProps = (0, _objectWithoutProperties2.default)(_this$props, ["overlayClassName", "className", "onRequestClose", "title", "icon", "closeButtonLabel", "children", "aria", "instanceId", "isDismissable"]);
+      var headingId = aria.labelledby || "components-modal-header-".concat(instanceId); // Disable reason: this stops mouse events from triggering tooltips and
+      // other elements underneath the modal overlay.
+
+      /* eslint-disable jsx-a11y/no-static-element-interactions */
+
       return (0, _element.createPortal)((0, _element.createElement)("div", {
-        className: (0, _classnames.default)('components-modal__screen-overlay', overlayClassName)
+        className: (0, _classnames.default)('components-modal__screen-overlay', overlayClassName),
+        onMouseDown: this.stopEventPropagationOutsideModal
       }, (0, _element.createElement)(_frame.default, (0, _extends2.default)({
         className: (0, _classnames.default)('components-modal__frame', className),
         onRequestClose: onRequestClose,
@@ -184,15 +203,18 @@ function (_Component) {
           labelledby: title ? headingId : null,
           describedby: aria.describedby
         }
-      }, otherProps), (0, _element.createElement)(_header.default, {
+      }, otherProps), (0, _element.createElement)("div", {
+        className: 'components-modal__content',
+        tabIndex: "0"
+      }, (0, _element.createElement)(_header.default, {
         closeLabel: closeButtonLabel,
-        onClose: onRequestClose,
-        title: title,
         headingId: headingId,
-        icon: icon
-      }), (0, _element.createElement)("div", {
-        className: 'components-modal__content'
-      }, children))), this.node);
+        icon: icon,
+        isDismissable: isDismissable,
+        onClose: onRequestClose,
+        title: title
+      }), children))), this.node);
+      /* eslint-enable jsx-a11y/no-static-element-interactions */
     }
   }]);
   return Modal;
@@ -206,6 +228,7 @@ Modal.defaultProps = {
   focusOnMount: true,
   shouldCloseOnEsc: true,
   shouldCloseOnClickOutside: true,
+  isDismissable: true,
 
   /* accessibility */
   aria: {
@@ -217,3 +240,4 @@ Modal.defaultProps = {
 var _default = (0, _compose.withInstanceId)(Modal);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

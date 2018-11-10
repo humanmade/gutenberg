@@ -2,23 +2,19 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es6.array.find");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getTerms = getTerms;
-exports.getCategories = getCategories;
-exports.isRequestingTerms = isRequestingTerms;
-exports.isRequestingCategories = isRequestingCategories;
+exports.isRequestingEmbedPreview = isRequestingEmbedPreview;
 exports.getAuthors = getAuthors;
 exports.getEntitiesByKind = getEntitiesByKind;
 exports.getEntity = getEntity;
 exports.getEntityRecord = getEntityRecord;
+exports.getEntityRecords = getEntityRecords;
 exports.getThemeSupports = getThemeSupports;
-exports.getEntityRecords = exports.getUserQueryResults = void 0;
-
-var _values = _interopRequireDefault(require("@babel/runtime/core-js/object/values"));
+exports.getEmbedPreview = getEmbedPreview;
+exports.isPreviewEmbedFallback = isPreviewEmbedFallback;
+exports.getUserQueryResults = void 0;
 
 var _rememo = _interopRequireDefault(require("rememo"));
 
@@ -27,6 +23,8 @@ var _lodash = require("lodash");
 var _data = require("@wordpress/data");
 
 var _name = require("./name");
+
+var _queriedData = require("./queried-data");
 
 /**
  * External dependencies
@@ -50,65 +48,25 @@ var _name = require("./name");
  * @return {boolean} Whether resolution is in progress.
  */
 function isResolving(selectorName) {
-  var _select;
-
   for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
     args[_key - 1] = arguments[_key];
   }
 
-  return (_select = (0, _data.select)('core/data')).isResolving.apply(_select, [_name.REDUCER_KEY, selectorName].concat(args));
+  return (0, _data.select)('core/data').isResolving(_name.REDUCER_KEY, selectorName, args);
 }
 /**
- * Returns all the available terms for the given taxonomy.
- *
- * @param {Object} state    Data state.
- * @param {string} taxonomy Taxonomy name.
- *
- * @return {Array} Categories list.
- */
-
-
-function getTerms(state, taxonomy) {
-  return state.terms[taxonomy];
-}
-/**
- * Returns all the available categories.
- *
- * @param {Object} state Data state.
- *
- * @return {Array} Categories list.
- */
-
-
-function getCategories(state) {
-  return getTerms(state, 'categories');
-}
-/**
- * Returns true if a request is in progress for terms data of a given taxonomy,
- * or false otherwise.
- *
- * @param {Object} state    Data state.
- * @param {string} taxonomy Taxonomy name.
- *
- * @return {boolean} Whether a request is in progress for taxonomy's terms.
- */
-
-
-function isRequestingTerms(state, taxonomy) {
-  return isResolving('getTerms', taxonomy);
-}
-/**
- * Returns true if a request is in progress for categories data, or false
+ * Returns true if a request is in progress for embed preview data, or false
  * otherwise.
  *
  * @param {Object} state Data state.
+ * @param {string} url   URL the preview would be for.
  *
- * @return {boolean} Whether a request is in progress for categories.
+ * @return {boolean} Whether a request is in progress for an embed preview.
  */
 
 
-function isRequestingCategories() {
-  return isResolving('getCategories');
+function isRequestingEmbedPreview(state, url) {
+  return isResolving('getEmbedPreview', url);
 }
 /**
  * Returns all available authors.
@@ -186,24 +144,29 @@ function getEntity(state, kind, name) {
 
 
 function getEntityRecord(state, kind, name, key) {
-  return (0, _lodash.get)(state.entities.data, [kind, name, 'byKey', key]);
+  return (0, _lodash.get)(state.entities.data, [kind, name, 'items', key]);
 }
 /**
  * Returns the Entity's records.
  *
- * @param {Object} state  State tree
- * @param {string} kind   Entity kind.
- * @param {string} name   Entity name.
+ * @param {Object}  state  State tree
+ * @param {string}  kind   Entity kind.
+ * @param {string}  name   Entity name.
+ * @param {?Object} query  Optional terms query.
  *
  * @return {Array} Records.
  */
 
 
-var getEntityRecords = (0, _rememo.default)(function (state, kind, name) {
-  return (0, _values.default)((0, _lodash.get)(state.entities.data, [kind, name, 'byKey']));
-}, function (state, kind, name) {
-  return [(0, _lodash.get)(state.entities.data, [kind, name, 'byKey'])];
-});
+function getEntityRecords(state, kind, name, query) {
+  var queriedState = (0, _lodash.get)(state.entities.data, [kind, name]);
+
+  if (!queriedState) {
+    return [];
+  }
+
+  return (0, _queriedData.getQueriedItems)(queriedState, query);
+}
 /**
  * Return theme supports data in the index.
  *
@@ -212,8 +175,45 @@ var getEntityRecords = (0, _rememo.default)(function (state, kind, name) {
  * @return {*}           Index data.
  */
 
-exports.getEntityRecords = getEntityRecords;
 
 function getThemeSupports(state) {
   return state.themeSupports;
 }
+/**
+ * Returns the embed preview for the given URL.
+ *
+ * @param {Object} state    Data state.
+ * @param {string} url      Embedded URL.
+ *
+ * @return {*} Undefined if the preview has not been fetched, otherwise, the preview fetched from the embed preview API.
+ */
+
+
+function getEmbedPreview(state, url) {
+  return state.embedPreviews[url];
+}
+/**
+ * Determines if the returned preview is an oEmbed link fallback.
+ *
+ * WordPress can be configured to return a simple link to a URL if it is not embeddable.
+ * We need to be able to determine if a URL is embeddable or not, based on what we
+ * get back from the oEmbed preview API.
+ *
+ * @param {Object} state    Data state.
+ * @param {string} url      Embedded URL.
+ *
+ * @return {booleans} Is the preview for the URL an oEmbed link fallback.
+ */
+
+
+function isPreviewEmbedFallback(state, url) {
+  var preview = state.embedPreviews[url];
+  var oEmbedLinkCheck = '<a href="' + url + '">' + url + '</a>';
+
+  if (!preview) {
+    return false;
+  }
+
+  return preview.html === oEmbedLinkCheck;
+}
+//# sourceMappingURL=selectors.js.map

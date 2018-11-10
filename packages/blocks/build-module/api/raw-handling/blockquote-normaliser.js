@@ -9,3 +9,4 @@ export default function (node) {
 
   node.innerHTML = normaliseBlocks(node.innerHTML);
 }
+//# sourceMappingURL=blockquote-normaliser.js.map

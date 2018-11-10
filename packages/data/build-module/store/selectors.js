@@ -73,3 +73,16 @@ export function isResolving(state, reducerKey, selectorName) {
   var args = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
   return getIsResolving(state, reducerKey, selectorName, args) === true;
 }
+/**
+ * Returns the list of the cached resolvers.
+ *
+ * @param {Object} state      Data state.
+ * @param {string} reducerKey Registered store reducer key.
+ *
+ * @return {Object} Resolvers mapped by args and selectorName.
+ */
+
+export function getCachedResolvers(state, reducerKey) {
+  return state.hasOwnProperty(reducerKey) ? state[reducerKey] : {};
+}
+//# sourceMappingURL=selectors.js.map

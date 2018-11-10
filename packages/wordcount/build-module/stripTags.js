@@ -1,5 +1,3 @@
-import "core-js/modules/es6.regexp.replace";
-
 /**
  * Replaces items matched in the regex with new line
  *
@@ -13,3 +11,4 @@ export default function (settings, text) {
     return text.replace(settings.HTMLRegExp, '\n');
   }
 }
+//# sourceMappingURL=stripTags.js.map

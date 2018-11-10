@@ -1,5 +1,5 @@
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 /**
  * External dependencies
@@ -66,3 +66,4 @@ function segmentHTMLToShortcodeBlock(HTML) {
 }
 
 export default segmentHTMLToShortcodeBlock;
+//# sourceMappingURL=shortcode-converter.js.map

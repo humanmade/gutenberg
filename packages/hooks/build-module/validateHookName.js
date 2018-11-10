@@ -30,3 +30,4 @@ function validateHookName(hookName) {
 }
 
 export default validateHookName;
+//# sourceMappingURL=validateHookName.js.map

@@ -1,7 +1,3 @@
-import _Promise from "@babel/runtime/core-js/promise";
-import "core-js/modules/es6.array.sort";
-import "core-js/modules/es6.regexp.split";
-
 var createPreloadingMiddleware = function createPreloadingMiddleware(preloadedData) {
   return function (options, next) {
     function getStablePath(path) {
@@ -36,7 +32,7 @@ var createPreloadingMiddleware = function createPreloadingMiddleware(preloadedDa
       var path = getStablePath(options.path);
 
       if ('GET' === method && preloadedData[path]) {
-        return _Promise.resolve(preloadedData[path].body);
+        return Promise.resolve(preloadedData[path].body);
       }
     }
 
@@ -45,3 +41,4 @@ var createPreloadingMiddleware = function createPreloadingMiddleware(preloadedDa
 };
 
 export default createPreloadingMiddleware;
+//# sourceMappingURL=preloading.js.map

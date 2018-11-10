@@ -2,39 +2,30 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es6.string.starts-with");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.escapeAmpersand = escapeAmpersand;
-exports.escapeQuotationMark = escapeQuotationMark;
-exports.escapeLessThan = escapeLessThan;
 exports.hasPrefix = hasPrefix;
 exports.renderElement = renderElement;
 exports.renderNativeComponent = renderNativeComponent;
 exports.renderComponent = renderComponent;
 exports.renderAttributes = renderAttributes;
 exports.renderStyle = renderStyle;
-exports.default = exports.escapeHTML = exports.escapeAttribute = void 0;
-
-var _assign = _interopRequireDefault(require("@babel/runtime/core-js/object/assign"));
+exports.default = void 0;
 
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
 
-require("core-js/modules/es6.regexp.to-string");
-
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
-
-require("core-js/modules/es6.regexp.replace");
-
-var _set = _interopRequireDefault(require("@babel/runtime/core-js/set"));
 
 var _lodash = require("lodash");
 
-var _ = require("./");
+var _escapeHtml = require("@wordpress/escape-html");
+
+var _react = require("./react");
+
+var _rawHtml = _interopRequireDefault(require("./raw-html"));
 
 /**
  * Parts of this source were derived and modified from fast-react-render,
@@ -68,22 +59,30 @@ var _ = require("./");
  */
 
 /**
- * Internal dependencies
+ * WordPress dependencies
  */
 
+/**
+ * Internal dependencies
+ */
+var _createContext = (0, _react.createContext)(),
+    Provider = _createContext.Provider,
+    Consumer = _createContext.Consumer;
 /**
  * Valid attribute types.
  *
  * @type {Set}
  */
-var ATTRIBUTES_TYPES = new _set.default(['string', 'boolean', 'number']);
+
+
+var ATTRIBUTES_TYPES = new Set(['string', 'boolean', 'number']);
 /**
  * Element tags which can be self-closing.
  *
  * @type {Set}
  */
 
-var SELF_CLOSING_TAGS = new _set.default(['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
+var SELF_CLOSING_TAGS = new Set(['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
 /**
  * Boolean attributes are attributes whose presence as being assigned is
  * meaningful, even if only empty.
@@ -100,7 +99,7 @@ var SELF_CLOSING_TAGS = new _set.default(['area', 'base', 'br', 'col', 'command'
  * @type {Set}
  */
 
-var BOOLEAN_ATTRIBUTES = new _set.default(['allowfullscreen', 'allowpaymentrequest', 'allowusermedia', 'async', 'autofocus', 'autoplay', 'checked', 'controls', 'default', 'defer', 'disabled', 'formnovalidate', 'hidden', 'ismap', 'itemscope', 'loop', 'multiple', 'muted', 'nomodule', 'novalidate', 'open', 'playsinline', 'readonly', 'required', 'reversed', 'selected', 'typemustmatch']);
+var BOOLEAN_ATTRIBUTES = new Set(['allowfullscreen', 'allowpaymentrequest', 'allowusermedia', 'async', 'autofocus', 'autoplay', 'checked', 'controls', 'default', 'defer', 'disabled', 'download', 'formnovalidate', 'hidden', 'ismap', 'itemscope', 'loop', 'multiple', 'muted', 'nomodule', 'novalidate', 'open', 'playsinline', 'readonly', 'required', 'reversed', 'selected', 'typemustmatch']);
 /**
  * Enumerated attributes are attributes which must be of a specific value form.
  * Like boolean attributes, these are meaningful if specified, even if not of a
@@ -122,7 +121,7 @@ var BOOLEAN_ATTRIBUTES = new _set.default(['allowfullscreen', 'allowpaymentreque
  * @type {Set}
  */
 
-var ENUMERATED_ATTRIBUTES = new _set.default(['autocapitalize', 'autocomplete', 'charset', 'contenteditable', 'crossorigin', 'decoding', 'dir', 'draggable', 'enctype', 'formenctype', 'formmethod', 'http-equiv', 'inputmode', 'kind', 'method', 'preload', 'scope', 'shape', 'spellcheck', 'translate', 'type', 'wrap']);
+var ENUMERATED_ATTRIBUTES = new Set(['autocapitalize', 'autocomplete', 'charset', 'contenteditable', 'crossorigin', 'decoding', 'dir', 'draggable', 'enctype', 'formenctype', 'formmethod', 'http-equiv', 'inputmode', 'kind', 'method', 'preload', 'scope', 'shape', 'spellcheck', 'translate', 'type', 'wrap']);
 /**
  * Set of CSS style properties which support assignment of unitless numbers.
  * Used in rendering of style properties, where `px` unit is assumed unless
@@ -142,79 +141,7 @@ var ENUMERATED_ATTRIBUTES = new _set.default(['autocapitalize', 'autocomplete', 
  * @type {Set}
  */
 
-var CSS_PROPERTIES_SUPPORTS_UNITLESS = new _set.default(['animation', 'animationIterationCount', 'baselineShift', 'borderImageOutset', 'borderImageSlice', 'borderImageWidth', 'columnCount', 'cx', 'cy', 'fillOpacity', 'flexGrow', 'flexShrink', 'floodOpacity', 'fontWeight', 'gridColumnEnd', 'gridColumnStart', 'gridRowEnd', 'gridRowStart', 'lineHeight', 'opacity', 'order', 'orphans', 'r', 'rx', 'ry', 'shapeImageThreshold', 'stopOpacity', 'strokeDasharray', 'strokeDashoffset', 'strokeMiterlimit', 'strokeOpacity', 'strokeWidth', 'tabSize', 'widows', 'x', 'y', 'zIndex', 'zoom']);
-/**
- * Returns a string with ampersands escaped. Note that this is an imperfect
- * implementation, where only ampersands which do not appear as a pattern of
- * named, decimal, or hexadecimal character references are escaped. Invalid
- * named references (i.e. ambiguous ampersand) are are still permitted.
- *
- * @link https://w3c.github.io/html/syntax.html#character-references
- * @link https://w3c.github.io/html/syntax.html#ambiguous-ampersand
- * @link https://w3c.github.io/html/syntax.html#named-character-references
- *
- * @param {string} value Original string.
- *
- * @return {string} Escaped string.
- */
-
-function escapeAmpersand(value) {
-  return value.replace(/&(?!([a-z0-9]+|#[0-9]+|#x[a-f0-9]+);)/gi, '&amp;');
-}
-/**
- * Returns a string with quotation marks replaced.
- *
- * @param {string} value Original string.
- *
- * @return {string} Escaped string.
- */
-
-
-function escapeQuotationMark(value) {
-  return value.replace(/"/g, '&quot;');
-}
-/**
- * Returns a string with less-than sign replaced.
- *
- * @param {string} value Original string.
- *
- * @return {string} Escaped string.
- */
-
-
-function escapeLessThan(value) {
-  return value.replace(/</g, '&lt;');
-}
-/**
- * Returns an escaped attribute value.
- *
- * @link https://w3c.github.io/html/syntax.html#elements-attributes
- *
- * "[...] the text cannot contain an ambiguous ampersand [...] must not contain
- * any literal U+0022 QUOTATION MARK characters (")"
- *
- * @param {string} value Attribute value.
- *
- * @return {string} Escaped attribute value.
- */
-
-
-var escapeAttribute = (0, _lodash.flowRight)([escapeAmpersand, escapeQuotationMark]);
-/**
- * Returns an escaped HTML element value.
- *
- * @link https://w3c.github.io/html/syntax.html#writing-html-documents-elements
- *
- * "the text must not contain the character U+003C LESS-THAN SIGN (<) or an
- * ambiguous ampersand."
- *
- * @param {string} value Element value.
- *
- * @return {string} Escaped HTML element value.
- */
-
-exports.escapeAttribute = escapeAttribute;
-var escapeHTML = (0, _lodash.flowRight)([escapeAmpersand, escapeLessThan]);
+var CSS_PROPERTIES_SUPPORTS_UNITLESS = new Set(['animation', 'animationIterationCount', 'baselineShift', 'borderImageOutset', 'borderImageSlice', 'borderImageWidth', 'columnCount', 'cx', 'cy', 'fillOpacity', 'flexGrow', 'flexShrink', 'floodOpacity', 'fontWeight', 'gridColumnEnd', 'gridColumnStart', 'gridRowEnd', 'gridRowStart', 'lineHeight', 'opacity', 'order', 'orphans', 'r', 'rx', 'ry', 'shapeImageThreshold', 'stopOpacity', 'strokeDasharray', 'strokeDashoffset', 'strokeMiterlimit', 'strokeOpacity', 'strokeWidth', 'tabSize', 'widows', 'x', 'y', 'zIndex', 'zoom']);
 /**
  * Returns true if the specified string is prefixed by one of an array of
  * possible prefixes.
@@ -224,8 +151,6 @@ var escapeHTML = (0, _lodash.flowRight)([escapeAmpersand, escapeLessThan]);
  *
  * @return {boolean} Whether string has prefix.
  */
-
-exports.escapeHTML = escapeHTML;
 
 function hasPrefix(string, prefixes) {
   return prefixes.some(function (prefix) {
@@ -355,59 +280,69 @@ function getNormalStylePropertyValue(property, value) {
 /**
  * Serializes a React element to string.
  *
- * @param {WPElement} element Element to serialize.
- * @param {?Object}   context Context object.
+ * @param {WPElement} element       Element to serialize.
+ * @param {?Object}   context       Context object.
+ * @param {?Object}   legacyContext Legacy context object.
  *
  * @return {string} Serialized element.
  */
 
 
-function renderElement(element) {
-  var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+function renderElement(element, context) {
+  var legacyContext = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   if (null === element || undefined === element || false === element) {
     return '';
   }
 
   if (Array.isArray(element)) {
-    return renderChildren(element, context);
+    return renderChildren(element, context, legacyContext);
   }
 
   switch ((0, _typeof2.default)(element)) {
     case 'string':
-      return escapeHTML(element);
+      return (0, _escapeHtml.escapeHTML)(element);
 
     case 'number':
       return element.toString();
   }
 
-  var tagName = element.type,
+  var type = element.type,
       props = element.props;
 
-  switch (tagName) {
-    case _.Fragment:
-      return renderChildren(props.children, context);
+  switch (type) {
+    case _react.StrictMode:
+    case _react.Fragment:
+      return renderChildren(props.children, context, legacyContext);
 
-    case _.RawHTML:
+    case _rawHtml.default:
       var children = props.children,
           wrapperProps = (0, _objectWithoutProperties2.default)(props, ["children"]);
       return renderNativeComponent((0, _lodash.isEmpty)(wrapperProps) ? null : 'div', (0, _objectSpread2.default)({}, wrapperProps, {
         dangerouslySetInnerHTML: {
           __html: children
         }
-      }), context);
+      }), context, legacyContext);
   }
 
-  switch ((0, _typeof2.default)(tagName)) {
+  switch ((0, _typeof2.default)(type)) {
     case 'string':
-      return renderNativeComponent(tagName, props, context);
+      return renderNativeComponent(type, props, context, legacyContext);
 
     case 'function':
-      if (tagName.prototype && typeof tagName.prototype.render === 'function') {
-        return renderComponent(tagName, props, context);
+      if (type.prototype && typeof type.prototype.render === 'function') {
+        return renderComponent(type, props, context, legacyContext);
       }
 
-      return renderElement(tagName(props, context), context);
+      return renderElement(type(props, legacyContext), context, legacyContext);
+  }
+
+  switch (type && type.$$typeof) {
+    case Provider.$$typeof:
+      return renderChildren(props.children, props.value, legacyContext);
+
+    case Consumer.$$typeof:
+      return renderElement(props.children(context || type._currentValue), context, legacyContext);
   }
 
   return '';
@@ -415,30 +350,31 @@ function renderElement(element) {
 /**
  * Serializes a native component type to string.
  *
- * @param {?string} type    Native component type to serialize, or null if
- *                          rendering as fragment of children content.
- * @param {Object}  props   Props object.
- * @param {?Object} context Context object.
+ * @param {?string} type          Native component type to serialize, or null if
+ *                                rendering as fragment of children content.
+ * @param {Object}  props         Props object.
+ * @param {?Object} context       Context object.
+ * @param {?Object} legacyContext Legacy context object.
  *
  * @return {string} Serialized element.
  */
 
 
-function renderNativeComponent(type, props) {
-  var context = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+function renderNativeComponent(type, props, context) {
+  var legacyContext = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
   var content = '';
 
   if (type === 'textarea' && props.hasOwnProperty('value')) {
     // Textarea children can be assigned as value prop. If it is, render in
     // place of children. Ensure to omit so it is not assigned as attribute
     // as well.
-    content = renderChildren(props.value, context);
+    content = renderChildren(props.value, context, legacyContext);
     props = (0, _lodash.omit)(props, 'value');
   } else if (props.dangerouslySetInnerHTML && typeof props.dangerouslySetInnerHTML.__html === 'string') {
     // Dangerous content is left unescaped.
     content = props.dangerouslySetInnerHTML.__html;
   } else if (typeof props.children !== 'undefined') {
-    content = renderChildren(props.children, context);
+    content = renderChildren(props.children, context, legacyContext);
   }
 
   if (!type) {
@@ -456,43 +392,45 @@ function renderNativeComponent(type, props) {
 /**
  * Serializes a non-native component type to string.
  *
- * @param {Function} Component Component type to serialize.
- * @param {Object}   props     Props object.
- * @param {?Object}  context   Context object.
+ * @param {Function} Component     Component type to serialize.
+ * @param {Object}   props         Props object.
+ * @param {?Object}  context       Context object.
+ * @param {?Object}  legacyContext Legacy context object.
  *
  * @return {string} Serialized element
  */
 
 
-function renderComponent(Component, props) {
-  var context = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  var instance = new Component(props, context);
+function renderComponent(Component, props, context) {
+  var legacyContext = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+  var instance = new Component(props, legacyContext);
 
   if (typeof instance.getChildContext === 'function') {
-    (0, _assign.default)(context, instance.getChildContext());
+    Object.assign(legacyContext, instance.getChildContext());
   }
 
-  var html = renderElement(instance.render(), context);
+  var html = renderElement(instance.render(), context, legacyContext);
   return html;
 }
 /**
  * Serializes an array of children to string.
  *
- * @param {Array}   children Children to serialize.
- * @param {?Object} context  Context object.
+ * @param {Array}   children      Children to serialize.
+ * @param {?Object} context       Context object.
+ * @param {?Object} legacyContext Legacy context object.
  *
  * @return {string} Serialized children.
  */
 
 
-function renderChildren(children) {
-  var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+function renderChildren(children, context) {
+  var legacyContext = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   var result = '';
   children = (0, _lodash.castArray)(children);
 
   for (var i = 0; i < children.length; i++) {
     var child = children[i];
-    result += renderElement(child, context);
+    result += renderElement(child, context, legacyContext);
   }
 
   return result;
@@ -511,6 +449,11 @@ function renderAttributes(props) {
 
   for (var key in props) {
     var attribute = getNormalAttributeName(key);
+
+    if (!(0, _escapeHtml.isValidAttributeName)(attribute)) {
+      continue;
+    }
+
     var value = getNormalAttributeValue(key, props[key]); // If value is not of serializeable type, skip.
 
     if (!ATTRIBUTES_TYPES.has((0, _typeof2.default)(value))) {
@@ -542,7 +485,7 @@ function renderAttributes(props) {
     }
 
     if (typeof value === 'string') {
-      value = escapeAttribute(value);
+      value = (0, _escapeHtml.escapeAttribute)(value);
     }
 
     result += '="' + value + '"';
@@ -590,3 +533,4 @@ function renderStyle(style) {
 
 var _default = renderElement;
 exports.default = _default;
+//# sourceMappingURL=serialize.js.map

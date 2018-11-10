@@ -5,21 +5,27 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = FontSizePicker;
+exports.default = void 0;
 
 var _element = require("@wordpress/element");
-
-require("core-js/modules/es6.function.name");
 
 var _lodash = require("lodash");
 
 var _i18n = require("@wordpress/i18n");
 
+var _compose = require("@wordpress/compose");
+
+var _dashicon = _interopRequireDefault(require("../dashicon"));
+
+var _baseControl = _interopRequireDefault(require("../base-control"));
+
 var _button = _interopRequireDefault(require("../button"));
 
-var _buttonGroup = _interopRequireDefault(require("../button-group"));
+var _dropdown = _interopRequireDefault(require("../dropdown"));
 
 var _rangeControl = _interopRequireDefault(require("../range-control"));
+
+var _navigableContainer = require("../navigable-container");
 
 /**
  * External dependencies
@@ -33,34 +39,88 @@ var _rangeControl = _interopRequireDefault(require("../range-control"));
  * Internal dependencies
  */
 function FontSizePicker(_ref) {
-  var _ref$fontSizes = _ref.fontSizes,
+  var fallbackFontSize = _ref.fallbackFontSize,
+      _ref$fontSizes = _ref.fontSizes,
       fontSizes = _ref$fontSizes === void 0 ? [] : _ref$fontSizes,
-      fallbackFontSize = _ref.fallbackFontSize,
+      _ref$disableCustomFon = _ref.disableCustomFontSizes,
+      disableCustomFontSizes = _ref$disableCustomFon === void 0 ? false : _ref$disableCustomFon,
+      onChange = _ref.onChange,
       value = _ref.value,
-      onChange = _ref.onChange;
-  return (0, _element.createElement)(_element.Fragment, null, (0, _element.createElement)("div", {
+      _ref$withSlider = _ref.withSlider,
+      withSlider = _ref$withSlider === void 0 ? false : _ref$withSlider;
+
+  var onChangeValue = function onChangeValue(event) {
+    var newValue = event.target.value;
+
+    if (newValue === '') {
+      onChange(undefined);
+      return;
+    }
+
+    onChange(Number(newValue));
+  };
+
+  var currentFont = fontSizes.find(function (font) {
+    return font.size === value;
+  });
+  return (0, _element.createElement)(_baseControl.default, {
+    label: (0, _i18n.__)('Font Size')
+  }, (0, _element.createElement)("div", {
     className: "components-font-size-picker__buttons"
-  }, (0, _element.createElement)(_buttonGroup.default, {
-    "aria-label": (0, _i18n.__)('Font Size')
-  }, (0, _lodash.map)(fontSizes, function (_ref2) {
-    var name = _ref2.name,
-        size = _ref2.size,
-        shortName = _ref2.shortName;
-    return (0, _element.createElement)(_button.default, {
-      key: size,
-      isLarge: true,
-      isPrimary: value === size,
-      "aria-pressed": value === size,
-      onClick: function onClick() {
-        return onChange(size);
-      }
-    }, shortName || name);
-  })), (0, _element.createElement)(_button.default, {
-    isLarge: true,
+  }, (0, _element.createElement)(_dropdown.default, {
+    className: "components-font-size-picker__dropdown",
+    contentClassName: "components-font-size-picker__dropdown-content",
+    position: "bottom",
+    renderToggle: function renderToggle(_ref2) {
+      var isOpen = _ref2.isOpen,
+          onToggle = _ref2.onToggle;
+      return (0, _element.createElement)(_button.default, {
+        className: "components-font-size-picker__selector",
+        isLarge: true,
+        onClick: onToggle,
+        "aria-expanded": isOpen,
+        "aria-label": (0, _i18n.__)('Custom font size')
+      }, currentFont && currentFont.name || !value && (0, _i18n._x)('Normal', 'font size name') || (0, _i18n._x)('Custom', 'font size name'));
+    },
+    renderContent: function renderContent() {
+      return (0, _element.createElement)(_navigableContainer.NavigableMenu, null, (0, _lodash.map)(fontSizes, function (_ref3) {
+        var name = _ref3.name,
+            size = _ref3.size,
+            slug = _ref3.slug;
+        return (0, _element.createElement)(_button.default, {
+          key: slug,
+          onClick: function onClick() {
+            return onChange(slug === 'normal' ? undefined : size);
+          },
+          className: 'is-font-' + slug,
+          role: "menuitem"
+        }, (value === size || !value && slug === 'normal') && (0, _element.createElement)(_dashicon.default, {
+          icon: "saved"
+        }), (0, _element.createElement)("span", {
+          className: "components-font-size-picker__dropdown-text-size",
+          style: {
+            fontSize: size
+          }
+        }, name));
+      }));
+    }
+  }), !withSlider && !disableCustomFontSizes && (0, _element.createElement)("input", {
+    className: "components-range-control__number",
+    type: "number",
+    onChange: onChangeValue,
+    "aria-label": (0, _i18n.__)('Custom font size'),
+    value: value || ''
+  }), (0, _element.createElement)(_button.default, {
+    className: "components-color-palette__clear",
+    type: "button",
+    disabled: value === undefined,
     onClick: function onClick() {
       return onChange(undefined);
-    }
-  }, (0, _i18n.__)('Reset'))), (0, _element.createElement)(_rangeControl.default, {
+    },
+    isSmall: true,
+    isDefault: true,
+    "aria-label": (0, _i18n.__)('Reset font size')
+  }, (0, _i18n.__)('Reset'))), withSlider && (0, _element.createElement)(_rangeControl.default, {
     className: "components-font-size-picker__custom-input",
     label: (0, _i18n.__)('Custom Size'),
     value: value || '',
@@ -72,3 +132,8 @@ function FontSizePicker(_ref) {
     afterIcon: "editor-textcolor"
   }));
 }
+
+var _default = (0, _compose.withInstanceId)(FontSizePicker);
+
+exports.default = _default;
+//# sourceMappingURL=index.js.map

@@ -1,4 +1,3 @@
-import _Object$create from "@babel/runtime/core-js/object/create";
 import createAddHook from './createAddHook';
 import createRemoveHook from './createRemoveHook';
 import createHasHook from './createHasHook';
@@ -13,10 +12,8 @@ import createDidHook from './createDidHook';
  */
 
 function createHooks() {
-  var actions = _Object$create(null);
-
-  var filters = _Object$create(null);
-
+  var actions = Object.create(null);
+  var filters = Object.create(null);
   actions.__current = [];
   filters.__current = [];
   return {
@@ -42,3 +39,4 @@ function createHooks() {
 }
 
 export default createHooks;
+//# sourceMappingURL=createHooks.js.map

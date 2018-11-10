@@ -1,5 +1,3 @@
-import "core-js/modules/es6.function.name";
-
 /**
  * Returns a function which, when invoked, will return whether a hook is
  * currently being executed.
@@ -30,3 +28,4 @@ function createDoingHook(hooks) {
 }
 
 export default createDoingHook;
+//# sourceMappingURL=createDoingHook.js.map

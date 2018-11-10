@@ -8,22 +8,18 @@ Object.defineProperty(exports, "__esModule", {
 exports.unstable__bootstrapServerSideBlockDefinitions = unstable__bootstrapServerSideBlockDefinitions;
 exports.registerBlockType = registerBlockType;
 exports.unregisterBlockType = unregisterBlockType;
-exports.setUnknownTypeHandlerName = setUnknownTypeHandlerName;
-exports.getUnknownTypeHandlerName = getUnknownTypeHandlerName;
+exports.setFreeformContentHandlerName = setFreeformContentHandlerName;
+exports.getFreeformContentHandlerName = getFreeformContentHandlerName;
+exports.setUnregisteredTypeHandlerName = setUnregisteredTypeHandlerName;
+exports.getUnregisteredTypeHandlerName = getUnregisteredTypeHandlerName;
 exports.setDefaultBlockName = setDefaultBlockName;
 exports.getDefaultBlockName = getDefaultBlockName;
-exports.getDefaultBlockForPostFormat = getDefaultBlockForPostFormat;
 exports.getBlockType = getBlockType;
 exports.getBlockTypes = getBlockTypes;
 exports.getBlockSupport = getBlockSupport;
 exports.hasBlockSupport = hasBlockSupport;
 exports.isReusableBlock = isReusableBlock;
-exports.isSharedBlock = isSharedBlock;
-exports.registerBlockStyle = exports.hasChildBlocks = exports.getChildBlockNames = void 0;
-
-var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
-
-require("core-js/modules/es6.function.name");
+exports.unregisterBlockStyle = exports.registerBlockStyle = exports.hasChildBlocksWithInserterSupport = exports.hasChildBlocks = exports.getChildBlockNames = void 0;
 
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
@@ -32,8 +28,6 @@ var _lodash = require("lodash");
 var _hooks = require("@wordpress/hooks");
 
 var _data = require("@wordpress/data");
-
-var _deprecated = _interopRequireDefault(require("@wordpress/deprecated"));
 
 var _utils = require("./utils");
 
@@ -75,19 +69,6 @@ var _utils = require("./utils");
  * @property {WPComponent}               edit       Component rendering element to be
  *                                                  interacted with in an editor.
  */
-
-/**
- * Constant mapping post formats to the expected default block.
- *
- * @type {Object}
- */
-var POST_FORMAT_BLOCK_MAP = {
-  audio: 'core/audio',
-  gallery: 'core/gallery',
-  image: 'core/image',
-  quote: 'core/quote',
-  video: 'core/video'
-};
 var serverSideBlockDefinitions = {};
 /**
  * Set the server side block definition of blocks.
@@ -178,10 +159,6 @@ function registerBlockType(name, settings) {
     return;
   }
 
-  if ((0, _utils.isIconUnreadable)(settings.icon) && window) {
-    window.console.warn("The icon background color ".concat(settings.icon.background, " and the foreground color ").concat(settings.icon.foreground, " are not readable together. ") + 'Please try to increase the brightness and/or contrast difference between background and foreground.');
-  }
-
   (0, _data.dispatch)('core/blocks').addBlockTypes(settings);
   return settings;
 }
@@ -207,25 +184,46 @@ function unregisterBlockType(name) {
   return oldBlock;
 }
 /**
- * Assigns name of block handling unknown block types.
+ * Assigns name of block for handling non-block content.
  *
- * @param {string} name Block name.
+ * @param {string} blockName Block name.
  */
 
 
-function setUnknownTypeHandlerName(name) {
-  (0, _data.dispatch)('core/blocks').setFallbackBlockName(name);
+function setFreeformContentHandlerName(blockName) {
+  (0, _data.dispatch)('core/blocks').setFreeformFallbackBlockName(blockName);
 }
 /**
- * Retrieves name of block handling unknown block types, or undefined if no
+ * Retrieves name of block handling non-block content, or undefined if no
  * handler has been defined.
  *
  * @return {?string} Blog name.
  */
 
 
-function getUnknownTypeHandlerName() {
-  return (0, _data.select)('core/blocks').getFallbackBlockName();
+function getFreeformContentHandlerName() {
+  return (0, _data.select)('core/blocks').getFreeformFallbackBlockName();
+}
+/**
+ * Assigns name of block handling unregistered block types.
+ *
+ * @param {string} blockName Block name.
+ */
+
+
+function setUnregisteredTypeHandlerName(blockName) {
+  (0, _data.dispatch)('core/blocks').setUnregisteredFallbackBlockName(blockName);
+}
+/**
+ * Retrieves name of block handling unregistered block types, or undefined if no
+ * handler has been defined.
+ *
+ * @return {?string} Blog name.
+ */
+
+
+function getUnregisteredTypeHandlerName() {
+  return (0, _data.select)('core/blocks').getUnregisteredFallbackBlockName();
 }
 /**
  * Assigns the default block name.
@@ -246,23 +244,6 @@ function setDefaultBlockName(name) {
 
 function getDefaultBlockName() {
   return (0, _data.select)('core/blocks').getDefaultBlockName();
-}
-/**
- * Retrieves the expected default block for the post format.
- *
- * @param	{string} postFormat Post format
- * @return {string}            Block name.
- */
-
-
-function getDefaultBlockForPostFormat(postFormat) {
-  var blockName = POST_FORMAT_BLOCK_MAP[postFormat];
-
-  if (blockName && getBlockType(blockName)) {
-    return blockName;
-  }
-
-  return null;
 }
 /**
  * Returns a registered block type.
@@ -293,13 +274,13 @@ function getBlockTypes() {
  * @param  {string}          feature         Feature to retrieve
  * @param  {*}               defaultSupports Default value to return if not
  *                                           explicitly defined
- * @return {?*}                              Block support value
+ *
+ * @return {?*} Block support value
  */
 
 
 function getBlockSupport(nameOrType, feature, defaultSupports) {
-  var blockType = 'string' === typeof nameOrType ? getBlockType(nameOrType) : nameOrType;
-  return (0, _lodash.get)(blockType, ['supports', feature], defaultSupports);
+  return (0, _data.select)('core/blocks').getBlockSupport(nameOrType, feature, defaultSupports);
 }
 /**
  * Returns true if the block defines support for a feature, or false otherwise.
@@ -314,7 +295,7 @@ function getBlockSupport(nameOrType, feature, defaultSupports) {
 
 
 function hasBlockSupport(nameOrType, feature, defaultSupports) {
-  return !!getBlockSupport(nameOrType, feature, defaultSupports);
+  return (0, _data.select)('core/blocks').hasBlockSupport(nameOrType, feature, defaultSupports);
 }
 /**
  * Determines whether or not the given block is a reusable block. This is a
@@ -329,15 +310,6 @@ function hasBlockSupport(nameOrType, feature, defaultSupports) {
 
 function isReusableBlock(blockOrType) {
   return blockOrType.name === 'core/block';
-}
-
-function isSharedBlock(blockOrType) {
-  (0, _deprecated.default)('isSharedBlock', {
-    alternative: 'isReusableBlock',
-    version: '3.6',
-    plugin: 'Gutenberg'
-  });
-  return isReusableBlock(blockOrType);
 }
 /**
  * Returns an array with the child blocks of a given block.
@@ -366,6 +338,21 @@ var hasChildBlocks = function hasChildBlocks(blockName) {
   return (0, _data.select)('core/blocks').hasChildBlocks(blockName);
 };
 /**
+ * Returns a boolean indicating if a block has at least one child block with inserter support.
+ *
+ * @param {string} blockName Block type name.
+ *
+ * @return {boolean} True if a block contains at least one child blocks with inserter support
+ *                   and false otherwise.
+ */
+
+
+exports.hasChildBlocks = hasChildBlocks;
+
+var hasChildBlocksWithInserterSupport = function hasChildBlocksWithInserterSupport(blockName) {
+  return (0, _data.select)('core/blocks').hasChildBlocksWithInserterSupport(blockName);
+};
+/**
  * Registers a new block style variation for the given block.
  *
  * @param {string} blockName      Name of block (example: “core/latest-posts”).
@@ -373,18 +360,24 @@ var hasChildBlocks = function hasChildBlocks(blockName) {
  */
 
 
-exports.hasChildBlocks = hasChildBlocks;
+exports.hasChildBlocksWithInserterSupport = hasChildBlocksWithInserterSupport;
 
 var registerBlockStyle = function registerBlockStyle(blockName, styleVariation) {
-  (0, _hooks.addFilter)('blocks.registerBlockType', "".concat(blockName, "/").concat(styleVariation.name), function (settings, name) {
-    if (blockName !== name) {
-      return settings;
-    }
-
-    return (0, _objectSpread2.default)({}, settings, {
-      styles: (0, _toConsumableArray2.default)((0, _lodash.get)(settings, ['styles'], [])).concat([styleVariation])
-    });
-  });
+  (0, _data.dispatch)('core/blocks').addBlockStyles(blockName, styleVariation);
 };
+/**
+ * Unregisters a block style variation for the given block.
+ *
+ * @param {string} blockName          Name of block (example: “core/latest-posts”).
+ * @param {string} styleVariationName Name of class applied to the block.
+ */
+
 
 exports.registerBlockStyle = registerBlockStyle;
+
+var unregisterBlockStyle = function unregisterBlockStyle(blockName, styleVariationName) {
+  (0, _data.dispatch)('core/blocks').removeBlockStyles(blockName, styleVariationName);
+};
+
+exports.unregisterBlockStyle = unregisterBlockStyle;
+//# sourceMappingURL=registration.js.map

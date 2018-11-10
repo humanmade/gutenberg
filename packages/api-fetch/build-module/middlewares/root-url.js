@@ -1,5 +1,4 @@
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import "core-js/modules/es6.regexp.replace";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 /**
  * Internal dependencies
@@ -38,3 +37,4 @@ var createRootURLMiddleware = function createRootURLMiddleware(rootURL) {
 };
 
 export default createRootURLMiddleware;
+//# sourceMappingURL=root-url.js.map

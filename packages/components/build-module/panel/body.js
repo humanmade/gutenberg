@@ -1,9 +1,10 @@
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -14,15 +15,15 @@ import classnames from 'classnames';
  * WordPress dependencies
  */
 
-import { Component } from '@wordpress/element';
+import { Component, forwardRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
 
 import Button from '../button';
-import Dashicon from '../dashicon';
-
-var PanelBody =
+import Icon from '../icon';
+import { G, Path, SVG } from '../primitives';
+export var PanelBody =
 /*#__PURE__*/
 function (_Component) {
   _inherits(PanelBody, _Component);
@@ -65,31 +66,60 @@ function (_Component) {
           children = _this$props.children,
           opened = _this$props.opened,
           className = _this$props.className,
-          icon = _this$props.icon;
+          icon = _this$props.icon,
+          forwardedRef = _this$props.forwardedRef;
       var isOpened = opened === undefined ? this.state.opened : opened;
-      var arrow = "arrow-".concat(isOpened ? 'up' : 'down');
       var classes = classnames('components-panel__body', className, {
         'is-opened': isOpened
       });
       return createElement("div", {
-        className: classes
+        className: classes,
+        ref: forwardedRef
       }, !!title && createElement("h2", {
         className: "components-panel__body-title"
       }, createElement(Button, {
         className: "components-panel__body-toggle",
         onClick: this.toggle,
         "aria-expanded": isOpened
-      }, createElement(Dashicon, {
-        icon: arrow,
-        className: "components-panel__arrow"
-      }), icon && createElement(Dashicon, {
+      }, isOpened ? createElement(SVG, {
+        className: "components-panel__arrow",
+        width: "24px",
+        height: "24px",
+        viewBox: "0 0 24 24",
+        xmlns: "http://www.w3.org/2000/svg"
+      }, createElement(G, null, createElement(Path, {
+        fill: "none",
+        d: "M0,0h24v24H0V0z"
+      })), createElement(G, null, createElement(Path, {
+        d: "M12,8l-6,6l1.41,1.41L12,10.83l4.59,4.58L18,14L12,8z"
+      }))) : createElement(SVG, {
+        className: "components-panel__arrow",
+        width: "24px",
+        height: "24px",
+        viewBox: "0 0 24 24",
+        xmlns: "http://www.w3.org/2000/svg"
+      }, createElement(G, null, createElement(Path, {
+        fill: "none",
+        d: "M0,0h24v24H0V0z"
+      })), createElement(G, null, createElement(Path, {
+        d: "M7.41,8.59L12,13.17l4.59-4.58L18,10l-6,6l-6-6L7.41,8.59z"
+      }))), title, icon && createElement(Icon, {
         icon: icon,
-        className: "components-panel__icon"
-      }), title)), isOpened && children);
+        className: "components-panel__icon",
+        size: 20
+      }))), isOpened && children);
     }
   }]);
 
   return PanelBody;
 }(Component);
 
-export default PanelBody;
+var forwardedPanelBody = function forwardedPanelBody(props, ref) {
+  return createElement(PanelBody, _extends({}, props, {
+    forwardedRef: ref
+  }));
+};
+
+forwardedPanelBody.displayName = 'PanelBody';
+export default forwardRef(forwardedPanelBody);
+//# sourceMappingURL=body.js.map

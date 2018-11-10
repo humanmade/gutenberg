@@ -79,3 +79,4 @@ function createNextpage(doc) {
   node.dataset.block = 'core/nextpage';
   return node;
 }
+//# sourceMappingURL=special-comment-converter.js.map

@@ -7,8 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = _default;
 
-require("core-js/modules/es6.function.name");
-
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 /**
@@ -104,3 +102,4 @@ function _default(babel) {
     }
   };
 }
+//# sourceMappingURL=index.js.map

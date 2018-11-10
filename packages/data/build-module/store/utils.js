@@ -1,5 +1,5 @@
-import _defineProperty from "@babel/runtime/helpers/defineProperty";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
+import _defineProperty from "@babel/runtime/helpers/esm/defineProperty";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 /**
  * Higher-order reducer creator which creates a combined reducer object, keyed
@@ -34,3 +34,4 @@ export var onSubKey = function onSubKey(actionProperty) {
     };
   };
 };
+//# sourceMappingURL=utils.js.map

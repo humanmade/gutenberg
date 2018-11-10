@@ -9,11 +9,7 @@ exports.default = ColorPalette;
 
 var _element = require("@wordpress/element");
 
-require("core-js/modules/es6.function.name");
-
 var _classnames = _interopRequireDefault(require("classnames"));
-
-var _reactColor = require("react-color");
 
 var _lodash = require("lodash");
 
@@ -24,6 +20,8 @@ var _button = _interopRequireDefault(require("../button"));
 var _dropdown = _interopRequireDefault(require("../dropdown"));
 
 var _tooltip = _interopRequireDefault(require("../tooltip"));
+
+var _colorPicker = _interopRequireDefault(require("../color-picker"));
 
 /**
  * External dependencies
@@ -98,7 +96,7 @@ function ColorPalette(_ref) {
       })));
     },
     renderContent: function renderContent() {
-      return (0, _element.createElement)(_reactColor.ChromePicker, {
+      return (0, _element.createElement)(_colorPicker.default, {
         color: value,
         onChangeComplete: function onChangeComplete(color) {
           return onChange(color.hex);
@@ -112,6 +110,8 @@ function ColorPalette(_ref) {
     onClick: function onClick() {
       return onChange(undefined);
     },
-    isLink: true
+    isSmall: true,
+    isDefault: true
   }, (0, _i18n.__)('Clear')));
 }
+//# sourceMappingURL=index.js.map

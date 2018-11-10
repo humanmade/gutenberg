@@ -2,16 +2,12 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es6.array.find");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
 
 var _element = require("@wordpress/element");
-
-require("core-js/modules/es6.function.name");
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
@@ -137,7 +133,7 @@ function (_Component) {
         id: selectedId + '-view',
         className: "components-tab-panel__tab-content",
         tabIndex: "0"
-      }, this.props.children(selectedTab.name)));
+      }, this.props.children(selectedTab)));
     }
   }]);
   return TabPanel;
@@ -146,3 +142,4 @@ function (_Component) {
 var _default = (0, _compose.withInstanceId)(TabPanel);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

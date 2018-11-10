@@ -38,13 +38,25 @@ var isResolved = (0, _lodash.flowRight)([(0, _utils.onSubKey)('reducerKey'), (0,
   switch (action.type) {
     case 'START_RESOLUTION':
     case 'FINISH_RESOLUTION':
-      var isStarting = action.type === 'START_RESOLUTION';
-      var nextState = new _equivalentKeyMap.default(state);
-      nextState.set(action.args, isStarting);
-      return nextState;
+      {
+        var isStarting = action.type === 'START_RESOLUTION';
+        var nextState = new _equivalentKeyMap.default(state);
+        nextState.set(action.args, isStarting);
+        return nextState;
+      }
+
+    case 'INVALIDATE_RESOLUTION':
+      {
+        var _nextState = new _equivalentKeyMap.default(state);
+
+        _nextState.delete(action.args);
+
+        return _nextState;
+      }
   }
 
   return state;
 });
 var _default = isResolved;
 exports.default = _default;
+//# sourceMappingURL=reducer.js.map

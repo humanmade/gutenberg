@@ -2,10 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es7.array.includes");
-
-require("core-js/modules/es6.string.includes");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -178,3 +174,4 @@ var _default = (0, _compose.createHigherOrderComponent)(function (WrappedCompone
 }, 'withFocusOutside');
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

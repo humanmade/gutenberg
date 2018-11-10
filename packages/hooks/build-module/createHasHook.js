@@ -21,3 +21,4 @@ function createHasHook(hooks) {
 }
 
 export default createHasHook;
+//# sourceMappingURL=createHasHook.js.map

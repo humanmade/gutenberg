@@ -44,3 +44,4 @@ export var speak = function speak(message, ariaLive) {
     containerPolite.textContent = message;
   }
 };
+//# sourceMappingURL=index.js.map

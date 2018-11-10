@@ -37,3 +37,4 @@ var ifCondition = function ifCondition(predicate) {
 
 var _default = ifCondition;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

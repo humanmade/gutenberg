@@ -88,3 +88,4 @@ function SelectControl(_ref) {
 var _default = (0, _compose.withInstanceId)(SelectControl);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

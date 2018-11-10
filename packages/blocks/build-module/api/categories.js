@@ -20,3 +20,4 @@ export function getCategories() {
 export function setCategories(categories) {
   dispatch('core/blocks').setCategories(categories);
 }
+//# sourceMappingURL=categories.js.map

@@ -1,5 +1,5 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -45,3 +45,4 @@ function TextareaControl(_ref) {
 }
 
 export default withInstanceId(TextareaControl);
+//# sourceMappingURL=index.js.map

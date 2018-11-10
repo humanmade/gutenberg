@@ -23,3 +23,4 @@ function _default(node) {
     (0, _dom.remove)(node);
   }
 }
+//# sourceMappingURL=iframe-remover.js.map

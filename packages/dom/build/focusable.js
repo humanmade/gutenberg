@@ -9,14 +9,6 @@ exports.find = find;
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
-require("core-js/modules/es6.function.name");
-
-require("element-closest");
-
-/**
- * External dependencies
- */
-
 /**
  * References:
  *
@@ -94,3 +86,4 @@ function find(context) {
     return true;
   });
 }
+//# sourceMappingURL=focusable.js.map

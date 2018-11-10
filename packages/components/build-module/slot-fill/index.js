@@ -1,5 +1,4 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _extends from "@babel/runtime/helpers/esm/extends";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -7,29 +6,23 @@ import { createElement } from "@wordpress/element";
  */
 import Slot from './slot';
 import Fill from './fill';
-import Provider from './provider';
+import Provider, { Consumer } from './context';
 export { Slot };
 export { Fill };
-export { Provider };
+export { Provider, Consumer };
 export function createSlotFill(name) {
-  var FillComponent = function FillComponent(_ref) {
-    var children = _ref.children,
-        props = _objectWithoutProperties(_ref, ["children"]);
-
+  var FillComponent = function FillComponent(props) {
     return createElement(Fill, _extends({
       name: name
-    }, props), children);
+    }, props));
   };
 
   FillComponent.displayName = name + 'Fill';
 
-  var SlotComponent = function SlotComponent(_ref2) {
-    var children = _ref2.children,
-        props = _objectWithoutProperties(_ref2, ["children"]);
-
+  var SlotComponent = function SlotComponent(props) {
     return createElement(Slot, _extends({
       name: name
-    }, props), children);
+    }, props));
   };
 
   SlotComponent.displayName = name + 'Slot';
@@ -38,3 +31,4 @@ export function createSlotFill(name) {
     Slot: SlotComponent
   };
 }
+//# sourceMappingURL=index.js.map

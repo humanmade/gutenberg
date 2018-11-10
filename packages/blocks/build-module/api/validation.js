@@ -1,11 +1,7 @@
-import "core-js/modules/es6.regexp.to-string";
-import "core-js/modules/es6.function.name";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import _toArray from "@babel/runtime/helpers/toArray";
-import "core-js/modules/es6.regexp.replace";
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
-import "core-js/modules/es6.regexp.split";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _toArray from "@babel/runtime/helpers/esm/toArray";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
 
 /**
  * External dependencies
@@ -13,10 +9,16 @@ import "core-js/modules/es6.regexp.split";
 import { tokenize } from 'simple-html-tokenizer';
 import { xor, fromPairs, isEqual, includes, stubTrue } from 'lodash';
 /**
+ * WordPress dependencies
+ */
+
+import deprecated from '@wordpress/deprecated';
+/**
  * Internal dependencies
  */
 
 import { getSaveContent } from './serializer';
+import { normalizeBlockType } from './utils';
 /**
  * Globally matches any consecutive whitespace
  *
@@ -54,7 +56,7 @@ var REGEXP_STYLE_URL_TYPE = /^url\s*\(['"\s]*(.*?)['"\s]*\)$/;
  * @type {Array}
  */
 
-var BOOLEAN_ATTRIBUTES = ['allowfullscreen', 'allowpaymentrequest', 'allowusermedia', 'async', 'autofocus', 'autoplay', 'checked', 'controls', 'default', 'defer', 'disabled', 'formnovalidate', 'hidden', 'ismap', 'itemscope', 'loop', 'multiple', 'muted', 'nomodule', 'novalidate', 'open', 'playsinline', 'readonly', 'required', 'reversed', 'selected', 'typemustmatch'];
+var BOOLEAN_ATTRIBUTES = ['allowfullscreen', 'allowpaymentrequest', 'allowusermedia', 'async', 'autofocus', 'autoplay', 'checked', 'controls', 'default', 'defer', 'disabled', 'download', 'formnovalidate', 'hidden', 'ismap', 'itemscope', 'loop', 'multiple', 'muted', 'nomodule', 'novalidate', 'open', 'playsinline', 'readonly', 'required', 'reversed', 'selected', 'typemustmatch'];
 /**
  * Enumerated attributes are attributes which must be of a specific value form.
  * Like boolean attributes, these are meaningful if specified, even if not of a
@@ -341,8 +343,50 @@ export function getNextNonWhitespaceToken(tokens) {
   }
 }
 /**
- * Returns true if there is given HTML strings are effectively equivalent, or
- * false otherwise.
+ * Tokenize an HTML string, gracefully handling any errors thrown during
+ * underlying tokenization.
+ *
+ * @param {string} html HTML string to tokenize.
+ *
+ * @return {Object[]|null} Array of valid tokenized HTML elements, or null on error
+ */
+
+function getHTMLTokens(html) {
+  try {
+    return tokenize(html);
+  } catch (e) {
+    log.warning('Malformed HTML detected: %s', html);
+  }
+
+  return null;
+}
+/**
+ * Returns true if the next HTML token closes the current token.
+ *
+ * @param {Object} currentToken Current token to compare with.
+ * @param {Object|undefined} nextToken Next token to compare against.
+ *
+ * @return {boolean} true if `nextToken` closes `currentToken`, false otherwise
+ */
+
+
+export function isClosedByToken(currentToken, nextToken) {
+  // Ensure this is a self closed token
+  if (!currentToken.selfClosing) {
+    return false;
+  } // Check token names and determine if nextToken is the closing tag for currentToken
+
+
+  if (nextToken && nextToken.tagName === currentToken.tagName && nextToken.type === 'EndTag') {
+    return true;
+  }
+
+  return false;
+}
+/**
+ * Returns true if the given HTML strings are effectively equivalent, or
+ * false otherwise. Invalid HTML is not considered equivalent, even if the
+ * strings directly match.
  *
  * @param {string} actual Actual HTML string.
  * @param {string} expected Expected HTML string.
@@ -352,10 +396,15 @@ export function getNextNonWhitespaceToken(tokens) {
 
 export function isEquivalentHTML(actual, expected) {
   // Tokenize input content and reserialized save content
-  var _map3 = [actual, expected].map(tokenize),
+  var _map3 = [actual, expected].map(getHTMLTokens),
       _map4 = _slicedToArray(_map3, 2),
       actualTokens = _map4[0],
-      expectedTokens = _map4[1];
+      expectedTokens = _map4[1]; // If either is malformed then stop comparing - the strings are not equivalent
+
+
+  if (!actualTokens || !expectedTokens) {
+    return false;
+  }
 
   var actualToken, expectedToken;
 
@@ -379,6 +428,18 @@ export function isEquivalentHTML(actual, expected) {
 
     if (isEqualTokens && !isEqualTokens(actualToken, expectedToken)) {
       return false;
+    } // Peek at the next tokens (actual and expected) to see if they close
+    // a self-closing tag
+
+
+    if (isClosedByToken(actualToken, expectedTokens[0])) {
+      // Consume the next expected token that closes the current actual
+      // self-closing token
+      getNextNonWhitespaceToken(expectedTokens);
+    } else if (isClosedByToken(expectedToken, actualTokens[0])) {
+      // Consume the next actual token that closes the current expected
+      // self-closing token
+      getNextNonWhitespaceToken(actualTokens);
     }
   }
 
@@ -391,6 +452,15 @@ export function isEquivalentHTML(actual, expected) {
 
   return true;
 }
+export function isValidBlock(innerHTML, blockType, attributes) {
+  deprecated('isValidBlock', {
+    plugin: 'Gutenberg',
+    version: '4.4',
+    alternative: 'isValidBlockContent',
+    hint: 'The order of params has changed.'
+  });
+  return isValidBlockContent(blockType, attributes, innerHTML);
+}
 /**
  * Returns true if the parsed block is valid given the input content. A block
  * is considered valid if, when serialized with assumed attributes, the content
@@ -398,14 +468,15 @@ export function isEquivalentHTML(actual, expected) {
  *
  * Logs to console in development environments when invalid.
  *
- * @param {string} innerHTML  Original block content.
- * @param {string} blockType  Block type.
- * @param {Object} attributes Parsed block attributes.
+ * @param {string|Object} blockTypeOrName Block type.
+ * @param {Object}        attributes      Parsed block attributes.
+ * @param {string}        innerHTML       Original block content.
  *
  * @return {boolean} Whether block is valid.
  */
 
-export function isValidBlock(innerHTML, blockType, attributes) {
+export function isValidBlockContent(blockTypeOrName, attributes, innerHTML) {
+  var blockType = normalizeBlockType(blockTypeOrName);
   var saveContent;
 
   try {
@@ -423,3 +494,4 @@ export function isValidBlock(innerHTML, blockType, attributes) {
 
   return isValid;
 }
+//# sourceMappingURL=validation.js.map

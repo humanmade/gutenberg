@@ -14,3 +14,4 @@ registerStore('core/blocks', {
   selectors: selectors,
   actions: actions
 });
+//# sourceMappingURL=index.js.map

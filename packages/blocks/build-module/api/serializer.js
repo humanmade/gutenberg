@@ -1,7 +1,4 @@
-import "core-js/modules/es6.function.name";
-import _JSON$stringify from "@babel/runtime/core-js/json/stringify";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import "core-js/modules/es6.regexp.replace";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -19,7 +16,8 @@ import isShallowEqual from '@wordpress/is-shallow-equal';
  * Internal dependencies
  */
 
-import { getBlockType, getUnknownTypeHandlerName } from './registration';
+import { getBlockType, getFreeformContentHandlerName, getUnregisteredTypeHandlerName } from './registration';
+import { normalizeBlockType } from './utils';
 import BlockContentProvider from '../block-content-provider';
 /**
  * Returns the block's default classname from its name.
@@ -53,15 +51,16 @@ export function getBlockMenuDefaultClassName(blockName) {
  * Given a block type containing a save render implementation and attributes, returns the
  * enhanced element to be saved or string when raw HTML expected.
  *
- * @param {Object} blockType   Block type.
- * @param {Object} attributes  Block attributes.
- * @param {?Array} innerBlocks Nested blocks.
+ * @param {string|Object} blockTypeOrName   Block type or name.
+ * @param {Object}        attributes        Block attributes.
+ * @param {?Array}        innerBlocks       Nested blocks.
  *
  * @return {Object|string} Save element or raw HTML string.
  */
 
-export function getSaveElement(blockType, attributes) {
+export function getSaveElement(blockTypeOrName, attributes) {
   var innerBlocks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+  var blockType = normalizeBlockType(blockTypeOrName);
   var save = blockType.save; // Component classes are unsupported for save since serialization must
   // occur synchronously. For improved interoperability with higher-order
   // components which often return component class, emulate basic support.
@@ -110,14 +109,15 @@ export function getSaveElement(blockType, attributes) {
  * Given a block type containing a save render implementation and attributes, returns the
  * static markup to be saved.
  *
- * @param {Object} blockType   Block type.
- * @param {Object} attributes  Block attributes.
- * @param {?Array} innerBlocks Nested blocks.
+ * @param {string|Object} blockTypeOrName Block type or name.
+ * @param {Object}        attributes      Block attributes.
+ * @param {?Array}        innerBlocks     Nested blocks.
  *
  * @return {string} Save content.
  */
 
-export function getSaveContent(blockType, attributes, innerBlocks) {
+export function getSaveContent(blockTypeOrName, attributes, innerBlocks) {
+  var blockType = normalizeBlockType(blockTypeOrName);
   return renderToString(getSaveElement(blockType, attributes, innerBlocks));
 }
 /**
@@ -131,15 +131,15 @@ export function getSaveContent(blockType, attributes, innerBlocks) {
  * This function returns only those attributes which are needed to persist and
  * which cannot be matched from the block content.
  *
- * @param {Object<string,*>} allAttributes Attributes from in-memory block data.
  * @param {Object<string,*>} blockType     Block type.
+ * @param {Object<string,*>} attributes Attributes from in-memory block data.
  *
  * @return {Object<string,*>} Subset of attributes for comment serialization.
  */
 
-export function getCommentAttributes(allAttributes, blockType) {
-  var attributes = reduce(blockType.attributes, function (result, attributeSchema, key) {
-    var value = allAttributes[key]; // Ignore undefined values.
+export function getCommentAttributes(blockType, attributes) {
+  return reduce(blockType.attributes, function (result, attributeSchema, key) {
+    var value = attributes[key]; // Ignore undefined values.
 
     if (undefined === value) {
       return result;
@@ -160,7 +160,6 @@ export function getCommentAttributes(allAttributes, blockType) {
     result[key] = value;
     return result;
   }, {});
-  return attributes;
 }
 /**
  * Given an attributes object, returns a string in the serialized attributes
@@ -172,7 +171,7 @@ export function getCommentAttributes(allAttributes, blockType) {
  */
 
 export function serializeAttributes(attributes) {
-  return _JSON$stringify(attributes) // Don't break HTML comments.
+  return JSON.stringify(attributes) // Don't break HTML comments.
   .replace(/--/g, "\\u002d\\u002d") // Don't break non-standard-compliant tools.
   .replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026") // Bypass server stripslashes behavior which would unescape stringify's
   // escaping of quotation mark.
@@ -183,24 +182,23 @@ export function serializeAttributes(attributes) {
 /**
  * Given a block object, returns the Block's Inner HTML markup.
  *
- * @param {Object} block Block Object.
+ * @param {Object} block Block instance.
  *
  * @return {string} HTML.
  */
 
 export function getBlockContent(block) {
   // @todo why not getBlockInnerHtml?
-  var blockType = getBlockType(block.name); // If block was parsed as invalid or encounters an error while generating
+  // If block was parsed as invalid or encounters an error while generating
   // save content, use original content instead to avoid content loss. If a
   // block contains nested content, exempt it from this condition because we
   // otherwise have no access to its original content and content loss would
   // still occur.
-
   var saveContent = block.originalContent;
 
   if (block.isValid || block.innerBlocks.length) {
     try {
-      saveContent = getSaveContent(blockType, block.attributes, block.innerBlocks);
+      saveContent = getSaveContent(block.name, block.attributes, block.innerBlocks);
     } catch (error) {}
   }
 
@@ -240,10 +238,11 @@ export function serializeBlock(block) {
   var blockName = block.name;
   var blockType = getBlockType(blockName);
   var saveContent = getBlockContent(block);
-  var saveAttributes = getCommentAttributes(block.attributes, blockType);
+  var saveAttributes = getCommentAttributes(blockType, block.attributes);
 
   switch (blockName) {
-    case getUnknownTypeHandlerName():
+    case getFreeformContentHandlerName():
+    case getUnregisteredTypeHandlerName():
       return saveContent;
 
     default:
@@ -261,3 +260,4 @@ export function serializeBlock(block) {
 export default function serialize(blocks) {
   return castArray(blocks).map(serializeBlock).join('\n\n');
 }
+//# sourceMappingURL=serializer.js.map

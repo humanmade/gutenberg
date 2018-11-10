@@ -1,5 +1,3 @@
-import "core-js/modules/es6.regexp.match";
-import "core-js/modules/es6.regexp.constructor";
 import { extend, flow } from 'lodash';
 import { defaultSettings } from './defaultSettings';
 import stripTags from './stripTags';
@@ -80,11 +78,15 @@ function matchCharacters(text, regex, settings) {
 
 
 export function count(text, type, userSettings) {
-  var settings = loadSettings(type, userSettings);
+  if ('' === text) {
+    return 0;
+  }
 
   if (text) {
+    var settings = loadSettings(type, userSettings);
     var matchRegExp = settings[type + 'RegExp'];
     var results = 'words' === settings.type ? matchWords(text, matchRegExp, settings) : matchCharacters(text, matchRegExp, settings);
     return results ? results.length : 0;
   }
 }
+//# sourceMappingURL=index.js.map

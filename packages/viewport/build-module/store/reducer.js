@@ -1,6 +1,3 @@
-import "core-js/modules/web.dom.iterable";
-import "core-js/modules/es6.array.iterator";
-
 /**
  * Reducer returning the viewport state, as keys of breakpoint queries with
  * boolean value representing whether query is matched.
@@ -23,3 +20,4 @@ function reducer() {
 }
 
 export default reducer;
+//# sourceMappingURL=reducer.js.map

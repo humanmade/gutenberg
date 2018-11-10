@@ -1,4 +1,4 @@
-import _extends from "@babel/runtime/helpers/extends";
+import _extends from "@babel/runtime/helpers/esm/extends";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -22,3 +22,4 @@ export default function CategorySelect(_ref) {
     selectedId: selectedCategoryId
   }));
 }
+//# sourceMappingURL=category-select.js.map

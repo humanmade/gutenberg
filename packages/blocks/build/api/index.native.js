@@ -1,5 +1,7 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
 
 Object.defineProperty(exports, "__esModule", {
@@ -9,6 +11,12 @@ Object.defineProperty(exports, "createBlock", {
   enumerable: true,
   get: function get() {
     return _factory.createBlock;
+  }
+});
+Object.defineProperty(exports, "switchToBlockType", {
+  enumerable: true,
+  get: function get() {
+    return _factory.switchToBlockType;
   }
 });
 Object.defineProperty(exports, "parse", {
@@ -53,16 +61,52 @@ Object.defineProperty(exports, "registerBlockType", {
     return _registration.registerBlockType;
   }
 });
+Object.defineProperty(exports, "setUnregisteredTypeHandlerName", {
+  enumerable: true,
+  get: function get() {
+    return _registration.setUnregisteredTypeHandlerName;
+  }
+});
+Object.defineProperty(exports, "getUnregisteredTypeHandlerName", {
+  enumerable: true,
+  get: function get() {
+    return _registration.getUnregisteredTypeHandlerName;
+  }
+});
 Object.defineProperty(exports, "getBlockType", {
   enumerable: true,
   get: function get() {
     return _registration.getBlockType;
   }
 });
+Object.defineProperty(exports, "getBlockTypes", {
+  enumerable: true,
+  get: function get() {
+    return _registration.getBlockTypes;
+  }
+});
 Object.defineProperty(exports, "hasBlockSupport", {
   enumerable: true,
   get: function get() {
     return _registration.hasBlockSupport;
+  }
+});
+Object.defineProperty(exports, "isReusableBlock", {
+  enumerable: true,
+  get: function get() {
+    return _registration.isReusableBlock;
+  }
+});
+Object.defineProperty(exports, "getPhrasingContentSchema", {
+  enumerable: true,
+  get: function get() {
+    return _rawHandling.getPhrasingContentSchema;
+  }
+});
+Object.defineProperty(exports, "children", {
+  enumerable: true,
+  get: function get() {
+    return _children.default;
   }
 });
 
@@ -73,3 +117,8 @@ var _parser = _interopRequireWildcard(require("./parser"));
 var _serializer = _interopRequireWildcard(require("./serializer"));
 
 var _registration = require("./registration");
+
+var _rawHandling = require("./raw-handling");
+
+var _children = _interopRequireDefault(require("./children"));
+//# sourceMappingURL=index.native.js.map

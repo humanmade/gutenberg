@@ -23,3 +23,4 @@ function validateNamespace(namespace) {
 }
 
 export default validateNamespace;
+//# sourceMappingURL=validateNamespace.js.map

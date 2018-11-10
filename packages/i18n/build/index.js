@@ -6,17 +6,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.setLocaleData = setLocaleData;
-exports.getI18n = getI18n;
 exports.__ = __;
 exports._x = _x;
 exports._n = _n;
 exports._nx = _nx;
 exports.sprintf = sprintf;
-exports.dcnpgettext = void 0;
-
-require("core-js/modules/es6.regexp.to-string");
-
-var _assign = _interopRequireDefault(require("@babel/runtime/core-js/object/assign"));
 
 var _jed = _interopRequireDefault(require("jed"));
 
@@ -56,12 +50,14 @@ function setLocaleData() {
     i18n = new _jed.default({
       domain: 'default',
       locale_data: {
-        default: {}
+        default: {
+          '': {}
+        }
       }
     });
   }
 
-  i18n.options.locale_data[domain] = (0, _assign.default)({}, i18n.options.locale_data[domain], localeData);
+  i18n.options.locale_data[domain] = Object.assign({}, i18n.options.locale_data[domain], localeData);
 }
 /**
  * Returns the current Jed instance, initializing with a default configuration
@@ -118,8 +114,6 @@ var dcnpgettext = (0, _memize.default)(function () {
  *
  * @return {string} Translated text.
  */
-
-exports.dcnpgettext = dcnpgettext;
 
 function __(text, domain) {
   return dcnpgettext(domain, undefined, text);
@@ -204,3 +198,4 @@ function sprintf(format) {
     return format;
   }
 }
+//# sourceMappingURL=index.js.map

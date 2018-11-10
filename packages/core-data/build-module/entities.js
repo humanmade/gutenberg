@@ -1,24 +1,24 @@
-import _regeneratorRuntime from "@babel/runtime/regenerator";
-import "regenerator-runtime/runtime";
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _awaitAsyncGenerator from "@babel/runtime/helpers/awaitAsyncGenerator";
-import _wrapAsyncGenerator from "@babel/runtime/helpers/wrapAsyncGenerator";
+var _marked =
+/*#__PURE__*/
+regeneratorRuntime.mark(loadPostTypeEntities),
+    _marked2 =
+/*#__PURE__*/
+regeneratorRuntime.mark(loadTaxonomyEntities),
+    _marked3 =
+/*#__PURE__*/
+regeneratorRuntime.mark(getKindEntities);
 
 /**
  * External dependencies
  */
 import { upperFirst, camelCase, map, find } from 'lodash';
 /**
- * WordPress dependencies
- */
-
-import apiFetch from '@wordpress/api-fetch';
-/**
  * Internal dependencies
  */
 
-import { getEntitiesByKind } from './selectors';
 import { addEntities } from './actions';
+import { apiFetch, select } from './controls';
+export var DEFAULT_ENTITY_KEY = 'id';
 export var defaultEntities = [{
   name: 'postType',
   kind: 'root',
@@ -39,6 +39,9 @@ export var defaultEntities = [{
 export var kinds = [{
   name: 'postType',
   loadEntities: loadPostTypeEntities
+}, {
+  name: 'taxonomy',
+  loadEntities: loadTaxonomyEntities
 }];
 /**
  * Returns the list of post type entities.
@@ -47,7 +50,67 @@ export var kinds = [{
  */
 
 function loadPostTypeEntities() {
-  return _loadPostTypeEntities.apply(this, arguments);
+  var postTypes;
+  return regeneratorRuntime.wrap(function loadPostTypeEntities$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return apiFetch({
+            path: '/wp/v2/types?context=edit'
+          });
+
+        case 2:
+          postTypes = _context.sent;
+          return _context.abrupt("return", map(postTypes, function (postType, name) {
+            return {
+              kind: 'postType',
+              baseURL: '/wp/v2/' + postType.rest_base,
+              name: name
+            };
+          }));
+
+        case 4:
+        case "end":
+          return _context.stop();
+      }
+    }
+  }, _marked, this);
+}
+/**
+ * Returns the list of the taxonomies entities.
+ *
+ * @return {Promise} Entities promise
+ */
+
+
+function loadTaxonomyEntities() {
+  var taxonomies;
+  return regeneratorRuntime.wrap(function loadTaxonomyEntities$(_context2) {
+    while (1) {
+      switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.next = 2;
+          return apiFetch({
+            path: '/wp/v2/taxonomies?context=edit'
+          });
+
+        case 2:
+          taxonomies = _context2.sent;
+          return _context2.abrupt("return", map(taxonomies, function (taxonomy, name) {
+            return {
+              kind: 'taxonomy',
+              baseURL: '/wp/v2/' + taxonomy.rest_base,
+              name: name
+            };
+          }));
+
+        case 4:
+        case "end":
+          return _context2.stop();
+      }
+    }
+  }, _marked2, this);
 }
 /**
  * Returns the entity's getter method name given its kind and name.
@@ -60,40 +123,6 @@ function loadPostTypeEntities() {
  * @return {string} Method name
  */
 
-
-function _loadPostTypeEntities() {
-  _loadPostTypeEntities = _asyncToGenerator(
-  /*#__PURE__*/
-  _regeneratorRuntime.mark(function _callee2() {
-    var postTypes;
-    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            _context2.next = 2;
-            return apiFetch({
-              path: '/wp/v2/types?context=edit'
-            });
-
-          case 2:
-            postTypes = _context2.sent;
-            return _context2.abrupt("return", map(postTypes, function (postType, name) {
-              return {
-                kind: 'postType',
-                baseURL: '/wp/v2/' + postType.rest_base,
-                name: name
-              };
-            }));
-
-          case 4:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2, this);
-  }));
-  return _loadPostTypeEntities.apply(this, arguments);
-}
 
 export var getMethodName = function getMethodName(kind, name) {
   var prefix = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'get';
@@ -110,64 +139,59 @@ export var getMethodName = function getMethodName(kind, name) {
 /**
  * Loads the kind entities into the store.
  *
- * @param {Object} state Global state
  * @param {string} kind  Kind
  *
  * @return {Array} Entities
  */
 
-export function getKindEntities(_x, _x2) {
-  return _getKindEntities.apply(this, arguments);
-}
+export function getKindEntities(kind) {
+  var entities, kindConfig;
+  return regeneratorRuntime.wrap(function getKindEntities$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.next = 2;
+          return select('getEntitiesByKind', kind);
 
-function _getKindEntities() {
-  _getKindEntities = _wrapAsyncGenerator(
-  /*#__PURE__*/
-  _regeneratorRuntime.mark(function _callee(state, kind) {
-    var entities, kindConfig;
-    return _regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            entities = getEntitiesByKind(state, kind);
+        case 2:
+          entities = _context3.sent;
 
-            if (!(entities && entities.length !== 0)) {
-              _context.next = 3;
-              break;
-            }
+          if (!(entities && entities.length !== 0)) {
+            _context3.next = 5;
+            break;
+          }
 
-            return _context.abrupt("return", entities);
+          return _context3.abrupt("return", entities);
 
-          case 3:
-            kindConfig = find(kinds, {
-              name: kind
-            });
+        case 5:
+          kindConfig = find(kinds, {
+            name: kind
+          });
 
-            if (kindConfig) {
-              _context.next = 6;
-              break;
-            }
+          if (kindConfig) {
+            _context3.next = 8;
+            break;
+          }
 
-            return _context.abrupt("return", []);
+          return _context3.abrupt("return", []);
 
-          case 6:
-            _context.next = 8;
-            return _awaitAsyncGenerator(kindConfig.loadEntities());
+        case 8:
+          _context3.next = 10;
+          return kindConfig.loadEntities();
 
-          case 8:
-            entities = _context.sent;
-            _context.next = 11;
-            return addEntities(entities);
+        case 10:
+          entities = _context3.sent;
+          _context3.next = 13;
+          return addEntities(entities);
 
-          case 11:
-            return _context.abrupt("return", entities);
+        case 13:
+          return _context3.abrupt("return", entities);
 
-          case 12:
-          case "end":
-            return _context.stop();
-        }
+        case 14:
+        case "end":
+          return _context3.stop();
       }
-    }, _callee, this);
-  }));
-  return _getKindEntities.apply(this, arguments);
+    }
+  }, _marked3, this);
 }
+//# sourceMappingURL=entities.js.map

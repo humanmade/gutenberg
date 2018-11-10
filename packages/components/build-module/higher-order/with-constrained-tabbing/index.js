@@ -1,10 +1,9 @@
-import "core-js/modules/es6.array.find";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -53,6 +52,13 @@ var withConstrainedTabbing = createHigherOrderComponent(function (WrappedCompone
           } else if (!event.shiftKey && event.target === lastTabbable) {
             event.preventDefault();
             firstTabbable.focus();
+            /*
+             * When pressing Tab and none of the tabbables has focus, the keydown
+             * event happens on the wrapper div: move focus on the first tabbable.
+             */
+          } else if (!tabbables.includes(event.target)) {
+            event.preventDefault();
+            firstTabbable.focus();
           }
         }
       }, {
@@ -64,7 +70,8 @@ var withConstrainedTabbing = createHigherOrderComponent(function (WrappedCompone
           /* eslint-disable jsx-a11y/no-static-element-interactions */
           return createElement("div", {
             onKeyDown: this.handleTabBehaviour,
-            ref: this.focusContainRef
+            ref: this.focusContainRef,
+            tabIndex: "-1"
           }, createElement(WrappedComponent, this.props));
           /* eslint-enable jsx-a11y/no-static-element-interactions */
         }
@@ -75,3 +82,4 @@ var withConstrainedTabbing = createHigherOrderComponent(function (WrappedCompone
   );
 }, 'withConstrainedTabbing');
 export default withConstrainedTabbing;
+//# sourceMappingURL=index.js.map

@@ -1,16 +1,11 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 import { createElement } from "@wordpress/element";
 
 /**
  * External dependencies
  */
 import classnames from 'classnames';
-/**
- * Internal dependencies
- */
-
-import './style.scss';
 
 var ColorIndicator = function ColorIndicator(_ref) {
   var className = _ref.className,
@@ -26,3 +21,4 @@ var ColorIndicator = function ColorIndicator(_ref) {
 };
 
 export default ColorIndicator;
+//# sourceMappingURL=index.js.map

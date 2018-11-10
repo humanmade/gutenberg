@@ -1,7 +1,6 @@
-import _extends from "@babel/runtime/helpers/extends";
-import "core-js/modules/es6.regexp.split";
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -40,9 +39,10 @@ export function ExternalLink(_ref, ref) {
     className: "screen-reader-text"
   },
   /* translators: accessibility text */
-  __('(opens in a new window)')), createElement(Dashicon, {
+  __('(opens in a new tab)')), createElement(Dashicon, {
     icon: "external",
     className: "components-external-link__icon"
   }));
 }
 export default forwardRef(ExternalLink);
+//# sourceMappingURL=index.js.map

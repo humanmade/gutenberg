@@ -1,4 +1,4 @@
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
 
 /**
  * WordPress dependencies
@@ -59,3 +59,4 @@ export default function (node) {
     }
   }
 }
+//# sourceMappingURL=list-reducer.js.map

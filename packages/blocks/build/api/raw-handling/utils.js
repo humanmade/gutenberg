@@ -2,15 +2,9 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es7.array.includes");
-
-require("core-js/modules/es6.string.includes");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getPhrasingContentSchema = getPhrasingContentSchema;
-exports.isPhrasingContent = isPhrasingContent;
 exports.getBlockContentSchema = getBlockContentSchema;
 exports.isEmpty = isEmpty;
 exports.isPlain = isPlain;
@@ -18,23 +12,17 @@ exports.deepFilterNodeList = deepFilterNodeList;
 exports.deepFilterHTML = deepFilterHTML;
 exports.removeInvalidHTML = removeInvalidHTML;
 
-require("core-js/modules/es6.regexp.constructor");
-
-require("core-js/modules/es6.function.name");
-
-var _from = _interopRequireDefault(require("@babel/runtime/core-js/array/from"));
-
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
-
-require("core-js/modules/web.dom.iterable");
 
 var _lodash = require("lodash");
 
 var _dom = require("@wordpress/dom");
 
 var _ = require("..");
+
+var _phrasingContent = require("./phrasing-content");
 
 /**
  * External dependencies
@@ -45,60 +33,15 @@ var _ = require("..");
  */
 
 /**
+ * Internal dependencies
+ */
+
+/**
  * Browser dependencies
  */
 var _window$Node = window.Node,
     ELEMENT_NODE = _window$Node.ELEMENT_NODE,
     TEXT_NODE = _window$Node.TEXT_NODE;
-var phrasingContentSchema = {
-  strong: {},
-  em: {},
-  del: {},
-  ins: {},
-  a: {
-    attributes: ['href', 'target', 'rel']
-  },
-  code: {},
-  abbr: {
-    attributes: ['title']
-  },
-  sub: {},
-  sup: {},
-  br: {},
-  '#text': {}
-}; // Recursion is needed.
-// Possible: strong > em > strong.
-// Impossible: strong > strong.
-
-['strong', 'em', 'del', 'ins', 'a', 'code', 'abbr', 'sub', 'sup'].forEach(function (tag) {
-  phrasingContentSchema[tag].children = (0, _lodash.omit)(phrasingContentSchema, tag);
-});
-/**
- * Get schema of possible paths for phrasing content.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
- *
- * @return {Object} Schema.
- */
-
-function getPhrasingContentSchema() {
-  return phrasingContentSchema;
-}
-/**
- * Find out whether or not the given node is phrasing content.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
- *
- * @param {Element} node The node to test.
- *
- * @return {boolean} True if phrasing content, false if not.
- */
-
-
-function isPhrasingContent(node) {
-  var tag = node.nodeName.toLowerCase();
-  return getPhrasingContentSchema().hasOwnProperty(tag) || tag === 'span';
-}
 /**
  * Given raw transforms from blocks, merges all schemas into one.
  *
@@ -106,7 +49,6 @@ function isPhrasingContent(node) {
  *
  * @return {Object} A complete block content schema.
  */
-
 
 function getBlockContentSchema(transforms) {
   var schemas = transforms.map(function (_ref) {
@@ -153,7 +95,7 @@ function isEmpty(element) {
     return true;
   }
 
-  return (0, _from.default)(element.childNodes).every(function (node) {
+  return Array.from(element.childNodes).every(function (node) {
     if (node.nodeType === TEXT_NODE) {
       return !node.nodeValue.trim();
     }
@@ -195,7 +137,7 @@ function isPlain(HTML) {
 
 
 function deepFilterNodeList(nodeList, filters, doc, schema) {
-  (0, _from.default)(nodeList).forEach(function (node) {
+  Array.from(nodeList).forEach(function (node) {
     deepFilterNodeList(node.childNodes, filters, doc, schema);
     filters.forEach(function (item) {
       // Make sure the node is still attached to the document.
@@ -239,7 +181,7 @@ function deepFilterHTML(HTML) {
 
 
 function cleanNodeList(nodeList, doc, schema, inline) {
-  (0, _from.default)(nodeList).forEach(function (node) {
+  Array.from(nodeList).forEach(function (node) {
     var tag = node.nodeName.toLowerCase(); // It's a valid child.
 
     if (schema.hasOwnProperty(tag)) {
@@ -262,7 +204,7 @@ function cleanNodeList(nodeList, doc, schema, inline) {
 
         if (node.hasAttributes()) {
           // Strip invalid attributes.
-          (0, _from.default)(node.attributes).forEach(function (_ref2) {
+          Array.from(node.attributes).forEach(function (_ref2) {
             var name = _ref2.name;
 
             if (name !== 'class' && !(0, _lodash.includes)(attributes, name)) {
@@ -284,7 +226,7 @@ function cleanNodeList(nodeList, doc, schema, inline) {
 
               return _lodash.noop;
             });
-            (0, _from.default)(node.classList).forEach(function (name) {
+            Array.from(node.classList).forEach(function (name) {
               if (!mattchers.some(function (isMatch) {
                 return isMatch(name);
               })) {
@@ -326,7 +268,7 @@ function cleanNodeList(nodeList, doc, schema, inline) {
       cleanNodeList(node.childNodes, doc, schema, inline); // For inline mode, insert a line break when unwrapping nodes that
       // are not phrasing content.
 
-      if (inline && !isPhrasingContent(node) && node.nextElementSibling) {
+      if (inline && !(0, _phrasingContent.isPhrasingContent)(node) && node.nextElementSibling) {
         (0, _dom.insertAfter)(doc.createElement('br'), node);
       }
 
@@ -351,3 +293,4 @@ function removeInvalidHTML(HTML, schema, inline) {
   cleanNodeList(doc.body.childNodes, doc, schema, inline);
   return doc.body.innerHTML;
 }
+//# sourceMappingURL=utils.js.map

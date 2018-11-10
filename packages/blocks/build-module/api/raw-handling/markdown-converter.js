@@ -1,5 +1,3 @@
-import "core-js/modules/es6.regexp.replace";
-
 /**
  * External dependencies
  */
@@ -42,3 +40,4 @@ function slackMarkdownVariantCorrector(text) {
 export default function (text) {
   return converter.makeHtml(slackMarkdownVariantCorrector(text));
 }
+//# sourceMappingURL=markdown-converter.js.map

@@ -1,7 +1,3 @@
-import _Object$keys from "@babel/runtime/core-js/object/keys";
-import "core-js/modules/es6.regexp.constructor";
-import "core-js/modules/es6.regexp.replace";
-
 /**
  * Internal dependencies
  */
@@ -270,7 +266,7 @@ var shortcode = extend(function (options) {
 
   if (isString(attributes)) {
     this.attrs = attrs(attributes); // Identify a correctly formatted `attrs` object.
-  } else if (isEqual(_Object$keys(attributes), ['named', 'numeric'])) {
+  } else if (isEqual(Object.keys(attributes), ['named', 'numeric'])) {
     this.attrs = attributes; // Handle a flat object of attributes.
   } else {
     forEach(attributes, function (value, key) {
@@ -353,3 +349,4 @@ extend(shortcode.prototype, {
   }
 });
 export default shortcode;
+//# sourceMappingURL=index.js.map

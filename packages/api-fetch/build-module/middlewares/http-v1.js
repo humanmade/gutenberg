@@ -1,21 +1,50 @@
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+
+/**
+ * Set of HTTP methods which are eligible to be overridden.
+ *
+ * @type {Set}
+ */
+var OVERRIDE_METHODS = new Set(['PATCH', 'PUT', 'DELETE']);
+/**
+ * Default request method.
+ *
+ * "A request has an associated method (a method). Unless stated otherwise it
+ * is `GET`."
+ *
+ * @see  https://fetch.spec.whatwg.org/#requests
+ *
+ * @type {string}
+ */
+
+var DEFAULT_METHOD = 'GET';
+/**
+ * API Fetch middleware which overrides the request method for HTTP v1
+ * compatibility leveraging the REST API X-HTTP-Method-Override header.
+ *
+ * @param {Object}   options Fetch options.
+ * @param {Function} next    [description]
+ *
+ * @return {*} The evaluated result of the remaining middleware chain.
+ */
 
 function httpV1Middleware(options, next) {
-  var newOptions = _objectSpread({}, options);
+  var _options = options,
+      _options$method = _options.method,
+      method = _options$method === void 0 ? DEFAULT_METHOD : _options$method;
 
-  if (newOptions.method) {
-    if (['PATCH', 'PUT', 'DELETE'].indexOf(newOptions.method.toUpperCase()) >= 0) {
-      if (!newOptions.headers) {
-        newOptions.headers = {};
-      }
-
-      newOptions.headers['X-HTTP-Method-Override'] = newOptions.method;
-      newOptions.headers['Content-Type'] = 'application/json';
-      newOptions.method = 'POST';
-    }
+  if (OVERRIDE_METHODS.has(method.toUpperCase())) {
+    options = _objectSpread({}, options, {
+      headers: _objectSpread({}, options.headers, {
+        'X-HTTP-Method-Override': method,
+        'Content-Type': 'application/json'
+      }),
+      method: 'POST'
+    });
   }
 
-  return next(newOptions, next);
+  return next(options, next);
 }
 
 export default httpV1Middleware;
+//# sourceMappingURL=http-v1.js.map

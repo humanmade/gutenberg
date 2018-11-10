@@ -2,14 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/web.dom.iterable");
-
-require("core-js/modules/es6.array.iterator");
-
-require("core-js/modules/es7.array.includes");
-
-require("core-js/modules/es6.string.includes");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -18,8 +10,6 @@ exports.areTipsEnabled = areTipsEnabled;
 exports.getAssociatedGuide = void 0;
 
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
-
-var _getIterator2 = _interopRequireDefault(require("@babel/runtime/core-js/get-iterator"));
 
 var _rememo = _interopRequireDefault(require("rememo"));
 
@@ -53,7 +43,7 @@ var getAssociatedGuide = (0, _rememo.default)(function (state, tipId) {
   var _iteratorError = undefined;
 
   try {
-    for (var _iterator = (0, _getIterator2.default)(state.guides), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+    for (var _iterator = state.guides[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
       var tipIds = _step.value;
 
       if ((0, _lodash.includes)(tipIds, tipId)) {
@@ -97,25 +87,25 @@ var getAssociatedGuide = (0, _rememo.default)(function (state, tipId) {
  * guide that they have been added to.
  *
  * @param {Object} state Global application state.
- * @param {string} id    The tip to query.
+ * @param {string} tipId The tip to query.
  *
  * @return {boolean} Whether or not the given tip is showing.
  */
 
 exports.getAssociatedGuide = getAssociatedGuide;
 
-function isTipVisible(state, id) {
+function isTipVisible(state, tipId) {
   if (!state.preferences.areTipsEnabled) {
     return false;
   }
 
-  if (state.preferences.dismissedTips[id]) {
+  if (state.preferences.dismissedTips[tipId]) {
     return false;
   }
 
-  var associatedGuide = getAssociatedGuide(state, id);
+  var associatedGuide = getAssociatedGuide(state, tipId);
 
-  if (associatedGuide && associatedGuide.currentTipId !== id) {
+  if (associatedGuide && associatedGuide.currentTipId !== tipId) {
     return false;
   }
 
@@ -133,3 +123,4 @@ function isTipVisible(state, id) {
 function areTipsEnabled(state) {
   return state.preferences.areTipsEnabled;
 }
+//# sourceMappingURL=selectors.js.map

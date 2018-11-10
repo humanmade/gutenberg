@@ -1,24 +1,84 @@
 "use strict";
 
-var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
-
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "APIProvider", {
-  enumerable: true,
-  get: function get() {
-    return _provider.default;
-  }
-});
-Object.defineProperty(exports, "unstable__setApiSettings", {
-  enumerable: true,
-  get: function get() {
-    return _provider.unstable__setApiSettings;
-  }
-});
+var _exportNames = {
+  Autocomplete: true,
+  BaseControl: true,
+  Button: true,
+  ButtonGroup: true,
+  CheckboxControl: true,
+  ClipboardButton: true,
+  ColorIndicator: true,
+  ColorPalette: true,
+  ColorPicker: true,
+  Dashicon: true,
+  DateTimePicker: true,
+  DatePicker: true,
+  TimePicker: true,
+  Disabled: true,
+  Draggable: true,
+  DropZone: true,
+  DropZoneProvider: true,
+  Dropdown: true,
+  DropdownMenu: true,
+  ExternalLink: true,
+  FocusableIframe: true,
+  FontSizePicker: true,
+  FormFileUpload: true,
+  FormToggle: true,
+  FormTokenField: true,
+  Icon: true,
+  IconButton: true,
+  KeyboardShortcuts: true,
+  MenuGroup: true,
+  MenuItem: true,
+  MenuItemsChoice: true,
+  Modal: true,
+  ScrollLock: true,
+  NavigableMenu: true,
+  TabbableContainer: true,
+  Notice: true,
+  NoticeList: true,
+  Panel: true,
+  PanelBody: true,
+  PanelHeader: true,
+  PanelRow: true,
+  Placeholder: true,
+  Popover: true,
+  QueryControls: true,
+  RadioControl: true,
+  RangeControl: true,
+  ResizableBox: true,
+  ResponsiveWrapper: true,
+  SandBox: true,
+  SelectControl: true,
+  Spinner: true,
+  ServerSideRender: true,
+  TabPanel: true,
+  TextControl: true,
+  TextareaControl: true,
+  ToggleControl: true,
+  Toolbar: true,
+  ToolbarButton: true,
+  Tooltip: true,
+  TreeSelect: true,
+  createSlotFill: true,
+  Slot: true,
+  Fill: true,
+  SlotFillProvider: true,
+  navigateRegions: true,
+  withConstrainedTabbing: true,
+  withFallbackStyles: true,
+  withFilters: true,
+  withFocusOutside: true,
+  withFocusReturn: true,
+  withNotices: true,
+  withSpokenMessages: true
+};
 Object.defineProperty(exports, "Autocomplete", {
   enumerable: true,
   get: function get() {
@@ -67,6 +127,12 @@ Object.defineProperty(exports, "ColorPalette", {
     return _colorPalette.default;
   }
 });
+Object.defineProperty(exports, "ColorPicker", {
+  enumerable: true,
+  get: function get() {
+    return _colorPicker.default;
+  }
+});
 Object.defineProperty(exports, "Dashicon", {
   enumerable: true,
   get: function get() {
@@ -112,7 +178,7 @@ Object.defineProperty(exports, "DropZone", {
 Object.defineProperty(exports, "DropZoneProvider", {
   enumerable: true,
   get: function get() {
-    return _provider2.default;
+    return _provider.default;
   }
 });
 Object.defineProperty(exports, "Dropdown", {
@@ -161,6 +227,12 @@ Object.defineProperty(exports, "FormTokenField", {
   enumerable: true,
   get: function get() {
     return _formTokenField.default;
+  }
+});
+Object.defineProperty(exports, "Icon", {
+  enumerable: true,
+  get: function get() {
+    return _icon.default;
   }
 });
 Object.defineProperty(exports, "IconButton", {
@@ -241,12 +313,6 @@ Object.defineProperty(exports, "PanelBody", {
     return _body.default;
   }
 });
-Object.defineProperty(exports, "PanelColor", {
-  enumerable: true,
-  get: function get() {
-    return _color.default;
-  }
-});
 Object.defineProperty(exports, "PanelHeader", {
   enumerable: true,
   get: function get() {
@@ -287,6 +353,12 @@ Object.defineProperty(exports, "RangeControl", {
   enumerable: true,
   get: function get() {
     return _rangeControl.default;
+  }
+});
+Object.defineProperty(exports, "ResizableBox", {
+  enumerable: true,
+  get: function get() {
+    return _resizableBox.default;
   }
 });
 Object.defineProperty(exports, "ResponsiveWrapper", {
@@ -349,6 +421,12 @@ Object.defineProperty(exports, "Toolbar", {
     return _toolbar.default;
   }
 });
+Object.defineProperty(exports, "ToolbarButton", {
+  enumerable: true,
+  get: function get() {
+    return _toolbarButton.default;
+  }
+});
 Object.defineProperty(exports, "Tooltip", {
   enumerable: true,
   get: function get() {
@@ -389,18 +467,6 @@ Object.defineProperty(exports, "navigateRegions", {
   enumerable: true,
   get: function get() {
     return _navigateRegions.default;
-  }
-});
-Object.defineProperty(exports, "withAPIData", {
-  enumerable: true,
-  get: function get() {
-    return _withApiData.default;
-  }
-});
-Object.defineProperty(exports, "withContext", {
-  enumerable: true,
-  get: function get() {
-    return _withContext.default;
   }
 });
 Object.defineProperty(exports, "withConstrainedTabbing", {
@@ -445,11 +511,19 @@ Object.defineProperty(exports, "withSpokenMessages", {
     return _withSpokenMessages.default;
   }
 });
-exports.withState = exports.withSafeTimeout = exports.withInstanceId = exports.withGlobalEvents = exports.ifCondition = void 0;
 
-var _deprecated = _interopRequireDefault(require("./deprecated"));
+var _primitives = require("./primitives");
 
-var _provider = _interopRequireWildcard(require("./higher-order/with-api-data/provider"));
+Object.keys(_primitives).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _primitives[key];
+    }
+  });
+});
 
 var _autocomplete = _interopRequireDefault(require("./autocomplete"));
 
@@ -467,6 +541,8 @@ var _colorIndicator = _interopRequireDefault(require("./color-indicator"));
 
 var _colorPalette = _interopRequireDefault(require("./color-palette"));
 
+var _colorPicker = _interopRequireDefault(require("./color-picker"));
+
 var _dashicon = _interopRequireDefault(require("./dashicon"));
 
 var _dateTime = require("./date-time");
@@ -477,7 +553,7 @@ var _draggable = _interopRequireDefault(require("./draggable"));
 
 var _dropZone = _interopRequireDefault(require("./drop-zone"));
 
-var _provider2 = _interopRequireDefault(require("./drop-zone/provider"));
+var _provider = _interopRequireDefault(require("./drop-zone/provider"));
 
 var _dropdown = _interopRequireDefault(require("./dropdown"));
 
@@ -494,6 +570,8 @@ var _formFileUpload = _interopRequireDefault(require("./form-file-upload"));
 var _formToggle = _interopRequireDefault(require("./form-toggle"));
 
 var _formTokenField = _interopRequireDefault(require("./form-token-field"));
+
+var _icon = _interopRequireDefault(require("./icon"));
 
 var _iconButton = _interopRequireDefault(require("./icon-button"));
 
@@ -519,8 +597,6 @@ var _panel = _interopRequireDefault(require("./panel"));
 
 var _body = _interopRequireDefault(require("./panel/body"));
 
-var _color = _interopRequireDefault(require("./panel/color"));
-
 var _header = _interopRequireDefault(require("./panel/header"));
 
 var _row = _interopRequireDefault(require("./panel/row"));
@@ -534,6 +610,8 @@ var _queryControls = _interopRequireDefault(require("./query-controls"));
 var _radioControl = _interopRequireDefault(require("./radio-control"));
 
 var _rangeControl = _interopRequireDefault(require("./range-control"));
+
+var _resizableBox = _interopRequireDefault(require("./resizable-box"));
 
 var _responsiveWrapper = _interopRequireDefault(require("./responsive-wrapper"));
 
@@ -555,6 +633,8 @@ var _toggleControl = _interopRequireDefault(require("./toggle-control"));
 
 var _toolbar = _interopRequireDefault(require("./toolbar"));
 
+var _toolbarButton = _interopRequireDefault(require("./toolbar-button"));
+
 var _tooltip = _interopRequireDefault(require("./tooltip"));
 
 var _treeSelect = _interopRequireDefault(require("./tree-select"));
@@ -562,10 +642,6 @@ var _treeSelect = _interopRequireDefault(require("./tree-select"));
 var _slotFill = require("./slot-fill");
 
 var _navigateRegions = _interopRequireDefault(require("./higher-order/navigate-regions"));
-
-var _withApiData = _interopRequireDefault(require("./higher-order/with-api-data"));
-
-var _withContext = _interopRequireDefault(require("./higher-order/with-context"));
 
 var _withConstrainedTabbing = _interopRequireDefault(require("./higher-order/with-constrained-tabbing"));
 
@@ -580,20 +656,4 @@ var _withFocusReturn = _interopRequireDefault(require("./higher-order/with-focus
 var _withNotices = _interopRequireDefault(require("./higher-order/with-notices"));
 
 var _withSpokenMessages = _interopRequireDefault(require("./higher-order/with-spoken-messages"));
-
-/**
- * Internal dependencies
- */
-// Components
-// eslint-disable-next-line camelcase
-// Higher-Order Components
-var ifCondition = _deprecated.default.ifCondition;
-exports.ifCondition = ifCondition;
-var withGlobalEvents = _deprecated.default.withGlobalEvents;
-exports.withGlobalEvents = withGlobalEvents;
-var withInstanceId = _deprecated.default.withInstanceId;
-exports.withInstanceId = withInstanceId;
-var withSafeTimeout = _deprecated.default.withSafeTimeout;
-exports.withSafeTimeout = withSafeTimeout;
-var withState = _deprecated.default.withState;
-exports.withState = withState;
+//# sourceMappingURL=index.js.map

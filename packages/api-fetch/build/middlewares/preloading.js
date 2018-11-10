@@ -1,17 +1,9 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
-var _promise = _interopRequireDefault(require("@babel/runtime/core-js/promise"));
-
-require("core-js/modules/es6.array.sort");
-
-require("core-js/modules/es6.regexp.split");
 
 var createPreloadingMiddleware = function createPreloadingMiddleware(preloadedData) {
   return function (options, next) {
@@ -47,7 +39,7 @@ var createPreloadingMiddleware = function createPreloadingMiddleware(preloadedDa
       var path = getStablePath(options.path);
 
       if ('GET' === method && preloadedData[path]) {
-        return _promise.default.resolve(preloadedData[path].body);
+        return Promise.resolve(preloadedData[path].body);
       }
     }
 
@@ -57,3 +49,4 @@ var createPreloadingMiddleware = function createPreloadingMiddleware(preloadedDa
 
 var _default = createPreloadingMiddleware;
 exports.default = _default;
+//# sourceMappingURL=preloading.js.map

@@ -1,4 +1,4 @@
-import _extends from "@babel/runtime/helpers/extends";
+import _extends from "@babel/runtime/helpers/esm/extends";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -35,3 +35,4 @@ export var withPluginContext = function withPluginContext(mapContextToProps) {
     };
   }, 'withPluginContext');
 };
+//# sourceMappingURL=index.js.map

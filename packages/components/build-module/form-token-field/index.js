@@ -1,14 +1,11 @@
-import _Object$freeze from "@babel/runtime/core-js/object/freeze";
-import _Object$assign from "@babel/runtime/core-js/object/assign";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import _typeof from "@babel/runtime/helpers/typeof";
-import "core-js/modules/es6.regexp.split";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _typeof from "@babel/runtime/helpers/esm/typeof";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -23,6 +20,7 @@ import classnames from 'classnames';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { Component } from '@wordpress/element';
 import { withInstanceId } from '@wordpress/compose';
+import { BACKSPACE, ENTER, UP, DOWN, LEFT, RIGHT, SPACE, DELETE, ESCAPE } from '@wordpress/keycodes';
 /**
  * Internal dependencies
  */
@@ -128,47 +126,44 @@ function (_Component) {
       var preventDefault = false;
 
       switch (event.keyCode) {
-        case 8:
-          // backspace (delete to left)
+        case BACKSPACE:
           preventDefault = this.handleDeleteKey(this.deleteTokenBeforeInput);
           break;
 
-        case 13:
-          // enter/return
+        case ENTER:
           preventDefault = this.addCurrentToken();
           break;
 
-        case 37:
-          // left arrow
+        case LEFT:
           preventDefault = this.handleLeftArrowKey();
           break;
 
-        case 38:
-          // up arrow
+        case UP:
           preventDefault = this.handleUpArrowKey();
           break;
 
-        case 39:
-          // right arrow
+        case RIGHT:
           preventDefault = this.handleRightArrowKey();
           break;
 
-        case 40:
-          // down arrow
+        case DOWN:
           preventDefault = this.handleDownArrowKey();
           break;
 
-        case 46:
-          // delete (to right)
+        case DELETE:
           preventDefault = this.handleDeleteKey(this.deleteTokenAfterInput);
           break;
 
-        case 32:
-          // space
+        case SPACE:
           if (this.props.tokenizeOnSpace) {
             preventDefault = this.addCurrentToken();
           }
 
+          break;
+
+        case ESCAPE:
+          preventDefault = this.handleEscapeKey(event);
+          event.stopPropagation();
           break;
 
         default:
@@ -237,6 +232,9 @@ function (_Component) {
       var separator = this.props.tokenizeOnSpace ? /[ ,\t]+/ : /[,\t]+/;
       var items = text.split(separator);
       var tokenValue = last(items) || '';
+      var inputHasMinimumChars = tokenValue.trim().length > 1;
+      var matchingSuggestions = this.getMatchingSuggestions(tokenValue);
+      var hasVisibleSuggestions = inputHasMinimumChars && !!matchingSuggestions.length;
 
       if (items.length > 1) {
         this.addNewTokens(items.slice(0, -1));
@@ -249,12 +247,10 @@ function (_Component) {
         isExpanded: false
       });
       this.props.onInputChange(tokenValue);
-      var inputHasMinimumChars = tokenValue.trim().length > 1;
 
       if (inputHasMinimumChars) {
-        var matchingSuggestions = this.getMatchingSuggestions(tokenValue);
         this.setState({
-          isExpanded: !!matchingSuggestions.length
+          isExpanded: hasVisibleSuggestions
         });
 
         if (!!matchingSuggestions.length) {
@@ -303,9 +299,11 @@ function (_Component) {
   }, {
     key: "handleUpArrowKey",
     value: function handleUpArrowKey() {
-      this.setState(function (state) {
+      var _this2 = this;
+
+      this.setState(function (state, props) {
         return {
-          selectedSuggestionIndex: Math.max((state.selectedSuggestionIndex || 0) - 1, 0),
+          selectedSuggestionIndex: (state.selectedSuggestionIndex === 0 ? _this2.getMatchingSuggestions(state.incompleteTokenValue, props.suggestions, props.value, props.maxSuggestions, props.saveTransform).length : state.selectedSuggestionIndex) - 1,
           selectedSuggestionScroll: true
         };
       });
@@ -314,13 +312,24 @@ function (_Component) {
   }, {
     key: "handleDownArrowKey",
     value: function handleDownArrowKey() {
-      var _this2 = this;
+      var _this3 = this;
 
       this.setState(function (state, props) {
         return {
-          selectedSuggestionIndex: Math.min(state.selectedSuggestionIndex + 1 || 0, _this2.getMatchingSuggestions(state.incompleteTokenValue, props.suggestions, props.value, props.maxSuggestions, props.saveTransform).length - 1),
+          selectedSuggestionIndex: (state.selectedSuggestionIndex + 1) % _this3.getMatchingSuggestions(state.incompleteTokenValue, props.suggestions, props.value, props.maxSuggestions, props.saveTransform).length,
           selectedSuggestionScroll: true
         };
+      });
+      return true; // preventDefault
+    }
+  }, {
+    key: "handleEscapeKey",
+    value: function handleEscapeKey(event) {
+      this.setState({
+        incompleteTokenValue: event.target.value,
+        isExpanded: false,
+        selectedSuggestionIndex: -1,
+        selectedSuggestionScroll: false
       });
       return true; // preventDefault
     }
@@ -399,10 +408,10 @@ function (_Component) {
   }, {
     key: "addNewTokens",
     value: function addNewTokens(tokens) {
-      var _this3 = this;
+      var _this4 = this;
 
       var tokensToAdd = uniq(tokens.map(this.props.saveTransform).filter(Boolean).filter(function (token) {
-        return !_this3.valueContainsToken(token);
+        return !_this4.valueContainsToken(token);
       }));
 
       if (tokensToAdd.length > 0) {
@@ -419,7 +428,8 @@ function (_Component) {
       this.setState({
         incompleteTokenValue: '',
         selectedSuggestionIndex: -1,
-        selectedSuggestionScroll: false
+        selectedSuggestionScroll: false,
+        isExpanded: false
       });
 
       if (this.state.isActive) {
@@ -429,10 +439,10 @@ function (_Component) {
   }, {
     key: "deleteToken",
     value: function deleteToken(token) {
-      var _this4 = this;
+      var _this5 = this;
 
       var newTokens = this.props.value.filter(function (item) {
-        return _this4.getTokenValue(item) !== _this4.getTokenValue(token);
+        return _this5.getTokenValue(item) !== _this5.getTokenValue(token);
       });
       this.props.onChange(newTokens);
       this.props.speak(this.props.messages.removed, 'assertive');
@@ -488,10 +498,10 @@ function (_Component) {
   }, {
     key: "valueContainsToken",
     value: function valueContainsToken(token) {
-      var _this5 = this;
+      var _this6 = this;
 
       return some(this.props.value, function (item) {
-        return _this5.getTokenValue(token) === _this5.getTokenValue(item);
+        return _this6.getTokenValue(token) === _this6.getTokenValue(item);
       });
     }
   }, {
@@ -547,7 +557,6 @@ function (_Component) {
           autoComplete = _this$props.autoComplete,
           maxLength = _this$props.maxLength,
           value = _this$props.value,
-          placeholder = _this$props.placeholder,
           instanceId = _this$props.instanceId;
       var props = {
         instanceId: instanceId,
@@ -562,10 +571,6 @@ function (_Component) {
         selectedSuggestionIndex: this.state.selectedSuggestionIndex
       };
 
-      if (value.length === 0 && placeholder) {
-        props.placeholder = placeholder;
-      }
-
       if (!(maxLength && value.length >= maxLength)) {
         props = _objectSpread({}, props, {
           onChange: this.onInputChange
@@ -579,24 +584,23 @@ function (_Component) {
     value: function render() {
       var _this$props2 = this.props,
           disabled = _this$props2.disabled,
-          _this$props2$placehol = _this$props2.placeholder,
-          placeholder = _this$props2$placehol === void 0 ? __('Add item.') : _this$props2$placehol,
+          _this$props2$label = _this$props2.label,
+          label = _this$props2$label === void 0 ? __('Add item') : _this$props2$label,
           instanceId = _this$props2.instanceId,
           className = _this$props2.className;
-      var classes = classnames(className, 'components-form-token-field', {
+      var isExpanded = this.state.isExpanded;
+      var classes = classnames(className, 'components-form-token-field__input-container', {
         'is-active': this.state.isActive,
         'is-disabled': disabled
       });
       var tokenFieldProps = {
-        className: classes,
+        className: 'components-form-token-field',
         tabIndex: '-1'
       };
       var matchingSuggestions = this.getMatchingSuggestions();
-      var inputHasMinimumChars = this.state.incompleteTokenValue.trim().length > 1;
-      var showSuggestions = inputHasMinimumChars && !!matchingSuggestions.length;
 
       if (!disabled) {
-        tokenFieldProps = _Object$assign({}, tokenFieldProps, {
+        tokenFieldProps = Object.assign({}, tokenFieldProps, {
           onKeyDown: this.onKeyDown,
           onKeyPress: this.onKeyPress,
           onFocus: this.onFocus
@@ -610,14 +614,14 @@ function (_Component) {
 
       return createElement("div", tokenFieldProps, createElement("label", {
         htmlFor: "components-form-token-input-".concat(instanceId),
-        className: "screen-reader-text"
-      }, placeholder), createElement("div", {
+        className: "components-form-token-field__label"
+      }, label), createElement("div", {
         ref: this.bindTokensAndInput,
-        className: "components-form-token-field__input-container",
+        className: classes,
         tabIndex: "-1",
         onMouseDown: this.onContainerTouched,
         onTouchStart: this.onContainerTouched
-      }, this.renderTokensAndInput()), showSuggestions && createElement(SuggestionsList, {
+      }, this.renderTokensAndInput(), isExpanded && createElement(SuggestionsList, {
         instanceId: instanceId,
         match: this.props.saveTransform(this.state.incompleteTokenValue),
         displayTransform: this.props.displayTransform,
@@ -626,7 +630,7 @@ function (_Component) {
         scrollIntoView: this.state.selectedSuggestionScroll,
         onHover: this.onSuggestionHovered,
         onSelect: this.onSuggestionSelected
-      }), createElement("div", {
+      })), createElement("div", {
         id: "components-form-token-suggestions-howto-".concat(instanceId),
         className: "screen-reader-text"
       }, __('Separate with commas')));
@@ -650,10 +654,9 @@ function (_Component) {
 }(Component);
 
 FormTokenField.defaultProps = {
-  suggestions: _Object$freeze([]),
+  suggestions: Object.freeze([]),
   maxSuggestions: 100,
-  value: _Object$freeze([]),
-  placeholder: '',
+  value: Object.freeze([]),
   displayTransform: identity,
   saveTransform: function saveTransform(token) {
     return token.trim();
@@ -670,3 +673,4 @@ FormTokenField.defaultProps = {
   }
 };
 export default withSpokenMessages(withInstanceId(FormTokenField));
+//# sourceMappingURL=index.js.map

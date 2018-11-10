@@ -61,10 +61,16 @@ Object.defineProperty(exports, "parseWithAttributeSchema", {
     return _parser.parseWithAttributeSchema;
   }
 });
+Object.defineProperty(exports, "pasteHandler", {
+  enumerable: true,
+  get: function get() {
+    return _rawHandling.pasteHandler;
+  }
+});
 Object.defineProperty(exports, "rawHandler", {
   enumerable: true,
   get: function get() {
-    return _rawHandling.default;
+    return _rawHandling.rawHandler;
   }
 });
 Object.defineProperty(exports, "getPhrasingContentSchema", {
@@ -109,6 +115,12 @@ Object.defineProperty(exports, "getSaveContent", {
     return _serializer.getSaveContent;
   }
 });
+Object.defineProperty(exports, "isValidBlockContent", {
+  enumerable: true,
+  get: function get() {
+    return _validation.isValidBlockContent;
+  }
+});
 Object.defineProperty(exports, "isValidBlock", {
   enumerable: true,
   get: function get() {
@@ -139,16 +151,28 @@ Object.defineProperty(exports, "unregisterBlockType", {
     return _registration.unregisterBlockType;
   }
 });
-Object.defineProperty(exports, "setUnknownTypeHandlerName", {
+Object.defineProperty(exports, "setFreeformContentHandlerName", {
   enumerable: true,
   get: function get() {
-    return _registration.setUnknownTypeHandlerName;
+    return _registration.setFreeformContentHandlerName;
   }
 });
-Object.defineProperty(exports, "getUnknownTypeHandlerName", {
+Object.defineProperty(exports, "getFreeformContentHandlerName", {
   enumerable: true,
   get: function get() {
-    return _registration.getUnknownTypeHandlerName;
+    return _registration.getFreeformContentHandlerName;
+  }
+});
+Object.defineProperty(exports, "setUnregisteredTypeHandlerName", {
+  enumerable: true,
+  get: function get() {
+    return _registration.setUnregisteredTypeHandlerName;
+  }
+});
+Object.defineProperty(exports, "getUnregisteredTypeHandlerName", {
+  enumerable: true,
+  get: function get() {
+    return _registration.getUnregisteredTypeHandlerName;
   }
 });
 Object.defineProperty(exports, "setDefaultBlockName", {
@@ -161,12 +185,6 @@ Object.defineProperty(exports, "getDefaultBlockName", {
   enumerable: true,
   get: function get() {
     return _registration.getDefaultBlockName;
-  }
-});
-Object.defineProperty(exports, "getDefaultBlockForPostFormat", {
-  enumerable: true,
-  get: function get() {
-    return _registration.getDefaultBlockForPostFormat;
   }
 });
 Object.defineProperty(exports, "getBlockType", {
@@ -199,12 +217,6 @@ Object.defineProperty(exports, "isReusableBlock", {
     return _registration.isReusableBlock;
   }
 });
-Object.defineProperty(exports, "isSharedBlock", {
-  enumerable: true,
-  get: function get() {
-    return _registration.isSharedBlock;
-  }
-});
 Object.defineProperty(exports, "getChildBlockNames", {
   enumerable: true,
   get: function get() {
@@ -217,6 +229,12 @@ Object.defineProperty(exports, "hasChildBlocks", {
     return _registration.hasChildBlocks;
   }
 });
+Object.defineProperty(exports, "hasChildBlocksWithInserterSupport", {
+  enumerable: true,
+  get: function get() {
+    return _registration.hasChildBlocksWithInserterSupport;
+  }
+});
 Object.defineProperty(exports, "unstable__bootstrapServerSideBlockDefinitions", {
   enumerable: true,
   get: function get() {
@@ -227,6 +245,12 @@ Object.defineProperty(exports, "registerBlockStyle", {
   enumerable: true,
   get: function get() {
     return _registration.registerBlockStyle;
+  }
+});
+Object.defineProperty(exports, "unregisterBlockStyle", {
+  enumerable: true,
+  get: function get() {
+    return _registration.unregisterBlockStyle;
   }
 });
 Object.defineProperty(exports, "isUnmodifiedDefaultBlock", {
@@ -276,7 +300,7 @@ var _factory = require("./factory");
 
 var _parser = _interopRequireWildcard(require("./parser"));
 
-var _rawHandling = _interopRequireWildcard(require("./raw-handling"));
+var _rawHandling = require("./raw-handling");
 
 var _serializer = _interopRequireWildcard(require("./serializer"));
 
@@ -293,3 +317,4 @@ var _templates = require("./templates");
 var _children = _interopRequireDefault(require("./children"));
 
 var _node = _interopRequireDefault(require("./node"));
+//# sourceMappingURL=index.js.map

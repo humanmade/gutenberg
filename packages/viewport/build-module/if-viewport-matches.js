@@ -27,3 +27,4 @@ var ifViewportMatches = function ifViewportMatches(query) {
 };
 
 export default ifViewportMatches;
+//# sourceMappingURL=if-viewport-matches.js.map

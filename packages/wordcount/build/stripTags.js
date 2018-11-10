@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = _default;
 
-require("core-js/modules/es6.regexp.replace");
-
 /**
  * Replaces items matched in the regex with new line
  *
@@ -20,3 +18,4 @@ function _default(settings, text) {
     return text.replace(settings.HTMLRegExp, '\n');
   }
 }
+//# sourceMappingURL=stripTags.js.map

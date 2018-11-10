@@ -70,19 +70,17 @@ function (_Component) {
     value: function render() {
       var _this$props = this.props,
           value = _this$props.value,
-          placeholder = _this$props.placeholder,
           isExpanded = _this$props.isExpanded,
           instanceId = _this$props.instanceId,
           selectedSuggestionIndex = _this$props.selectedSuggestionIndex,
-          props = (0, _objectWithoutProperties2.default)(_this$props, ["value", "placeholder", "isExpanded", "instanceId", "selectedSuggestionIndex"]);
-      var size = (value.length === 0 && placeholder && placeholder.length || value.length) + 1;
+          props = (0, _objectWithoutProperties2.default)(_this$props, ["value", "isExpanded", "instanceId", "selectedSuggestionIndex"]);
+      var size = value.length + 1;
       return (0, _element.createElement)("input", (0, _extends2.default)({
         ref: this.bindInput,
         id: "components-form-token-input-".concat(instanceId),
         type: "text"
       }, props, {
         value: value,
-        placeholder: placeholder,
         onChange: this.onChange,
         size: size,
         className: "components-form-token-field__input",
@@ -100,3 +98,4 @@ function (_Component) {
 
 var _default = TokenInput;
 exports.default = _default;
+//# sourceMappingURL=token-input.js.map

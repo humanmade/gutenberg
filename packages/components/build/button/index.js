@@ -16,8 +16,6 @@ var _classnames = _interopRequireDefault(require("classnames"));
 
 var _element = require("@wordpress/element");
 
-require("./style.scss");
-
 /**
  * External dependencies
  */
@@ -25,16 +23,13 @@ require("./style.scss");
 /**
  * WordPress dependencies
  */
-
-/**
- * Internal dependencies
- */
 function Button(props, ref) {
   var href = props.href,
       target = props.target,
       isPrimary = props.isPrimary,
       isLarge = props.isLarge,
       isSmall = props.isSmall,
+      isTertiary = props.isTertiary,
       isToggled = props.isToggled,
       isBusy = props.isBusy,
       isDefault = props.isDefault,
@@ -42,14 +37,14 @@ function Button(props, ref) {
       isDestructive = props.isDestructive,
       className = props.className,
       disabled = props.disabled,
-      focus = props.focus,
-      additionalProps = (0, _objectWithoutProperties2.default)(props, ["href", "target", "isPrimary", "isLarge", "isSmall", "isToggled", "isBusy", "isDefault", "isLink", "isDestructive", "className", "disabled", "focus"]);
+      additionalProps = (0, _objectWithoutProperties2.default)(props, ["href", "target", "isPrimary", "isLarge", "isSmall", "isTertiary", "isToggled", "isBusy", "isDefault", "isLink", "isDestructive", "className", "disabled"]);
   var classes = (0, _classnames.default)('components-button', className, {
     'is-button': isDefault || isPrimary || isLarge || isSmall,
     'is-default': isDefault || isLarge || isSmall,
     'is-primary': isPrimary,
     'is-large': isLarge,
     'is-small': isSmall,
+    'is-tertiary': isTertiary,
     'is-toggled': isToggled,
     'is-busy': isBusy,
     'is-link': isLink,
@@ -65,7 +60,6 @@ function Button(props, ref) {
   };
   return (0, _element.createElement)(tag, (0, _objectSpread2.default)({}, tagProps, additionalProps, {
     className: classes,
-    autoFocus: focus,
     ref: ref
   }));
 }
@@ -73,3 +67,4 @@ function Button(props, ref) {
 var _default = (0, _element.forwardRef)(Button);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

@@ -2,15 +2,9 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es6.function.name");
-
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-
-require("core-js/modules/es7.array.includes");
-
-require("core-js/modules/es6.string.includes");
 
 /**
  * External dependencies
@@ -62,3 +56,4 @@ function () {
   }]);
   return LibraryExportDefaultPlugin;
 }();
+//# sourceMappingURL=index.js.map

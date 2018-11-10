@@ -1,10 +1,10 @@
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -97,7 +97,9 @@ export default createHigherOrderComponent(function (WrappedComponent) {
             bindGlobal: true,
             shortcuts: {
               'ctrl+`': this.focusNextRegion,
-              'ctrl+shift+`': this.focusPreviousRegion
+              'shift+alt+n': this.focusNextRegion,
+              'ctrl+shift+`': this.focusPreviousRegion,
+              'shift+alt+p': this.focusPreviousRegion
             }
           }), createElement(WrappedComponent, this.props));
           /* eslint-enable jsx-a11y/no-static-element-interactions, jsx-a11y/onclick-has-role, jsx-a11y/click-events-have-key-events */
@@ -108,3 +110,4 @@ export default createHigherOrderComponent(function (WrappedComponent) {
     }(Component)
   );
 }, 'navigateRegions');
+//# sourceMappingURL=index.js.map

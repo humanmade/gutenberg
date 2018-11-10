@@ -1,14 +1,10 @@
-import "core-js/modules/es6.regexp.constructor";
-import "core-js/modules/es6.function.name";
-import _Array$from from "@babel/runtime/core-js/array/from";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
-import "core-js/modules/web.dom.iterable";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
 
 /**
  * External dependencies
  */
-import { omit, mergeWith, includes, noop } from 'lodash';
+import { mergeWith, includes, noop } from 'lodash';
 /**
  * WordPress dependencies
  */
@@ -16,60 +12,17 @@ import { omit, mergeWith, includes, noop } from 'lodash';
 import { unwrap, insertAfter, remove } from '@wordpress/dom';
 import { hasBlockSupport } from '..';
 /**
+ * Internal dependencies
+ */
+
+import { isPhrasingContent } from './phrasing-content';
+/**
  * Browser dependencies
  */
 
 var _window$Node = window.Node,
     ELEMENT_NODE = _window$Node.ELEMENT_NODE,
     TEXT_NODE = _window$Node.TEXT_NODE;
-var phrasingContentSchema = {
-  strong: {},
-  em: {},
-  del: {},
-  ins: {},
-  a: {
-    attributes: ['href', 'target', 'rel']
-  },
-  code: {},
-  abbr: {
-    attributes: ['title']
-  },
-  sub: {},
-  sup: {},
-  br: {},
-  '#text': {}
-}; // Recursion is needed.
-// Possible: strong > em > strong.
-// Impossible: strong > strong.
-
-['strong', 'em', 'del', 'ins', 'a', 'code', 'abbr', 'sub', 'sup'].forEach(function (tag) {
-  phrasingContentSchema[tag].children = omit(phrasingContentSchema, tag);
-});
-/**
- * Get schema of possible paths for phrasing content.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
- *
- * @return {Object} Schema.
- */
-
-export function getPhrasingContentSchema() {
-  return phrasingContentSchema;
-}
-/**
- * Find out whether or not the given node is phrasing content.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
- *
- * @param {Element} node The node to test.
- *
- * @return {boolean} True if phrasing content, false if not.
- */
-
-export function isPhrasingContent(node) {
-  var tag = node.nodeName.toLowerCase();
-  return getPhrasingContentSchema().hasOwnProperty(tag) || tag === 'span';
-}
 /**
  * Given raw transforms from blocks, merges all schemas into one.
  *
@@ -122,7 +75,7 @@ export function isEmpty(element) {
     return true;
   }
 
-  return _Array$from(element.childNodes).every(function (node) {
+  return Array.from(element.childNodes).every(function (node) {
     if (node.nodeType === TEXT_NODE) {
       return !node.nodeValue.trim();
     }
@@ -162,7 +115,7 @@ export function isPlain(HTML) {
  */
 
 export function deepFilterNodeList(nodeList, filters, doc, schema) {
-  _Array$from(nodeList).forEach(function (node) {
+  Array.from(nodeList).forEach(function (node) {
     deepFilterNodeList(node.childNodes, filters, doc, schema);
     filters.forEach(function (item) {
       // Make sure the node is still attached to the document.
@@ -204,7 +157,7 @@ export function deepFilterHTML(HTML) {
  */
 
 function cleanNodeList(nodeList, doc, schema, inline) {
-  _Array$from(nodeList).forEach(function (node) {
+  Array.from(nodeList).forEach(function (node) {
     var tag = node.nodeName.toLowerCase(); // It's a valid child.
 
     if (schema.hasOwnProperty(tag)) {
@@ -227,14 +180,13 @@ function cleanNodeList(nodeList, doc, schema, inline) {
 
         if (node.hasAttributes()) {
           // Strip invalid attributes.
-          _Array$from(node.attributes).forEach(function (_ref2) {
+          Array.from(node.attributes).forEach(function (_ref2) {
             var name = _ref2.name;
 
             if (name !== 'class' && !includes(attributes, name)) {
               node.removeAttribute(name);
             }
           }); // Strip invalid classes.
-
 
           if (node.classList.length) {
             var mattchers = classes.map(function (item) {
@@ -250,8 +202,7 @@ function cleanNodeList(nodeList, doc, schema, inline) {
 
               return noop;
             });
-
-            _Array$from(node.classList).forEach(function (name) {
+            Array.from(node.classList).forEach(function (name) {
               if (!mattchers.some(function (isMatch) {
                 return isMatch(name);
               })) {
@@ -318,3 +269,4 @@ export function removeInvalidHTML(HTML, schema, inline) {
   cleanNodeList(doc.body.childNodes, doc, schema, inline);
   return doc.body.innerHTML;
 }
+//# sourceMappingURL=utils.js.map

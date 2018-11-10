@@ -1,6 +1,5 @@
-import _extends from "@babel/runtime/helpers/extends";
-import "core-js/modules/es6.number.constructor";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -35,8 +34,19 @@ function RangeControl(_ref) {
 
   var id = "inspector-range-control-".concat(instanceId);
 
+  var resetValue = function resetValue() {
+    return onChange();
+  };
+
   var onChangeValue = function onChangeValue(event) {
-    return onChange(Number(event.target.value));
+    var newValue = event.target.value;
+
+    if (newValue === '') {
+      resetValue();
+      return;
+    }
+
+    onChange(Number(newValue));
   };
 
   var initialSliderValue = isFinite(value) ? value : initialPosition || '';
@@ -63,11 +73,10 @@ function RangeControl(_ref) {
     "aria-label": label,
     value: value
   }, props)), allowReset && createElement(Button, {
-    onClick: function onClick() {
-      return onChange();
-    },
+    onClick: resetValue,
     disabled: value === undefined
   }, __('Reset')));
 }
 
 export default withInstanceId(RangeControl);
+//# sourceMappingURL=index.js.map

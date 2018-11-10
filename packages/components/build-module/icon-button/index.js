@@ -1,17 +1,17 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
 import { createElement } from "@wordpress/element";
 
 /**
  * External dependencies
  */
 import classnames from 'classnames';
-import { isString, isArray } from 'lodash';
+import { isArray, isString } from 'lodash';
 /**
  * WordPress dependencies
  */
@@ -46,23 +46,22 @@ function (_Component) {
           label = _this$props.label,
           className = _this$props.className,
           tooltip = _this$props.tooltip,
-          focus = _this$props.focus,
           shortcut = _this$props.shortcut,
-          additionalProps = _objectWithoutProperties(_this$props, ["icon", "children", "label", "className", "tooltip", "focus", "shortcut"]);
+          additionalProps = _objectWithoutProperties(_this$props, ["icon", "children", "label", "className", "tooltip", "shortcut"]);
 
       var classes = classnames('components-icon-button', className);
       var tooltipText = tooltip || label; // Should show the tooltip if...
 
-      var showTooltip = // an explicit tooltip is passed or...
+      var showTooltip = !additionalProps.disabled && ( // an explicit tooltip is passed or...
       tooltip || // there's a shortcut or...
       shortcut || // there's a label and...
       !!label && ( // the children are empty and...
       !children || isArray(children) && !children.length) && // the tooltip is not explicitly disabled.
-      false !== tooltip;
-      var element = createElement(Button, _extends({}, additionalProps, {
-        "aria-label": label,
-        className: classes,
-        focus: focus
+      false !== tooltip);
+      var element = createElement(Button, _extends({
+        "aria-label": label
+      }, additionalProps, {
+        className: classes
       }), isString(icon) ? createElement(Dashicon, {
         icon: icon
       }) : icon, children);
@@ -82,3 +81,4 @@ function (_Component) {
 }(Component);
 
 export default IconButton;
+//# sourceMappingURL=index.js.map

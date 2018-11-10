@@ -57,3 +57,4 @@ function Placeholder(_ref) {
 
 var _default = Placeholder;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

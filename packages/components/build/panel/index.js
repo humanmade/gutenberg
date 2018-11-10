@@ -34,3 +34,4 @@ function Panel(_ref) {
 
 var _default = Panel;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

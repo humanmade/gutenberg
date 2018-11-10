@@ -154,3 +154,4 @@ function createScrollLockComponent() {
 var _default = createScrollLockComponent();
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

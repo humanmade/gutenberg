@@ -1,7 +1,7 @@
 import { createElement } from "@wordpress/element";
-var spinner = createElement("span", {
-  className: "spinner is-active"
-});
-export default (function () {
-  return spinner;
-});
+export default function Spinner() {
+  return createElement("span", {
+    className: "components-spinner"
+  });
+}
+//# sourceMappingURL=index.js.map

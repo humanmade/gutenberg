@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-require("core-js/modules/es6.function.name");
-
 var _lodash = require("lodash");
 
 /**
@@ -36,3 +34,4 @@ function createHigherOrderComponent(mapComponentToEnhancedComponent, modifierNam
 
 var _default = createHigherOrderComponent;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

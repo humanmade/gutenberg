@@ -69,3 +69,4 @@ var _default = (0, _createHigherOrderComponent.default)(function (WrappedCompone
 }, 'withInstanceId');
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

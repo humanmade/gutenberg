@@ -1,9 +1,5 @@
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import _Object$assign from "@babel/runtime/core-js/object/assign";
-import "core-js/modules/es6.function.name";
-import "core-js/modules/es6.number.constructor";
-import _Array$from from "@babel/runtime/core-js/array/from";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 /**
  * External dependencies
@@ -16,17 +12,24 @@ import { flow, castArray, mapValues, omit, stubFalse } from 'lodash';
 
 import { autop } from '@wordpress/autop';
 import { applyFilters } from '@wordpress/hooks';
-import deprecated from '@wordpress/deprecated';
-import { parse as grammarParse } from '@wordpress/block-serialization-spec-parser';
+import { parse as defaultParse } from '@wordpress/block-serialization-default-parser';
 /**
  * Internal dependencies
  */
 
-import { getBlockType, getUnknownTypeHandlerName } from './registration';
+import { getBlockType, getFreeformContentHandlerName, getUnregisteredTypeHandlerName } from './registration';
 import { createBlock } from './factory';
-import { isValidBlock } from './validation';
+import { isValidBlockContent } from './validation';
 import { getCommentDelimitedContent } from './serializer';
-import { attr, prop, html, text, query, node, children } from './matchers';
+import { attr, html, text, query, node, children, prop } from './matchers';
+import { normalizeBlockType } from './utils';
+/**
+ * Sources which are guaranteed to return a string value.
+ *
+ * @type {Set}
+ */
+
+var STRING_SOURCES = new Set(['attribute', 'html', 'text', 'tag']);
 /**
  * Higher-order hpq matcher which enhances an attribute matcher to return true
  * or false depending on whether the original matcher returns undefined. This
@@ -58,6 +61,80 @@ export var toBooleanAttributeMatcher = function toBooleanAttributeMatcher(matche
   }]);
 };
 /**
+ * Returns true if value is of the given JSON schema type, or false otherwise.
+ *
+ * @see http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.25
+ *
+ * @param {*}      value Value to test.
+ * @param {string} type  Type to test.
+ *
+ * @return {boolean} Whether value is of type.
+ */
+
+export function isOfType(value, type) {
+  switch (type) {
+    case 'string':
+      return typeof value === 'string';
+
+    case 'boolean':
+      return typeof value === 'boolean';
+
+    case 'object':
+      return !!value && value.constructor === Object;
+
+    case 'null':
+      return value === null;
+
+    case 'array':
+      return Array.isArray(value);
+
+    case 'integer':
+    case 'number':
+      return typeof value === 'number';
+  }
+
+  return true;
+}
+/**
+ * Returns true if value is of an array of given JSON schema types, or false
+ * otherwise.
+ *
+ * @see http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.25
+ *
+ * @param {*}        value Value to test.
+ * @param {string[]} types Types to test.
+ *
+ * @return {boolean} Whether value is of types.
+ */
+
+export function isOfTypes(value, types) {
+  return types.some(function (type) {
+    return isOfType(value, type);
+  });
+}
+/**
+ * Returns true if the given attribute schema describes a value which may be
+ * an ambiguous string.
+ *
+ * Some sources are ambiguously serialized as strings, for which value casting
+ * is enabled. This is only possible when a singular type is assigned to the
+ * attribute schema, since the string ambiguity makes it impossible to know the
+ * correct type of multiple to which to cast.
+ *
+ * @param {Object} attributeSchema Attribute's schema.
+ *
+ * @return {boolean} Whether attribute schema defines an ambiguous string
+ *                   source.
+ */
+
+export function isAmbiguousStringSource(attributeSchema) {
+  var source = attributeSchema.source,
+      type = attributeSchema.type;
+  var isStringSource = STRING_SOURCES.has(source);
+  var isSingleType = typeof type === 'string';
+  return isStringSource && isSingleType;
+}
+/**
  * Returns value coerced to the specified JSON schema type string.
  *
  * @see http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.25
@@ -87,7 +164,7 @@ export function asType(value, type) {
         return value;
       }
 
-      return _Array$from(value);
+      return Array.from(value);
 
     case 'integer':
     case 'number':
@@ -115,16 +192,8 @@ export function matcherFromSource(sourceConfig) {
 
       return matcher;
 
-    case 'property':
-      deprecated('`property` source', {
-        version: '3.4',
-        alternative: 'equivalent `text`, `html`, or `attribute` source, or comment attribute',
-        plugin: 'Gutenberg'
-      });
-      return prop(sourceConfig.selector, sourceConfig.property);
-
     case 'html':
-      return html(sourceConfig.selector);
+      return html(sourceConfig.selector, sourceConfig.multiline);
 
     case 'text':
       return text(sourceConfig.selector);
@@ -138,6 +207,11 @@ export function matcherFromSource(sourceConfig) {
     case 'query':
       var subMatchers = mapValues(sourceConfig.query, matcherFromSource);
       return query(sourceConfig.selector, subMatchers);
+
+    case 'tag':
+      return flow([prop(sourceConfig.selector, 'nodeName'), function (value) {
+        return value.toLowerCase();
+      }]);
 
     default:
       // eslint-disable-next-line no-console
@@ -171,6 +245,7 @@ export function parseWithAttributeSchema(innerHTML, attributeSchema) {
  */
 
 export function getBlockAttribute(attributeKey, attributeSchema, innerHTML, commentAttributes) {
+  var type = attributeSchema.type;
   var value;
 
   switch (attributeSchema.source) {
@@ -186,23 +261,36 @@ export function getBlockAttribute(attributeKey, attributeSchema, innerHTML, comm
     case 'children':
     case 'node':
     case 'query':
+    case 'tag':
       value = parseWithAttributeSchema(innerHTML, attributeSchema);
       break;
   }
 
-  return value === undefined ? attributeSchema.default : asType(value, attributeSchema.type);
+  if (type !== undefined && !isOfTypes(value, castArray(type))) {
+    // Reject the value if it is not valid of type. Reverting to the
+    // undefined value ensures the default is restored, if applicable.
+    value = undefined;
+  }
+
+  if (value === undefined) {
+    return attributeSchema.default;
+  }
+
+  return value;
 }
 /**
  * Returns the block attributes of a registered block node given its type.
  *
- * @param {?Object} blockType  Block type.
- * @param {string}  innerHTML  Raw block content.
- * @param {?Object} attributes Known block attributes (from delimiters).
+ * @param {string|Object} blockTypeOrName Block type or name.
+ * @param {string}        innerHTML       Raw block content.
+ * @param {?Object}       attributes      Known block attributes (from delimiters).
  *
  * @return {Object} All block attributes.
  */
 
-export function getBlockAttributes(blockType, innerHTML, attributes) {
+export function getBlockAttributes(blockTypeOrName, innerHTML) {
+  var attributes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var blockType = normalizeBlockType(blockTypeOrName);
   var blockAttributes = mapValues(blockType.attributes, function (attributeSchema, attributeKey) {
     return getBlockAttribute(attributeKey, attributeSchema, innerHTML, attributes);
   });
@@ -245,11 +333,10 @@ export function getMigratedBlock(block) {
     // and must be explicitly provided.
 
 
-    var deprecatedBlockType = _Object$assign(omit(blockType, ['attributes', 'save', 'supports']), deprecatedDefinitions[i]);
-
+    var deprecatedBlockType = Object.assign(omit(blockType, ['attributes', 'save', 'supports']), deprecatedDefinitions[i]);
     var migratedAttributes = getBlockAttributes(deprecatedBlockType, originalContent, attributes); // Ignore the deprecation if it produces a block which is not valid.
 
-    var isValid = isValidBlock(originalContent, deprecatedBlockType, migratedAttributes);
+    var isValid = isValidBlockContent(deprecatedBlockType, migratedAttributes, originalContent);
 
     if (!isValid) {
       continue;
@@ -289,46 +376,61 @@ export function getMigratedBlock(block) {
  */
 
 export function createBlockWithFallback(blockNode) {
-  var name = blockNode.blockName,
-      attributes = blockNode.attrs,
+  var originalName = blockNode.blockName;
+  var attributes = blockNode.attrs,
       _blockNode$innerBlock = blockNode.innerBlocks,
       innerBlocks = _blockNode$innerBlock === void 0 ? [] : _blockNode$innerBlock,
       innerHTML = blockNode.innerHTML;
+  var freeformContentFallbackBlock = getFreeformContentHandlerName();
+  var unregisteredFallbackBlock = getUnregisteredTypeHandlerName() || freeformContentFallbackBlock;
   attributes = attributes || {}; // Trim content to avoid creation of intermediary freeform segments.
 
-  innerHTML = innerHTML.trim(); // Use type from block content, otherwise find unknown handler.
+  innerHTML = innerHTML.trim(); // Use type from block content if available. Otherwise, default to the
+  // freeform content fallback.
 
-  name = name || getUnknownTypeHandlerName(); // Convert 'core/text' blocks in existing content to 'core/paragraph'.
+  var name = originalName || freeformContentFallbackBlock; // Convert 'core/cover-image' block in existing content to 'core/cover'.
+
+  if ('core/cover-image' === name) {
+    name = 'core/cover';
+  } // Convert 'core/text' blocks in existing content to 'core/paragraph'.
+
 
   if ('core/text' === name || 'core/cover-text' === name) {
     name = 'core/paragraph';
+  } // Fallback content may be upgraded from classic editor expecting implicit
+  // automatic paragraphs, so preserve them. Assumes wpautop is idempotent,
+  // meaning there are no negative consequences to repeated autop calls.
+
+
+  if (name === freeformContentFallbackBlock) {
+    innerHTML = autop(innerHTML).trim();
   } // Try finding the type for known block name, else fall back again.
 
 
   var blockType = getBlockType(name);
-  var fallbackBlock = getUnknownTypeHandlerName(); // Fallback content may be upgraded from classic editor expecting implicit
-  // automatic paragraphs, so preserve them. Assumes wpautop is idempotent,
-  // meaning there are no negative consequences to repeated autop calls.
-
-  if (name === fallbackBlock) {
-    innerHTML = autop(innerHTML).trim();
-  }
 
   if (!blockType) {
-    // If detected as a block which is not registered, preserve comment
-    // delimiters in content of unknown type handler.
+    // Preserve undelimited content for use by the unregistered type handler.
+    var originalUndelimitedContent = innerHTML; // If detected as a block which is not registered, preserve comment
+    // delimiters in content of unregistered type handler.
+
     if (name) {
       innerHTML = getCommentDelimitedContent(name, attributes, innerHTML);
     }
 
-    name = fallbackBlock;
+    name = unregisteredFallbackBlock;
+    attributes = {
+      originalName: originalName,
+      originalUndelimitedContent: originalUndelimitedContent
+    };
     blockType = getBlockType(name);
   } // Coerce inner blocks from parsed form to canonical form.
 
 
-  innerBlocks = innerBlocks.map(createBlockWithFallback); // Include in set only if type were determined.
+  innerBlocks = innerBlocks.map(createBlockWithFallback);
+  var isFallbackBlock = name === freeformContentFallbackBlock || name === unregisteredFallbackBlock; // Include in set only if type was determined.
 
-  if (!blockType || !innerHTML && name === fallbackBlock) {
+  if (!blockType || !innerHTML && isFallbackBlock) {
     return;
   }
 
@@ -337,8 +439,8 @@ export function createBlockWithFallback(blockNode) {
   // provided source value with the serialized output before there are any modifications to
   // the block. When both match, the block is marked as valid.
 
-  if (name !== fallbackBlock) {
-    block.isValid = isValidBlock(innerHTML, blockType, block.attributes);
+  if (!isFallbackBlock) {
+    block.isValid = isValidBlockContent(blockType, block.attributes, innerHTML);
   } // Preserve original content for future use in case the block is parsed as
   // invalid, or future serialization attempt results in an error.
 
@@ -377,5 +479,6 @@ var createParse = function createParse(parseImplementation) {
  */
 
 
-export var parseWithGrammar = createParse(grammarParse);
+export var parseWithGrammar = createParse(defaultParse);
 export default parseWithGrammar;
+//# sourceMappingURL=parser.js.map

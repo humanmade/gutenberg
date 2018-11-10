@@ -10,3 +10,4 @@ var _registry = require("./registry");
 var _default = (0, _registry.createRegistry)();
 
 exports.default = _default;
+//# sourceMappingURL=default-registry.js.map

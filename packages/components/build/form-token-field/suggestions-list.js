@@ -9,10 +9,6 @@ exports.default = void 0;
 
 var _element = require("@wordpress/element");
 
-var _freeze = _interopRequireDefault(require("@babel/runtime/core-js/object/freeze"));
-
-require("core-js/modules/es6.regexp.match");
-
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -165,7 +161,8 @@ SuggestionsList.defaultProps = {
   match: '',
   onHover: function onHover() {},
   onSelect: function onSelect() {},
-  suggestions: (0, _freeze.default)([])
+  suggestions: Object.freeze([])
 };
 var _default = SuggestionsList;
 exports.default = _default;
+//# sourceMappingURL=suggestions-list.js.map

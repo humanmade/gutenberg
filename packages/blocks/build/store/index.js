@@ -24,3 +24,4 @@ var actions = _interopRequireWildcard(require("./actions"));
   selectors: selectors,
   actions: actions
 });
+//# sourceMappingURL=index.js.map

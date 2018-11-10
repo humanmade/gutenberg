@@ -9,8 +9,6 @@ exports.default = void 0;
 
 var _element = require("@wordpress/element");
 
-require("core-js/modules/es6.array.find");
-
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -70,6 +68,13 @@ var withConstrainedTabbing = (0, _compose.createHigherOrderComponent)(function (
           } else if (!event.shiftKey && event.target === lastTabbable) {
             event.preventDefault();
             firstTabbable.focus();
+            /*
+             * When pressing Tab and none of the tabbables has focus, the keydown
+             * event happens on the wrapper div: move focus on the first tabbable.
+             */
+          } else if (!tabbables.includes(event.target)) {
+            event.preventDefault();
+            firstTabbable.focus();
           }
         }
       }, {
@@ -81,7 +86,8 @@ var withConstrainedTabbing = (0, _compose.createHigherOrderComponent)(function (
           /* eslint-disable jsx-a11y/no-static-element-interactions */
           return (0, _element.createElement)("div", {
             onKeyDown: this.handleTabBehaviour,
-            ref: this.focusContainRef
+            ref: this.focusContainRef,
+            tabIndex: "-1"
           }, (0, _element.createElement)(WrappedComponent, this.props));
           /* eslint-enable jsx-a11y/no-static-element-interactions */
         }
@@ -92,3 +98,4 @@ var withConstrainedTabbing = (0, _compose.createHigherOrderComponent)(function (
 }, 'withConstrainedTabbing');
 var _default = withConstrainedTabbing;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

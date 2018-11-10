@@ -7,6 +7,8 @@ exports.default = _default;
 
 var _utils = require("./utils");
 
+var _phrasingContent = require("./phrasing-content");
+
 /**
  * Internal dependencies
  */
@@ -60,7 +62,7 @@ function _default(HTML) {
         } else {
           accu.appendChild(node);
         }
-      } else if ((0, _utils.isPhrasingContent)(node)) {
+      } else if ((0, _phrasingContent.isPhrasingContent)(node)) {
         if (!accu.lastChild || accu.lastChild.nodeName !== 'P') {
           accu.appendChild(accuDoc.createElement('P'));
         }
@@ -76,3 +78,4 @@ function _default(HTML) {
 
   return accu.innerHTML;
 }
+//# sourceMappingURL=normalise-blocks.js.map

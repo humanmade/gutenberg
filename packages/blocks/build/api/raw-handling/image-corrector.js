@@ -7,12 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = _default;
 
-require("core-js/modules/es6.regexp.replace");
-
-require("core-js/modules/es6.typed.uint8-array");
-
-require("core-js/modules/es6.regexp.split");
-
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
 var _blob = require("@wordpress/blob");
@@ -80,3 +74,4 @@ function _default(node) {
     node.parentNode.removeChild(node);
   }
 }
+//# sourceMappingURL=image-corrector.js.map

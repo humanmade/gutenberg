@@ -61,3 +61,4 @@ function NoticeList(_ref) {
 
 var _default = NoticeList;
 exports.default = _default;
+//# sourceMappingURL=list.js.map

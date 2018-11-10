@@ -26,3 +26,4 @@ var ifCondition = function ifCondition(predicate) {
 };
 
 export default ifCondition;
+//# sourceMappingURL=index.js.map

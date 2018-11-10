@@ -1,12 +1,16 @@
-import "core-js/modules/es6.regexp.split";
-import "core-js/modules/es6.regexp.replace";
-
 /**
  * External dependencies
  */
 import momentLib from 'moment';
 import 'moment-timezone';
 import 'moment-timezone/moment-timezone-utils';
+/**
+ * WordPress dependencies
+ */
+
+import deprecated from '@wordpress/deprecated'; // Changes made here will likely need to be made in `lib/client-assets.php` as
+// well because it uses the `setSettings()` function to change these settings.
+
 var settings = {
   l10n: {
     locale: 'en_US',
@@ -28,7 +32,8 @@ var settings = {
   formats: {
     time: 'g: i a',
     date: 'F j, Y',
-    datetime: 'F j, Y g: i a'
+    datetime: 'F j, Y g: i a',
+    datetimeAbbreviated: 'M j, Y g: i a'
   },
   timezone: {
     offset: '0',
@@ -94,7 +99,17 @@ export function setSettings(dateSettings) {
  * @return {Object} Settings, including locale data.
  */
 
+export function __experimentalGetSettings() {
+  return settings;
+} // deprecations
+
 export function getSettings() {
+  deprecated('wp.date.getSettings', {
+    version: '4.4',
+    alternative: 'wp.date.__experimentalGetSettings',
+    plugin: 'Gutenberg',
+    hint: 'Unstable APIs are strongly discouraged to be used, and are subject to removal without notice.'
+  });
   return settings;
 }
 
@@ -112,6 +127,12 @@ function setupWPTimezone() {
 
 
 export var moment = function moment() {
+  deprecated('wp.date.moment', {
+    version: '4.4',
+    alternative: 'the moment script as a dependency',
+    plugin: 'Gutenberg'
+  });
+
   for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
     args[_key] = arguments[_key];
   }
@@ -386,4 +407,33 @@ export function dateI18n(dateFormat) {
 
   return format(dateFormat, dateMoment);
 }
+/**
+ * Check whether a date is considered in the future according to the WordPress settings.
+ *
+ * @param {string} dateValue Date String or Date object in the Defined WP Timezone.
+ *
+ * @return {boolean} Is in the future.
+ */
+
+export function isInTheFuture(dateValue) {
+  var now = momentLib.tz('WP');
+  var momentObject = momentLib.tz(dateValue, 'WP');
+  return momentObject.isAfter(now);
+}
+/**
+ * Create and return a JavaScript Date Object from a date string in the WP timezone.
+ *
+ * @param {string?} dateString Date formatted in the WP timezone.
+ *
+ * @return {Date} Date
+ */
+
+export function getDate(dateString) {
+  if (!dateString) {
+    return momentLib.tz('WP').toDate();
+  }
+
+  return momentLib.tz(dateString, 'WP').toDate();
+}
 setupWPTimezone();
+//# sourceMappingURL=index.js.map

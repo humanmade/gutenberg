@@ -1,6 +1,5 @@
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import "core-js/modules/es6.regexp.split";
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
 
 /**
  * Module constants
@@ -160,3 +159,4 @@ export function computePopoverPosition(anchorRect, contentSize) {
     isMobile: isMobileViewport() && expandOnMobile
   }, xAxisPosition, yAxisPosition);
 }
+//# sourceMappingURL=utils.js.map

@@ -1,10 +1,11 @@
-import "core-js/modules/es6.function.name";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
+import _defineProperty from "@babel/runtime/helpers/esm/defineProperty";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 /**
  * External dependencies
  */
-import { keyBy, omit } from 'lodash';
+import { keyBy, omit, mapValues, get, uniqBy, filter, map } from 'lodash';
 /**
  * WordPress dependencies
  */
@@ -49,10 +50,46 @@ export function blockTypes() {
 
   switch (action.type) {
     case 'ADD_BLOCK_TYPES':
-      return _objectSpread({}, state, keyBy(action.blockTypes, 'name'));
+      return _objectSpread({}, state, keyBy(map(action.blockTypes, function (blockType) {
+        return omit(blockType, 'styles ');
+      }), 'name'));
 
     case 'REMOVE_BLOCK_TYPES':
       return omit(state, action.names);
+  }
+
+  return state;
+}
+/**
+ * Reducer managing the block style variations.
+ *
+ * @param {Object} state  Current state.
+ * @param {Object} action Dispatched action.
+ *
+ * @return {Object} Updated state.
+ */
+
+export function blockStyles() {
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var action = arguments.length > 1 ? arguments[1] : undefined;
+
+  switch (action.type) {
+    case 'ADD_BLOCK_TYPES':
+      return _objectSpread({}, state, mapValues(keyBy(action.blockTypes, 'name'), function (blockType) {
+        return uniqBy(_toConsumableArray(get(blockType, ['styles'], [])).concat(_toConsumableArray(get(state, [blockType.name], []))), function (style) {
+          return style.name;
+        });
+      }));
+
+    case 'ADD_BLOCK_STYLES':
+      return _objectSpread({}, state, _defineProperty({}, action.blockName, uniqBy(_toConsumableArray(get(state, [action.blockName], [])).concat(_toConsumableArray(action.styles)), function (style) {
+        return style.name;
+      })));
+
+    case 'REMOVE_BLOCK_STYLES':
+      return _objectSpread({}, state, _defineProperty({}, action.blockName, filter(get(state, [action.blockName], []), function (style) {
+        return action.styleNames.indexOf(style.name) === -1;
+      })));
   }
 
   return state;
@@ -86,7 +123,8 @@ export function createBlockNameSetterReducer(setActionType) {
   };
 }
 export var defaultBlockName = createBlockNameSetterReducer('SET_DEFAULT_BLOCK_NAME');
-export var fallbackBlockName = createBlockNameSetterReducer('SET_FALLBACK_BLOCK_NAME');
+export var freeformFallbackBlockName = createBlockNameSetterReducer('SET_FREEFORM_FALLBACK_BLOCK_NAME');
+export var unregisteredFallbackBlockName = createBlockNameSetterReducer('SET_UNREGISTERED_FALLBACK_BLOCK_NAME');
 /**
  * Reducer managing the categories
  *
@@ -108,7 +146,10 @@ export function categories() {
 }
 export default combineReducers({
   blockTypes: blockTypes,
+  blockStyles: blockStyles,
   defaultBlockName: defaultBlockName,
-  fallbackBlockName: fallbackBlockName,
+  freeformFallbackBlockName: freeformFallbackBlockName,
+  unregisteredFallbackBlockName: unregisteredFallbackBlockName,
   categories: categories
 });
+//# sourceMappingURL=reducer.js.map

@@ -2,8 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/web.dom.iterable");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -13,12 +11,6 @@ exports.string = string;
 exports.regexp = regexp;
 exports.fromMatch = fromMatch;
 exports.default = exports.attrs = void 0;
-
-var _keys = _interopRequireDefault(require("@babel/runtime/core-js/object/keys"));
-
-require("core-js/modules/es6.regexp.constructor");
-
-require("core-js/modules/es6.regexp.replace");
 
 var _lodash = require("lodash");
 
@@ -297,7 +289,7 @@ var shortcode = (0, _lodash.extend)(function (options) {
 
   if ((0, _lodash.isString)(attributes)) {
     this.attrs = attrs(attributes); // Identify a correctly formatted `attrs` object.
-  } else if ((0, _lodash.isEqual)((0, _keys.default)(attributes), ['named', 'numeric'])) {
+  } else if ((0, _lodash.isEqual)(Object.keys(attributes), ['named', 'numeric'])) {
     this.attrs = attributes; // Handle a flat object of attributes.
   } else {
     (0, _lodash.forEach)(attributes, function (value, key) {
@@ -381,3 +373,4 @@ var shortcode = (0, _lodash.extend)(function (options) {
 });
 var _default = shortcode;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

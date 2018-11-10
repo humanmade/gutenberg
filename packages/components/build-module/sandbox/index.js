@@ -1,9 +1,9 @@
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -106,12 +106,15 @@ function (_Component) {
         return;
       }
 
-      var observeAndResizeJS = "\n\t\t\t( function() {\n\t\t\t\tvar observer;\n\t\t\t\tvar aspectRatio = false;\n\t\t\t\tvar iframe = false;\n\n\t\t\t\tif ( ! window.MutationObserver || ! document.body || ! window.parent ) {\n\t\t\t\t\treturn;\n\t\t\t\t}\n\n\t\t\t\tfunction sendResize() {\n\t\t\t\t\tvar clientBoundingRect = document.body.getBoundingClientRect();\n\t\t\t\t\tvar height = aspectRatio ? Math.ceil( clientBoundingRect.width / aspectRatio ) : clientBoundingRect.height;\n\n\t\t\t\t\tif ( iframe && aspectRatio ) {\n\t\t\t\t\t\t// This is embedded content delivered in an iframe with a fixed aspect ratio,\n\t\t\t\t\t\t// so set the height correctly and stop processing. The DOM mutation will trigger\n\t\t\t\t\t\t// another event and the resize message will get posted.\n\t\t\t\t\t\tif ( iframe.height != height ) {\n\t\t\t\t\t\t\tiframe.height = height;\n\t\t\t\t\t\t\treturn;\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\n\t\t\t\t\twindow.parent.postMessage( {\n\t\t\t\t\t\taction: 'resize',\n\t\t\t\t\t\twidth: clientBoundingRect.width,\n\t\t\t\t\t\theight: height,\n\t\t\t\t\t}, '*' );\n\t\t\t\t}\n\n\t\t\t\tobserver = new MutationObserver( sendResize );\n\t\t\t\tobserver.observe( document.body, {\n\t\t\t\t\tattributes: true,\n\t\t\t\t\tattributeOldValue: false,\n\t\t\t\t\tcharacterData: true,\n\t\t\t\t\tcharacterDataOldValue: false,\n\t\t\t\t\tchildList: true,\n\t\t\t\t\tsubtree: true\n\t\t\t\t} );\n\n\t\t\t\twindow.addEventListener( 'load', sendResize, true );\n\n\t\t\t\t// Hack: Remove viewport unit styles, as these are relative\n\t\t\t\t// the iframe root and interfere with our mechanism for\n\t\t\t\t// determining the unconstrained page bounds.\n\t\t\t\tfunction removeViewportStyles( ruleOrNode ) {\n\t\t\t\t\t[ 'width', 'height', 'minHeight', 'maxHeight' ].forEach( function( style ) {\n\t\t\t\t\t\tif ( /^\\d+(vmin|vmax|vh|vw)$/.test( ruleOrNode.style[ style ] ) ) {\n\t\t\t\t\t\t\truleOrNode.style[ style ] = '';\n\t\t\t\t\t\t}\n\t\t\t\t\t} );\n\t\t\t\t}\n\n\t\t\t\tArray.prototype.forEach.call( document.querySelectorAll( '[style]' ), removeViewportStyles );\n\t\t\t\tArray.prototype.forEach.call( document.styleSheets, function( stylesheet ) {\n\t\t\t\t\tArray.prototype.forEach.call( stylesheet.cssRules || stylesheet.rules, removeViewportStyles );\n\t\t\t\t} );\n\n\t\t\t\tdocument.body.style.position = 'absolute';\n\t\t\t\tdocument.body.style.width = '100%';\n\t\t\t\tdocument.body.setAttribute( 'data-resizable-iframe-connected', '' );\n\n\t\t\t\t// Make embedded content in an iframe with a fixed size responsive,\n\t\t\t\t// keeping the correct aspect ratio.\n\t\t\t\tvar potentialIframe = document.body.children[0];\n\t\t\t\tif ( 'DIV' === potentialIframe.tagName || 'SPAN' === potentialIframe.tagName ) {\n\t\t\t\t\t\tpotentialIframe = potentialIframe.children[0];\n\t\t\t\t\t}\n\t\t\t\tif ( 'IFRAME' === potentialIframe.tagName ) {\n\t\t\t\t\tif ( potentialIframe.width ) {\n\t\t\t\t\t\tiframe = potentialIframe;\n\t\t\t\t\t\taspectRatio = potentialIframe.width / potentialIframe.height;\n\t\t\t\t\t\tpotentialIframe.width = '100%';\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\tsendResize();\n\n\t\t\t\t// Resize events can change the width of elements with 100% width, but we don't\n\t\t\t\t// get an DOM mutations for that, so do the resize when the window is resized, too.\n\t\t\t\twindow.addEventListener( 'resize', sendResize, true );\n\t\t} )();";
-      var style = "\n\t\t\tbody {\n\t\t\t\tmargin: 0;\n\t\t\t}\n\t\t\tbody > div > iframe {\n\t\t\t\twidth: 100%;\n\t\t\t}\n\t\t\tbody > div > * {\n\t\t\t\tmargin-top: 0 !important;\t/* has to have !important to override inline styles */\n\t\t\t\tmargin-bottom: 0 !important;\n\t\t\t}\n\t\t"; // put the html snippet into a html document, and then write it to the iframe's document
-      // we can use this in the future to inject custom styles or scripts
+      var observeAndResizeJS = "\n\t\t\t( function() {\n\t\t\t\tvar observer;\n\n\t\t\t\tif ( ! window.MutationObserver || ! document.body || ! window.parent ) {\n\t\t\t\t\treturn;\n\t\t\t\t}\n\n\t\t\t\tfunction sendResize() {\n\t\t\t\t\tvar clientBoundingRect = document.body.getBoundingClientRect();\n\n\t\t\t\t\twindow.parent.postMessage( {\n\t\t\t\t\t\taction: 'resize',\n\t\t\t\t\t\twidth: clientBoundingRect.width,\n\t\t\t\t\t\theight: clientBoundingRect.height,\n\t\t\t\t\t}, '*' );\n\t\t\t\t}\n\n\t\t\t\tobserver = new MutationObserver( sendResize );\n\t\t\t\tobserver.observe( document.body, {\n\t\t\t\t\tattributes: true,\n\t\t\t\t\tattributeOldValue: false,\n\t\t\t\t\tcharacterData: true,\n\t\t\t\t\tcharacterDataOldValue: false,\n\t\t\t\t\tchildList: true,\n\t\t\t\t\tsubtree: true\n\t\t\t\t} );\n\n\t\t\t\twindow.addEventListener( 'load', sendResize, true );\n\n\t\t\t\t// Hack: Remove viewport unit styles, as these are relative\n\t\t\t\t// the iframe root and interfere with our mechanism for\n\t\t\t\t// determining the unconstrained page bounds.\n\t\t\t\tfunction removeViewportStyles( ruleOrNode ) {\n\t\t\t\t\t[ 'width', 'height', 'minHeight', 'maxHeight' ].forEach( function( style ) {\n\t\t\t\t\t\tif ( /^\\d+(vmin|vmax|vh|vw)$/.test( ruleOrNode.style[ style ] ) ) {\n\t\t\t\t\t\t\truleOrNode.style[ style ] = '';\n\t\t\t\t\t\t}\n\t\t\t\t\t} );\n\t\t\t\t}\n\n\t\t\t\tArray.prototype.forEach.call( document.querySelectorAll( '[style]' ), removeViewportStyles );\n\t\t\t\tArray.prototype.forEach.call( document.styleSheets, function( stylesheet ) {\n\t\t\t\t\tArray.prototype.forEach.call( stylesheet.cssRules || stylesheet.rules, removeViewportStyles );\n\t\t\t\t} );\n\n\t\t\t\tdocument.body.style.position = 'absolute';\n\t\t\t\tdocument.body.style.width = '100%';\n\t\t\t\tdocument.body.setAttribute( 'data-resizable-iframe-connected', '' );\n\n\t\t\t\tsendResize();\n\n\t\t\t\t// Resize events can change the width of elements with 100% width, but we don't\n\t\t\t\t// get an DOM mutations for that, so do the resize when the window is resized, too.\n\t\t\t\twindow.addEventListener( 'resize', sendResize, true );\n\t\t} )();";
+      var style = "\n\t\t\tbody {\n\t\t\t\tmargin: 0;\n\t\t\t}\n\t\t\thtml,\n\t\t\tbody,\n\t\t\tbody > div,\n\t\t\tbody > div > iframe {\n\t\t\t\twidth: 100%;\n\t\t\t}\n\t\t\thtml.wp-has-aspect-ratio,\n\t\t\tbody.wp-has-aspect-ratio,\n\t\t\tbody.wp-has-aspect-ratio > div,\n\t\t\tbody.wp-has-aspect-ratio > div > iframe {\n\t\t\t\theight: 100%;\n\t\t\t\toverflow: hidden; /* If it has an aspect ratio, it shouldn't scroll. */\n\t\t\t}\n\t\t\tbody > div > * {\n\t\t\t\tmargin-top: 0 !important; /* Has to have !important to override inline styles. */\n\t\t\t\tmargin-bottom: 0 !important;\n\t\t\t}\n\t\t"; // put the html snippet into a html document, and then write it to the iframe's document
+      // we can use this in the future to inject custom styles or scripts.
+      // Scripts go into the body rather than the head, to support embedded content such as Instagram
+      // that expect the scripts to be part of the body.
 
       var htmlDoc = createElement("html", {
-        lang: document.documentElement.lang
+        lang: document.documentElement.lang,
+        className: this.props.type
       }, createElement("head", null, createElement("title", null, this.props.title), createElement("style", {
         dangerouslySetInnerHTML: {
           __html: style
@@ -128,6 +131,11 @@ function (_Component) {
         dangerouslySetInnerHTML: {
           __html: observeAndResizeJS
         }
+      }), this.props.scripts && this.props.scripts.map(function (src) {
+        return createElement("script", {
+          key: src,
+          src: src
+        });
       }))); // writing the document like this makes it act in the same way as if it was
       // loaded over the network, so DOM creation and mutation, script execution, etc.
       // all work as expected
@@ -144,7 +152,7 @@ function (_Component) {
       return createElement(FocusableIframe, {
         iframeRef: this.iframe,
         title: title,
-        scrolling: "no",
+        className: "components-sandbox",
         sandbox: "allow-scripts allow-same-origin allow-presentation",
         onLoad: this.trySandbox,
         width: Math.ceil(this.state.width),
@@ -168,3 +176,4 @@ Sandbox = withGlobalEvents({
   message: 'checkMessageForResize'
 })(Sandbox);
 export default Sandbox;
+//# sourceMappingURL=index.js.map

@@ -9,8 +9,6 @@ exports.default = QueryControls;
 
 var _element = require("@wordpress/element");
 
-require("core-js/modules/es6.regexp.split");
-
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
 var _i18n = require("@wordpress/i18n");
@@ -92,3 +90,4 @@ function QueryControls(_ref) {
     max: maxItems
   })];
 }
+//# sourceMappingURL=index.js.map

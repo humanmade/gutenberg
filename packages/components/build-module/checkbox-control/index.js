@@ -1,5 +1,5 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -48,3 +48,4 @@ function CheckboxControl(_ref) {
 }
 
 export default withInstanceId(CheckboxControl);
+//# sourceMappingURL=index.js.map

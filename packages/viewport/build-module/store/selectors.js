@@ -1,5 +1,4 @@
-import "core-js/modules/es6.regexp.split";
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
 
 /**
  * External dependencies
@@ -28,3 +27,4 @@ export function isViewportMatch(state, query) {
   var key = takeRight(['>='].concat(_toConsumableArray(query.split(' '))), 2).join(' ');
   return !!state[key];
 }
+//# sourceMappingURL=selectors.js.map

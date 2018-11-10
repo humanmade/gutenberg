@@ -1,15 +1,16 @@
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import { createElement } from "@wordpress/element";
 
 /**
  * WordPress dependencies
  */
-import { Component } from '@wordpress/element';
+import deprecated from '@wordpress/deprecated';
+import { Component, createRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
@@ -29,8 +30,9 @@ function (_Component) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Dropdown).apply(this, arguments));
     _this.toggle = _this.toggle.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this.close = _this.close.bind(_assertThisInitialized(_assertThisInitialized(_this)));
-    _this.clickOutside = _this.clickOutside.bind(_assertThisInitialized(_assertThisInitialized(_this)));
-    _this.bindContainer = _this.bindContainer.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this.closeIfClickOutside = _this.closeIfClickOutside.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this.refresh = _this.refresh.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this.containerRef = createRef();
     _this.state = {
       isOpen: false
     };
@@ -57,10 +59,21 @@ function (_Component) {
         onToggle(isOpen);
       }
     }
+    /**
+     * When contents change height due to user interaction,
+     * `refresh` can be called to re-render Popover with correct
+     * attributes which allow scroll, if need be.
+     * @deprecated
+     */
+
   }, {
-    key: "bindContainer",
-    value: function bindContainer(ref) {
-      this.container = ref;
+    key: "refresh",
+    value: function refresh() {
+      deprecated('Dropdown.refresh()', {
+        plugin: 'Gutenberg',
+        version: '4.5',
+        hint: 'Popover is now automatically re-rendered without needing to execute "refresh"'
+      });
     }
   }, {
     key: "toggle",
@@ -71,10 +84,19 @@ function (_Component) {
         };
       });
     }
+    /**
+     * Closes the dropdown if a click occurs outside the dropdown wrapper. This
+     * is intentionally distinct from `onClose` in that a click outside the
+     * popover may occur in the toggling of the dropdown via its toggle button.
+     * The correct behavior is to keep the dropdown closed.
+     *
+     * @param {MouseEvent} event Click event triggering `onClickOutside`.
+     */
+
   }, {
-    key: "clickOutside",
-    value: function clickOutside(event) {
-      if (!this.container.contains(event.target)) {
+    key: "closeIfClickOutside",
+    value: function closeIfClickOutside(event) {
+      if (!this.containerRef.current.contains(event.target)) {
         this.close();
       }
     }
@@ -105,15 +127,15 @@ function (_Component) {
       };
       return createElement("div", {
         className: className,
-        ref: this.bindContainer
-      }, createElement("div", null, renderToggle(args), isOpen && createElement(Popover, {
+        ref: this.containerRef
+      }, renderToggle(args), isOpen && createElement(Popover, {
         className: contentClassName,
         position: position,
         onClose: this.close,
-        onClickOutside: this.clickOutside,
+        onClickOutside: this.closeIfClickOutside,
         expandOnMobile: expandOnMobile,
         headerTitle: headerTitle
-      }, renderContent(args))));
+      }, renderContent(args)));
     }
   }]);
 
@@ -121,3 +143,4 @@ function (_Component) {
 }(Component);
 
 export default Dropdown;
+//# sourceMappingURL=index.js.map

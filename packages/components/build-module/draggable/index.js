@@ -1,19 +1,15 @@
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
-import "core-js/modules/web.dom.iterable";
-import _JSON$stringify from "@babel/runtime/core-js/json/stringify";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
-import { createElement } from "@wordpress/element";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
 
 /**
  * External dependencies
  */
 import { noop } from 'lodash';
-import classnames from 'classnames';
 /**
  * WordPress Dependencies
  */
@@ -24,6 +20,14 @@ var dragImageClass = 'components-draggable__invisible-drag-image';
 var cloneWrapperClass = 'components-draggable__clone';
 var cloneHeightTransformationBreakpoint = 700;
 var clonePadding = 20;
+
+var isChromeUA = function isChromeUA() {
+  return /Chrome/i.test(window.navigator.userAgent);
+};
+
+var documentHasIframes = function documentHasIframes() {
+  return _toConsumableArray(document.getElementById('editor').querySelectorAll('iframe')).length > 0;
+};
 
 var Draggable =
 /*#__PURE__*/
@@ -38,8 +42,10 @@ function (_Component) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Draggable).apply(this, arguments));
     _this.onDragStart = _this.onDragStart.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this.onDragOver = _this.onDragOver.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this.onDrop = _this.onDrop.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this.onDragEnd = _this.onDragEnd.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this.resetDragState = _this.resetDragState.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this.isChromeAndHasIframes = false;
     return _this;
   }
 
@@ -58,7 +64,11 @@ function (_Component) {
     value: function onDragEnd(event) {
       var _this$props$onDragEnd = this.props.onDragEnd,
           onDragEnd = _this$props$onDragEnd === void 0 ? noop : _this$props$onDragEnd;
-      event.preventDefault();
+
+      if (event) {
+        event.preventDefault();
+      }
+
       this.resetDragState();
       this.props.setTimeout(onDragEnd);
     }
@@ -75,6 +85,14 @@ function (_Component) {
 
       this.cursorLeft = event.clientX;
       this.cursorTop = event.clientY;
+    }
+  }, {
+    key: "onDrop",
+    value: function onDrop() {
+      // As per https://html.spec.whatwg.org/multipage/dnd.html#dndevents
+      // the target node for the dragend is the source node that started the drag operation,
+      // while drop event's target is the current target element.
+      this.onDragEnd(null);
     }
     /**
      *  - Clones the current element and spawns clone over original element.
@@ -115,7 +133,7 @@ function (_Component) {
         });
       }
 
-      event.dataTransfer.setData('text', _JSON$stringify(transferData)); // Prepare element clone and append to element wrapper.
+      event.dataTransfer.setData('text', JSON.stringify(transferData)); // Prepare element clone and append to element wrapper.
 
       var elementRect = element.getBoundingClientRect();
       var elementWrapper = element.parentNode;
@@ -152,7 +170,18 @@ function (_Component) {
       this.cursorTop = event.clientY; // Update cursor to 'grabbing', document wide.
 
       document.body.classList.add('is-dragging-components-draggable');
-      document.addEventListener('dragover', this.onDragOver);
+      document.addEventListener('dragover', this.onDragOver); // Fixes https://bugs.chromium.org/p/chromium/issues/detail?id=737691#c8
+      // dragend event won't be dispatched in the chrome browser
+      // when iframes are affected by the drag operation. So, in that case,
+      // we use the drop event to wrap up the dragging operation.
+      // This way the hack is contained to a specific use case and the external API
+      // still relies mostly on the dragend event.
+
+      if (isChromeUA() && documentHasIframes()) {
+        this.isChromeAndHasIframes = true;
+        document.addEventListener('drop', this.onDrop);
+      }
+
       this.props.setTimeout(onDragStart);
     }
     /**
@@ -169,6 +198,11 @@ function (_Component) {
       if (this.cloneWrapper && this.cloneWrapper.parentNode) {
         this.cloneWrapper.parentNode.removeChild(this.cloneWrapper);
         this.cloneWrapper = null;
+      }
+
+      if (this.isChromeAndHasIframes) {
+        this.isChromeAndHasIframes = false;
+        document.removeEventListener('drop', this.onDrop);
       } // Reset cursor.
 
 
@@ -177,15 +211,11 @@ function (_Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this$props2 = this.props,
-          children = _this$props2.children,
-          className = _this$props2.className;
-      return createElement("div", {
-        className: classnames('components-draggable', className),
-        onDragStart: this.onDragStart,
-        onDragEnd: this.onDragEnd,
-        draggable: true
-      }, children);
+      var children = this.props.children;
+      return children({
+        onDraggableStart: this.onDragStart,
+        onDraggableEnd: this.onDragEnd
+      });
     }
   }]);
 
@@ -193,3 +223,4 @@ function (_Component) {
 }(Component);
 
 export default withSafeTimeout(Draggable);
+//# sourceMappingURL=index.js.map

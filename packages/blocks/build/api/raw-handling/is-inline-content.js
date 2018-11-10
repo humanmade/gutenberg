@@ -1,17 +1,13 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = _default;
 
-var _from = _interopRequireDefault(require("@babel/runtime/core-js/array/from"));
-
 var _lodash = require("lodash");
 
-var _utils = require("./utils");
+var _phrasingContent = require("./phrasing-content");
 
 /**
  * External dependencies
@@ -31,7 +27,7 @@ var _utils = require("./utils");
  * @return {boolean} True if the node is inline content, false if nohe.
  */
 function isInline(node, contextTag) {
-  if ((0, _utils.isPhrasingContent)(node)) {
+  if ((0, _phrasingContent.isPhrasingContent)(node)) {
     return true;
   }
 
@@ -48,7 +44,7 @@ function isInline(node, contextTag) {
 
 function deepCheck(nodes, contextTag) {
   return nodes.every(function (node) {
-    return isInline(node, contextTag) && deepCheck((0, _from.default)(node.children), contextTag);
+    return isInline(node, contextTag) && deepCheck(Array.from(node.children), contextTag);
   });
 }
 
@@ -59,6 +55,7 @@ function isDoubleBR(node) {
 function _default(HTML, contextTag) {
   var doc = document.implementation.createHTMLDocument('');
   doc.body.innerHTML = HTML;
-  var nodes = (0, _from.default)(doc.body.children);
+  var nodes = Array.from(doc.body.children);
   return !nodes.some(isDoubleBR) && deepCheck(nodes, contextTag);
 }
+//# sourceMappingURL=is-inline-content.js.map

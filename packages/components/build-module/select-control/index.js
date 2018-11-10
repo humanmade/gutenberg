@@ -1,6 +1,6 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -74,3 +74,4 @@ function SelectControl(_ref) {
 }
 
 export default withInstanceId(SelectControl);
+//# sourceMappingURL=index.js.map

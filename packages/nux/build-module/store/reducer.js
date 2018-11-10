@@ -1,6 +1,6 @@
-import _defineProperty from "@babel/runtime/helpers/defineProperty";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
+import _defineProperty from "@babel/runtime/helpers/esm/defineProperty";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
 
 /**
  * WordPress dependencies
@@ -82,3 +82,4 @@ export default combineReducers({
   guides: guides,
   preferences: preferences
 });
+//# sourceMappingURL=reducer.js.map

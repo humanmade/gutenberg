@@ -1,5 +1,3 @@
-import _Array$from from "@babel/runtime/core-js/array/from";
-
 /**
  * External dependencies
  */
@@ -8,7 +6,7 @@ import { difference } from 'lodash';
  * Internal dependencies
  */
 
-import { isPhrasingContent } from './utils';
+import { isPhrasingContent } from './phrasing-content';
 /**
  * Checks if the given node should be considered inline content, optionally
  * depending on a context tag.
@@ -37,7 +35,7 @@ function isInline(node, contextTag) {
 
 function deepCheck(nodes, contextTag) {
   return nodes.every(function (node) {
-    return isInline(node, contextTag) && deepCheck(_Array$from(node.children), contextTag);
+    return isInline(node, contextTag) && deepCheck(Array.from(node.children), contextTag);
   });
 }
 
@@ -48,8 +46,7 @@ function isDoubleBR(node) {
 export default function (HTML, contextTag) {
   var doc = document.implementation.createHTMLDocument('');
   doc.body.innerHTML = HTML;
-
-  var nodes = _Array$from(doc.body.children);
-
+  var nodes = Array.from(doc.body.children);
   return !nodes.some(isDoubleBR) && deepCheck(nodes, contextTag);
 }
+//# sourceMappingURL=is-inline-content.js.map

@@ -2,8 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es6.string.starts-with");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -20,13 +18,7 @@ exports.default = serialize;
 
 var _element = require("@wordpress/element");
 
-require("core-js/modules/es6.function.name");
-
-var _stringify = _interopRequireDefault(require("@babel/runtime/core-js/json/stringify"));
-
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
-
-require("core-js/modules/es6.regexp.replace");
 
 var _lodash = require("lodash");
 
@@ -35,6 +27,8 @@ var _hooks = require("@wordpress/hooks");
 var _isShallowEqual = _interopRequireDefault(require("@wordpress/is-shallow-equal"));
 
 var _registration = require("./registration");
+
+var _utils = require("./utils");
 
 var _blockContentProvider = _interopRequireDefault(require("../block-content-provider"));
 
@@ -82,16 +76,17 @@ function getBlockMenuDefaultClassName(blockName) {
  * Given a block type containing a save render implementation and attributes, returns the
  * enhanced element to be saved or string when raw HTML expected.
  *
- * @param {Object} blockType   Block type.
- * @param {Object} attributes  Block attributes.
- * @param {?Array} innerBlocks Nested blocks.
+ * @param {string|Object} blockTypeOrName   Block type or name.
+ * @param {Object}        attributes        Block attributes.
+ * @param {?Array}        innerBlocks       Nested blocks.
  *
  * @return {Object|string} Save element or raw HTML string.
  */
 
 
-function getSaveElement(blockType, attributes) {
+function getSaveElement(blockTypeOrName, attributes) {
   var innerBlocks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+  var blockType = (0, _utils.normalizeBlockType)(blockTypeOrName);
   var save = blockType.save; // Component classes are unsupported for save since serialization must
   // occur synchronously. For improved interoperability with higher-order
   // components which often return component class, emulate basic support.
@@ -140,15 +135,16 @@ function getSaveElement(blockType, attributes) {
  * Given a block type containing a save render implementation and attributes, returns the
  * static markup to be saved.
  *
- * @param {Object} blockType   Block type.
- * @param {Object} attributes  Block attributes.
- * @param {?Array} innerBlocks Nested blocks.
+ * @param {string|Object} blockTypeOrName Block type or name.
+ * @param {Object}        attributes      Block attributes.
+ * @param {?Array}        innerBlocks     Nested blocks.
  *
  * @return {string} Save content.
  */
 
 
-function getSaveContent(blockType, attributes, innerBlocks) {
+function getSaveContent(blockTypeOrName, attributes, innerBlocks) {
+  var blockType = (0, _utils.normalizeBlockType)(blockTypeOrName);
   return (0, _element.renderToString)(getSaveElement(blockType, attributes, innerBlocks));
 }
 /**
@@ -162,16 +158,16 @@ function getSaveContent(blockType, attributes, innerBlocks) {
  * This function returns only those attributes which are needed to persist and
  * which cannot be matched from the block content.
  *
- * @param {Object<string,*>} allAttributes Attributes from in-memory block data.
  * @param {Object<string,*>} blockType     Block type.
+ * @param {Object<string,*>} attributes Attributes from in-memory block data.
  *
  * @return {Object<string,*>} Subset of attributes for comment serialization.
  */
 
 
-function getCommentAttributes(allAttributes, blockType) {
-  var attributes = (0, _lodash.reduce)(blockType.attributes, function (result, attributeSchema, key) {
-    var value = allAttributes[key]; // Ignore undefined values.
+function getCommentAttributes(blockType, attributes) {
+  return (0, _lodash.reduce)(blockType.attributes, function (result, attributeSchema, key) {
+    var value = attributes[key]; // Ignore undefined values.
 
     if (undefined === value) {
       return result;
@@ -192,7 +188,6 @@ function getCommentAttributes(allAttributes, blockType) {
     result[key] = value;
     return result;
   }, {});
-  return attributes;
 }
 /**
  * Given an attributes object, returns a string in the serialized attributes
@@ -205,7 +200,7 @@ function getCommentAttributes(allAttributes, blockType) {
 
 
 function serializeAttributes(attributes) {
-  return (0, _stringify.default)(attributes) // Don't break HTML comments.
+  return JSON.stringify(attributes) // Don't break HTML comments.
   .replace(/--/g, "\\u002d\\u002d") // Don't break non-standard-compliant tools.
   .replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026") // Bypass server stripslashes behavior which would unescape stringify's
   // escaping of quotation mark.
@@ -216,7 +211,7 @@ function serializeAttributes(attributes) {
 /**
  * Given a block object, returns the Block's Inner HTML markup.
  *
- * @param {Object} block Block Object.
+ * @param {Object} block Block instance.
  *
  * @return {string} HTML.
  */
@@ -224,17 +219,16 @@ function serializeAttributes(attributes) {
 
 function getBlockContent(block) {
   // @todo why not getBlockInnerHtml?
-  var blockType = (0, _registration.getBlockType)(block.name); // If block was parsed as invalid or encounters an error while generating
+  // If block was parsed as invalid or encounters an error while generating
   // save content, use original content instead to avoid content loss. If a
   // block contains nested content, exempt it from this condition because we
   // otherwise have no access to its original content and content loss would
   // still occur.
-
   var saveContent = block.originalContent;
 
   if (block.isValid || block.innerBlocks.length) {
     try {
-      saveContent = getSaveContent(blockType, block.attributes, block.innerBlocks);
+      saveContent = getSaveContent(block.name, block.attributes, block.innerBlocks);
     } catch (error) {}
   }
 
@@ -276,10 +270,11 @@ function serializeBlock(block) {
   var blockName = block.name;
   var blockType = (0, _registration.getBlockType)(blockName);
   var saveContent = getBlockContent(block);
-  var saveAttributes = getCommentAttributes(block.attributes, blockType);
+  var saveAttributes = getCommentAttributes(blockType, block.attributes);
 
   switch (blockName) {
-    case (0, _registration.getUnknownTypeHandlerName)():
+    case (0, _registration.getFreeformContentHandlerName)():
+    case (0, _registration.getUnregisteredTypeHandlerName)():
       return saveContent;
 
     default:
@@ -298,3 +293,4 @@ function serializeBlock(block) {
 function serialize(blocks) {
   return (0, _lodash.castArray)(blocks).map(serializeBlock).join('\n\n');
 }
+//# sourceMappingURL=serializer.js.map

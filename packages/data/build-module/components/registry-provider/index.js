@@ -14,3 +14,4 @@ var _createContext = createContext(defaultRegistry),
 
 export var RegistryConsumer = Consumer;
 export default Provider;
+//# sourceMappingURL=index.js.map

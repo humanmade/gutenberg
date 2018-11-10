@@ -4,21 +4,17 @@ var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWild
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/web.dom.iterable");
-
-require("core-js/modules/es6.array.iterator");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.isUnmodifiedDefaultBlock = isUnmodifiedDefaultBlock;
 exports.isValidIcon = isValidIcon;
-exports.isIconUnreadable = isIconUnreadable;
 exports.normalizeIconObject = normalizeIconObject;
+exports.normalizeBlockType = normalizeBlockType;
+
+var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
-
-require("core-js/modules/es6.function.name");
 
 var _lodash = require("lodash");
 
@@ -87,21 +83,6 @@ function isValidIcon(icon) {
   return !!icon && ((0, _lodash.isString)(icon) || (0, _element.isValidElement)(icon) || (0, _lodash.isFunction)(icon) || icon instanceof _element.Component);
 }
 /**
- * Function that returns true if the background and foreground colors of the icon are unreadable.
- *
- * @param {*} icon  Parameter to be checked.
- *
- * @return {boolean} True if the background and foreground colors of the icon are unreadable.
- */
-
-
-function isIconUnreadable(icon) {
-  return !!(icon && icon.background && icon.foreground) && !_tinycolor.default.isReadable((0, _tinycolor.default)(icon.background), (0, _tinycolor.default)(icon.foreground), {
-    level: 'AA',
-    size: 'large'
-  });
-}
-/**
  * Function that receives an icon as set by the blocks during the registration
  * and returns a new icon object that is normalized so we can rely on just on possible icon structure
  * in the codebase.
@@ -116,9 +97,7 @@ function isIconUnreadable(icon) {
 
 function normalizeIconObject(icon) {
   if (!icon) {
-    return {
-      src: 'block-default'
-    };
+    icon = 'block-default';
   }
 
   if (isValidIcon(icon)) {
@@ -127,20 +106,36 @@ function normalizeIconObject(icon) {
     };
   }
 
-  if (icon.background) {
+  if ((0, _lodash.has)(icon, ['background'])) {
     var tinyBgColor = (0, _tinycolor.default)(icon.background);
-
-    if (!icon.foreground) {
-      var foreground = (0, _tinycolor.mostReadable)(tinyBgColor, ICON_COLORS, {
+    return (0, _objectSpread2.default)({}, icon, {
+      foreground: icon.foreground ? icon.foreground : (0, _tinycolor.mostReadable)(tinyBgColor, ICON_COLORS, {
         includeFallbackColors: true,
         level: 'AA',
         size: 'large'
-      }).toHexString();
-      icon.foreground = foreground;
-    }
-
-    icon.shadowColor = tinyBgColor.setAlpha(0.3).toRgbString();
+      }).toHexString(),
+      shadowColor: tinyBgColor.setAlpha(0.3).toRgbString()
+    });
   }
 
   return icon;
 }
+/**
+ * Normalizes block type passed as param. When string is passed then
+ * it converts it to the matching block type object.
+ * It passes the original object otherwise.
+ *
+ * @param {string|Object} blockTypeOrName  Block type or name.
+ *
+ * @return {?Object} Block type.
+ */
+
+
+function normalizeBlockType(blockTypeOrName) {
+  if ((0, _lodash.isString)(blockTypeOrName)) {
+    return (0, _registration.getBlockType)(blockTypeOrName);
+  }
+
+  return blockTypeOrName;
+}
+//# sourceMappingURL=utils.js.map

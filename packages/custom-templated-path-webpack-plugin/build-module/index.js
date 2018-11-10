@@ -1,9 +1,6 @@
-import "core-js/modules/es6.regexp.replace";
-import "core-js/modules/es6.regexp.constructor";
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
-import _Object$entries from "@babel/runtime/core-js/object/entries";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
 
 /**
  * External dependencies
@@ -34,7 +31,7 @@ function () {
 
     this.handlers = [];
 
-    var _arr = _Object$entries(handlers);
+    var _arr = Object.entries(handlers);
 
     for (var _i = 0; _i < _arr.length; _i++) {
       var _arr$_i = _slicedToArray(_arr[_i], 2),
@@ -79,3 +76,4 @@ function () {
 }();
 
 module.exports = CustomTemplatedPathPlugin;
+//# sourceMappingURL=index.js.map

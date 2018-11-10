@@ -1,16 +1,21 @@
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import "core-js/modules/es6.function.name";
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
 
 /**
  * External dependencies
  */
-import { every, map } from 'lodash';
+import { every, map, get, mapValues, isArray } from 'lodash';
+/**
+ * WordPress dependencies
+ */
+
+import { renderToString } from '@wordpress/element';
 /**
  * Internal dependencies
  */
 
 import { createBlock } from './factory';
+import { getBlockType } from './registration';
 /**
  * Checks whether a list of blocks matches a template by comparing the block names.
  *
@@ -68,8 +73,45 @@ export function synchronizeBlocksWithTemplate() {
       return _objectSpread({}, block, {
         innerBlocks: innerBlocks
       });
-    }
+    } // To support old templates that were using the "children" format
+    // for the attributes using "html" strings now, we normalize the template attributes
+    // before creating the blocks.
 
-    return createBlock(name, attributes, synchronizeBlocksWithTemplate([], innerBlocksTemplate));
+
+    var blockType = getBlockType(name);
+
+    var isHTMLAttribute = function isHTMLAttribute(attributeDefinition) {
+      return get(attributeDefinition, ['source']) === 'html';
+    };
+
+    var isQueryAttribute = function isQueryAttribute(attributeDefinition) {
+      return get(attributeDefinition, ['source']) === 'query';
+    };
+
+    var normalizeAttributes = function normalizeAttributes(schema, values) {
+      return mapValues(values, function (value, key) {
+        return normalizeAttribute(schema[key], value);
+      });
+    };
+
+    var normalizeAttribute = function normalizeAttribute(definition, value) {
+      if (isHTMLAttribute(definition) && isArray(value)) {
+        // Introduce a deprecated call at this point
+        // When we're confident that "children" format should be removed from the templates.
+        return renderToString(value);
+      }
+
+      if (isQueryAttribute(definition) && value) {
+        return value.map(function (subValues) {
+          return normalizeAttributes(definition.query, subValues);
+        });
+      }
+
+      return value;
+    };
+
+    var normalizedAttributes = normalizeAttributes(get(blockType, ['attributes'], {}), attributes);
+    return createBlock(name, normalizedAttributes, synchronizeBlocksWithTemplate([], innerBlocksTemplate));
   });
 }
+//# sourceMappingURL=templates.js.map

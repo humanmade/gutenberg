@@ -29,3 +29,4 @@ var withViewportMatch = function withViewportMatch(queries) {
 };
 
 export default withViewportMatch;
+//# sourceMappingURL=with-viewport-match.js.map

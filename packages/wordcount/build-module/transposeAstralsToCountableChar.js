@@ -1,5 +1,3 @@
-import "core-js/modules/es6.regexp.replace";
-
 /**
  * Replaces items matched in the regex with character.
  *
@@ -15,3 +13,4 @@ export default function (settings, text) {
 
   return text;
 }
+//# sourceMappingURL=transposeAstralsToCountableChar.js.map

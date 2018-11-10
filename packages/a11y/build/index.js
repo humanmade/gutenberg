@@ -60,3 +60,4 @@ var speak = function speak(message, ariaLive) {
 };
 
 exports.speak = speak;
+//# sourceMappingURL=index.js.map

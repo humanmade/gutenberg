@@ -1,25 +1,25 @@
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 /**
  * External dependencies
  */
-import jQuery from 'jquery';
+import { addAction } from '@wordpress/hooks';
 
 var createNonceMiddleware = function createNonceMiddleware(nonce) {
-  return function (options, next) {
-    var usedNonce = nonce;
-    /**
-     * This is not ideal but it's fine for now.
-     *
-     * Configure heartbeat to refresh the wp-api nonce, keeping the editor
-     * authorization intact.
-     */
+  var usedNonce = nonce;
+  /**
+   * This is not ideal but it's fine for now.
+   *
+   * Configure heartbeat to refresh the wp-api nonce, keeping the editor
+   * authorization intact.
+   */
 
-    jQuery(document).on('heartbeat-tick', function (event, response) {
-      if (response['rest-nonce']) {
-        usedNonce = response['rest-nonce'];
-      }
-    });
+  addAction('heartbeat.tick', 'core/api-fetch/create-nonce-middleware', function (response) {
+    if (response['rest-nonce']) {
+      usedNonce = response['rest-nonce'];
+    }
+  });
+  return function (options, next) {
     var headers = options.headers || {}; // If an 'X-WP-Nonce' header (or any case-insensitive variation
     // thereof) was specified, no need to add a nonce header.
 
@@ -48,3 +48,4 @@ var createNonceMiddleware = function createNonceMiddleware(nonce) {
 };
 
 export default createNonceMiddleware;
+//# sourceMappingURL=nonce.js.map

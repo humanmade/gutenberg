@@ -17,15 +17,32 @@ import supportedMatchers from './supported-matchers';
 
 var setConsoleMethodSpy = function setConsoleMethodSpy(matcherName, methodName) {
   var spy = jest.spyOn(console, methodName).mockName("console.".concat(methodName));
-  beforeEach(function () {
+  /**
+   * Resets the spy to its initial state.
+   */
+
+  function resetSpy() {
     spy.mockReset();
     spy.assertionsNumber = 0;
-  });
-  afterEach(function () {
+  }
+  /**
+   * Verifies that the spy has only been called if expected.
+   */
+
+
+  function assertExpectedCalls() {
     if (spy.assertionsNumber === 0 && spy.mock.calls.length > 0) {
       expect(console).not[matcherName]();
     }
+  }
+
+  beforeAll(resetSpy);
+  beforeEach(function () {
+    assertExpectedCalls();
+    resetSpy();
   });
+  afterEach(assertExpectedCalls);
 };
 
 forEach(supportedMatchers, setConsoleMethodSpy);
+//# sourceMappingURL=index.js.map

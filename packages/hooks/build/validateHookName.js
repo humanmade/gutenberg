@@ -38,3 +38,4 @@ function validateHookName(hookName) {
 
 var _default = validateHookName;
 exports.default = _default;
+//# sourceMappingURL=validateHookName.js.map

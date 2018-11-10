@@ -65,22 +65,21 @@ function (_Component) {
           label = _this$props.label,
           className = _this$props.className,
           tooltip = _this$props.tooltip,
-          focus = _this$props.focus,
           shortcut = _this$props.shortcut,
-          additionalProps = (0, _objectWithoutProperties2.default)(_this$props, ["icon", "children", "label", "className", "tooltip", "focus", "shortcut"]);
+          additionalProps = (0, _objectWithoutProperties2.default)(_this$props, ["icon", "children", "label", "className", "tooltip", "shortcut"]);
       var classes = (0, _classnames.default)('components-icon-button', className);
       var tooltipText = tooltip || label; // Should show the tooltip if...
 
-      var showTooltip = // an explicit tooltip is passed or...
+      var showTooltip = !additionalProps.disabled && ( // an explicit tooltip is passed or...
       tooltip || // there's a shortcut or...
       shortcut || // there's a label and...
       !!label && ( // the children are empty and...
       !children || (0, _lodash.isArray)(children) && !children.length) && // the tooltip is not explicitly disabled.
-      false !== tooltip;
-      var element = (0, _element.createElement)(_button.default, (0, _extends2.default)({}, additionalProps, {
-        "aria-label": label,
-        className: classes,
-        focus: focus
+      false !== tooltip);
+      var element = (0, _element.createElement)(_button.default, (0, _extends2.default)({
+        "aria-label": label
+      }, additionalProps, {
+        className: classes
       }), (0, _lodash.isString)(icon) ? (0, _element.createElement)(_dashicon.default, {
         icon: icon
       }) : icon, children);
@@ -100,3 +99,4 @@ function (_Component) {
 
 var _default = IconButton;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

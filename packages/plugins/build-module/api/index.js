@@ -1,6 +1,5 @@
-import _Object$values from "@babel/runtime/core-js/object/values";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import _typeof from "@babel/runtime/helpers/typeof";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _typeof from "@babel/runtime/helpers/esm/typeof";
 
 /* eslint no-console: [ 'error', { allow: [ 'error' ] } ] */
 
@@ -103,5 +102,6 @@ export function getPlugin(name) {
  */
 
 export function getPlugins() {
-  return _Object$values(plugins);
+  return Object.values(plugins);
 }
+//# sourceMappingURL=index.js.map

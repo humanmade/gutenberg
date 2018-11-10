@@ -1,22 +1,62 @@
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
-import "core-js/modules/web.dom.iterable";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
+import { createElement } from "@wordpress/element";
 
 /**
  * External dependencies
  */
-import { isEqual, find, some, filter, noop, throttle } from 'lodash';
+import { isEqual, find, some, filter, throttle, includes } from 'lodash';
 /**
  * WordPress dependencies
  */
 
-import { Component, findDOMNode } from '@wordpress/element';
+import { Component, createContext } from '@wordpress/element';
 import isShallowEqual from '@wordpress/is-shallow-equal';
+
+var _createContext = createContext({
+  addDropZone: function addDropZone() {},
+  removeDropZone: function removeDropZone() {}
+}),
+    Provider = _createContext.Provider,
+    Consumer = _createContext.Consumer;
+
+var getDragEventType = function getDragEventType(_ref) {
+  var dataTransfer = _ref.dataTransfer;
+
+  if (dataTransfer) {
+    // Use lodash `includes` here as in the Edge browser `types` is implemented
+    // as a DomStringList, whereas in other browsers it's an array. `includes`
+    // happily works with both types.
+    if (includes(dataTransfer.types, 'Files')) {
+      return 'file';
+    }
+
+    if (includes(dataTransfer.types, 'text/html')) {
+      return 'html';
+    }
+  }
+
+  return 'default';
+};
+
+var isTypeSupportedByDropZone = function isTypeSupportedByDropZone(type, dropZone) {
+  return type === 'file' && dropZone.onFilesDrop || type === 'html' && dropZone.onHTMLDrop || type === 'default' && dropZone.onDrop;
+};
+
+var isWithinElementBounds = function isWithinElementBounds(element, x, y) {
+  var rect = element.getBoundingClientRect(); /// make sure the rect is a valid rect
+
+  if (rect.bottom === rect.top || rect.left === rect.right) {
+    return false;
+  }
+
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+};
 
 var DropZoneProvider =
 /*#__PURE__*/
@@ -28,73 +68,54 @@ function (_Component) {
 
     _classCallCheck(this, DropZoneProvider);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(DropZoneProvider).apply(this, arguments));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(DropZoneProvider).apply(this, arguments)); // Event listeners
+
+    _this.onDragOver = _this.onDragOver.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this.onDrop = _this.onDrop.bind(_assertThisInitialized(_assertThisInitialized(_this))); // Context methods so this component can receive data from consumers
+
+    _this.addDropZone = _this.addDropZone.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    _this.removeDropZone = _this.removeDropZone.bind(_assertThisInitialized(_assertThisInitialized(_this))); // Utility methods
+
     _this.resetDragState = _this.resetDragState.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     _this.toggleDraggingOverDocument = throttle(_this.toggleDraggingOverDocument.bind(_assertThisInitialized(_assertThisInitialized(_this))), 200);
-    _this.dragOverListener = _this.dragOverListener.bind(_assertThisInitialized(_assertThisInitialized(_this)));
-    _this.isWithinZoneBounds = _this.isWithinZoneBounds.bind(_assertThisInitialized(_assertThisInitialized(_this)));
-    _this.onDrop = _this.onDrop.bind(_assertThisInitialized(_assertThisInitialized(_this)));
-    _this.state = {
-      isDraggingOverDocument: false,
-      hoveredDropZone: -1,
-      position: null
+    _this.dropZones = [];
+    _this.dropZoneCallbacks = {
+      addDropZone: _this.addDropZone,
+      removeDropZone: _this.removeDropZone
     };
-    _this.dropzones = [];
+    _this.state = {
+      hoveredDropZone: -1,
+      isDraggingOverDocument: false,
+      isDraggingOverElement: false,
+      position: null,
+      type: null
+    };
     return _this;
   }
 
   _createClass(DropZoneProvider, [{
-    key: "dragOverListener",
-    value: function dragOverListener(event) {
-      this.toggleDraggingOverDocument(event, this.getDragEventType(event));
-      event.preventDefault();
-    }
-  }, {
-    key: "getChildContext",
-    value: function getChildContext() {
-      var _this2 = this;
-
-      return {
-        dropzones: {
-          add: function add(_ref) {
-            var element = _ref.element,
-                updateState = _ref.updateState,
-                onDrop = _ref.onDrop,
-                onFilesDrop = _ref.onFilesDrop,
-                onHTMLDrop = _ref.onHTMLDrop;
-
-            _this2.dropzones.push({
-              element: element,
-              updateState: updateState,
-              onDrop: onDrop,
-              onFilesDrop: onFilesDrop,
-              onHTMLDrop: onHTMLDrop
-            });
-          },
-          remove: function remove(element) {
-            _this2.dropzones = filter(_this2.dropzones, function (dropzone) {
-              return dropzone.element !== element;
-            });
-          }
-        }
-      };
-    }
-  }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      window.addEventListener('dragover', this.dragOverListener);
-      window.addEventListener('drop', this.onDrop);
-      window.addEventListener('mouseup', this.resetDragState); // Disable reason: Can't use a ref since this component just renders its children
-      // eslint-disable-next-line react/no-find-dom-node
-
-      this.container = findDOMNode(this);
+      window.addEventListener('dragover', this.onDragOver);
+      window.addEventListener('mouseup', this.resetDragState);
     }
   }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
-      window.removeEventListener('dragover', this.dragOverListener);
-      window.removeEventListener('drop', this.onDrop);
+      window.removeEventListener('dragover', this.onDragOver);
       window.removeEventListener('mouseup', this.resetDragState);
+    }
+  }, {
+    key: "addDropZone",
+    value: function addDropZone(dropZone) {
+      this.dropZones.push(dropZone);
+    }
+  }, {
+    key: "removeDropZone",
+    value: function removeDropZone(dropZone) {
+      this.dropZones = filter(this.dropZones, function (dz) {
+        return dz !== dropZone;
+      });
     }
   }, {
     key: "resetDragState",
@@ -110,13 +131,14 @@ function (_Component) {
       }
 
       this.setState({
-        isDraggingOverDocument: false,
         hoveredDropZone: -1,
-        position: null
+        isDraggingOverDocument: false,
+        isDraggingOverElement: false,
+        position: null,
+        type: null
       });
-      this.dropzones.forEach(function (_ref2) {
-        var updateState = _ref2.updateState;
-        updateState({
+      this.dropZones.forEach(function (dropZone) {
+        return dropZone.setState({
           isDraggingOverDocument: false,
           isDraggingOverElement: false,
           position: null,
@@ -125,29 +147,9 @@ function (_Component) {
       });
     }
   }, {
-    key: "getDragEventType",
-    value: function getDragEventType(event) {
-      if (event.dataTransfer) {
-        if (event.dataTransfer.types.indexOf('Files') !== -1) {
-          return 'file';
-        }
-
-        if (event.dataTransfer.types.indexOf('text/html') !== -1) {
-          return 'html';
-        }
-      }
-
-      return 'default';
-    }
-  }, {
-    key: "doesDropzoneSupportType",
-    value: function doesDropzoneSupportType(dropzone, type) {
-      return type === 'file' && dropzone.onFilesDrop || type === 'html' && dropzone.onHTMLDrop || type === 'default' && dropzone.onDrop;
-    }
-  }, {
     key: "toggleDraggingOverDocument",
     value: function toggleDraggingOverDocument(event, dragEventType) {
-      var _this3 = this;
+      var _this2 = this;
 
       // In some contexts, it may be necessary to capture and redirect the
       // drag event (e.g. atop an `iframe`). To accommodate this, you can
@@ -157,8 +159,8 @@ function (_Component) {
       // See: https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events
       var detail = window.CustomEvent && event instanceof window.CustomEvent ? event.detail : event; // Index of hovered dropzone.
 
-      var hoveredDropZones = filter(this.dropzones, function (dropzone) {
-        return _this3.doesDropzoneSupportType(dropzone, dragEventType) && _this3.isWithinZoneBounds(dropzone.element, detail.clientX, detail.clientY);
+      var hoveredDropZones = filter(this.dropZones, function (dropZone) {
+        return isTypeSupportedByDropZone(dragEventType, dropZone) && isWithinElementBounds(dropZone.element, detail.clientX, detail.clientY);
       }); // Find the leaf dropzone not containing another dropzone
 
       var hoveredDropZone = find(hoveredDropZones, function (zone) {
@@ -166,7 +168,7 @@ function (_Component) {
           return subZone !== zone && zone.element.parentElement.contains(subZone.element);
         });
       });
-      var hoveredDropZoneIndex = this.dropzones.indexOf(hoveredDropZone);
+      var hoveredDropZoneIndex = this.dropZones.indexOf(hoveredDropZone);
       var position = null;
 
       if (hoveredDropZone) {
@@ -178,31 +180,31 @@ function (_Component) {
       } // Optimisation: Only update the changed dropzones
 
 
-      var dropzonesToUpdate = [];
+      var toUpdate = [];
 
       if (!this.state.isDraggingOverDocument) {
-        dropzonesToUpdate = this.dropzones;
+        toUpdate = this.dropZones;
       } else if (hoveredDropZoneIndex !== this.state.hoveredDropZone) {
         if (this.state.hoveredDropZone !== -1) {
-          dropzonesToUpdate.push(this.dropzones[this.state.hoveredDropZone]);
+          toUpdate.push(this.dropZones[this.state.hoveredDropZone]);
         }
 
         if (hoveredDropZone) {
-          dropzonesToUpdate.push(hoveredDropZone);
+          toUpdate.push(hoveredDropZone);
         }
       } else if (hoveredDropZone && hoveredDropZoneIndex === this.state.hoveredDropZone && !isEqual(position, this.state.position)) {
-        dropzonesToUpdate.push(hoveredDropZone);
+        toUpdate.push(hoveredDropZone);
       } // Notifying the dropzones
 
 
-      dropzonesToUpdate.map(function (dropzone) {
-        var index = _this3.dropzones.indexOf(dropzone);
+      toUpdate.map(function (dropZone) {
+        var index = _this2.dropZones.indexOf(dropZone);
 
         var isDraggingOverDropZone = index === hoveredDropZoneIndex;
-        dropzone.updateState({
+        dropZone.setState({
+          isDraggingOverDocument: isTypeSupportedByDropZone(dragEventType, dropZone),
           isDraggingOverElement: isDraggingOverDropZone,
           position: isDraggingOverDropZone ? position : null,
-          isDraggingOverDocument: _this3.doesDropzoneSupportType(dropzone, dragEventType),
           type: isDraggingOverDropZone ? dragEventType : null
         });
       });
@@ -217,19 +219,10 @@ function (_Component) {
       }
     }
   }, {
-    key: "isWithinZoneBounds",
-    value: function isWithinZoneBounds(dropzone, x, y) {
-      var isWithinElement = function isWithinElement(element) {
-        var rect = element.getBoundingClientRect(); /// make sure the rect is a valid rect
-
-        if (rect.bottom === rect.top || rect.left === rect.right) {
-          return false;
-        }
-
-        return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-      };
-
-      return isWithinElement(dropzone);
+    key: "onDragOver",
+    value: function onDragOver(event) {
+      this.toggleDraggingOverDocument(event, getDragEventType(event));
+      event.preventDefault();
     }
   }, {
     key: "onDrop",
@@ -241,23 +234,22 @@ function (_Component) {
       var _this$state2 = this.state,
           position = _this$state2.position,
           hoveredDropZone = _this$state2.hoveredDropZone;
-      var dragEventType = this.getDragEventType(event);
-      var dropzone = this.dropzones[hoveredDropZone];
-      var isValidDropzone = !!dropzone && this.container.contains(event.target);
+      var dragEventType = getDragEventType(event);
+      var dropZone = this.dropZones[hoveredDropZone];
       this.resetDragState();
 
-      if (isValidDropzone) {
+      if (dropZone) {
         switch (dragEventType) {
           case 'file':
-            dropzone.onFilesDrop(_toConsumableArray(event.dataTransfer.files), position);
+            dropZone.onFilesDrop(_toConsumableArray(event.dataTransfer.files), position);
             break;
 
           case 'html':
-            dropzone.onHTMLDrop(event.dataTransfer.getData('text/html'), position);
+            dropZone.onHTMLDrop(event.dataTransfer.getData('text/html'), position);
             break;
 
           case 'default':
-            dropzone.onDrop(event, position);
+            dropZone.onDrop(event, position);
         }
       }
 
@@ -267,15 +259,18 @@ function (_Component) {
   }, {
     key: "render",
     value: function render() {
-      var children = this.props.children;
-      return children;
+      return createElement("div", {
+        onDrop: this.onDrop,
+        className: "components-drop-zone__provider"
+      }, createElement(Provider, {
+        value: this.dropZoneCallbacks
+      }, this.props.children));
     }
   }]);
 
   return DropZoneProvider;
 }(Component);
 
-DropZoneProvider.childContextTypes = {
-  dropzones: noop
-};
 export default DropZoneProvider;
+export { Consumer as DropZoneConsumer };
+//# sourceMappingURL=provider.js.map

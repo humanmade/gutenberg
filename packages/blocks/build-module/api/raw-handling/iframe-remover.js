@@ -15,3 +15,4 @@ export default function (node) {
     remove(node);
   }
 }
+//# sourceMappingURL=iframe-remover.js.map

@@ -2,10 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es7.array.includes");
-
-require("core-js/modules/es6.string.includes");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -16,10 +12,6 @@ var _element = require("@wordpress/element");
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 
 var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
-
-require("core-js/modules/es6.array.find");
-
-require("core-js/modules/web.dom.iterable");
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
@@ -141,3 +133,4 @@ function (_Component) {
 Disabled.Consumer = Consumer;
 var _default = Disabled;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

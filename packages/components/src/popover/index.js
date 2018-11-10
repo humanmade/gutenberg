@@ -2,13 +2,11 @@
  * External dependencies
  */
 import classnames from 'classnames';
-import { noop } from 'lodash';
 
 /**
  * WordPress dependencies
  */
 import { Component, createRef } from '@wordpress/element';
-import deprecated from '@wordpress/deprecated';
 import { focus } from '@wordpress/dom';
 import { ESCAPE } from '@wordpress/keycodes';
 
@@ -21,7 +19,7 @@ import withConstrainedTabbing from '../higher-order/with-constrained-tabbing';
 import PopoverDetectOutside from './detect-outside';
 import IconButton from '../icon-button';
 import ScrollLock from '../scroll-lock';
-import { Slot, Fill } from '../slot-fill';
+import { Slot, Fill, Consumer } from '../slot-fill';
 
 const FocusManaged = withConstrainedTabbing( withFocusReturn( ( { children } ) => children ) );
 
@@ -37,11 +35,12 @@ class Popover extends Component {
 		super( ...arguments );
 
 		this.focus = this.focus.bind( this );
+		this.refresh = this.refresh.bind( this );
 		this.getAnchorRect = this.getAnchorRect.bind( this );
 		this.updatePopoverSize = this.updatePopoverSize.bind( this );
 		this.computePopoverPosition = this.computePopoverPosition.bind( this );
-		this.throttledComputePopoverPosition = this.throttledComputePopoverPosition.bind( this );
 		this.maybeClose = this.maybeClose.bind( this );
+		this.throttledRefresh = this.throttledRefresh.bind( this );
 
 		this.contentNode = createRef();
 		this.anchorNode = createRef();
@@ -59,9 +58,18 @@ class Popover extends Component {
 	}
 
 	componentDidMount() {
-		this.toggleWindowEvents( true );
+		this.toggleAutoRefresh( true );
 		this.refresh();
-		this.focus();
+
+		/*
+		 * Without the setTimeout, the dom node is not being focused. Related:
+		 * https://stackoverflow.com/questions/35522220/react-ref-with-focus-doesnt-work-without-settimeout-my-example
+		 *
+		 * TODO: Treat the cause, not the symptom.
+		 */
+		this.focusTimeout = setTimeout( () => {
+			this.focus();
+		}, 0 );
 	}
 
 	componentDidUpdate( prevProps ) {
@@ -71,24 +79,47 @@ class Popover extends Component {
 	}
 
 	componentWillUnmount() {
-		this.toggleWindowEvents( false );
+		clearTimeout( this.focusTimeout );
+		this.toggleAutoRefresh( false );
 	}
 
-	toggleWindowEvents( isListening ) {
-		const handler = isListening ? 'addEventListener' : 'removeEventListener';
-
+	toggleAutoRefresh( isActive ) {
 		window.cancelAnimationFrame( this.rafHandle );
-		window[ handler ]( 'resize', this.throttledComputePopoverPosition );
-		window[ handler ]( 'scroll', this.throttledComputePopoverPosition, true );
+
+		// Refresh the popover every time the window is resized or scrolled
+		const handler = isActive ? 'addEventListener' : 'removeEventListener';
+		window[ handler ]( 'resize', this.throttledRefresh );
+		window[ handler ]( 'scroll', this.throttledRefresh, true );
+
+		/*
+		 * There are sometimes we need to reposition or resize the popover that are not
+		 * handled by the resize/scroll window events (i.e. CSS changes in the layout
+		 * that changes the position of the anchor).
+		 *
+		 * For these situations, we refresh the popover every 0.5s
+		 */
+		if ( isActive ) {
+			this.autoRefresh = setInterval( this.throttledRefresh, 500 );
+		} else {
+			clearInterval( this.autoRefresh );
+		}
 	}
 
-	throttledComputePopoverPosition( event ) {
-		if ( event.type === 'scroll' && this.contentNode.current.contains( event.target ) ) {
+	throttledRefresh( event ) {
+		window.cancelAnimationFrame( this.rafHandle );
+		if ( event && event.type === 'scroll' && this.contentNode.current.contains( event.target ) ) {
 			return;
 		}
-		this.rafHandle = window.requestAnimationFrame( () => this.computePopoverPosition() );
+		this.rafHandle = window.requestAnimationFrame( this.refresh );
 	}
 
+	/**
+	 * Calling `refresh()` will force the Popover to recalculate its size and
+	 * position. This is useful when a DOM change causes the anchor node to change
+	 * position.
+	 *
+	 * @return {void}
+	 */
 	refresh() {
 		const popoverSize = this.updatePopoverSize();
 		this.computePopoverPosition( popoverSize );
@@ -97,29 +128,20 @@ class Popover extends Component {
 	focus() {
 		const { focusOnMount } = this.props;
 
-		if ( focusOnMount === true ) {
-			deprecated( 'focusOnMount={ true }', {
-				version: '3.4',
-				alternative: 'focusOnMount="firstElement"',
-				plugin: 'Gutenberg',
-			} );
-		}
-
 		if ( ! focusOnMount || ! this.contentNode.current ) {
 			return;
 		}
 
-		// Without the setTimeout, the dom node is not being focused
-		// Related https://stackoverflow.com/questions/35522220/react-ref-with-focus-doesnt-work-without-settimeout-my-example
-		const focusNode = ( domNode ) => setTimeout( () => domNode.focus() );
-
-		// Boolean values for focusOnMount deprecated in 3.2–remove
-		// `focusOnMount === true` check in 3.4.
-		if ( focusOnMount === 'firstElement' || focusOnMount === true ) {
+		if ( focusOnMount === 'firstElement' ) {
 			// Find first tabbable node within content and shift focus, falling
 			// back to the popover panel itself.
 			const firstTabbable = focus.tabbable.find( this.contentNode.current )[ 0 ];
-			focusNode( firstTabbable ? firstTabbable : this.contentNode.current );
+
+			if ( firstTabbable ) {
+				firstTabbable.focus();
+			} else {
+				this.contentNode.current.focus();
+			}
 
 			return;
 		}
@@ -127,16 +149,11 @@ class Popover extends Component {
 		if ( focusOnMount === 'container' ) {
 			// Focus the popover panel itself so items in the popover are easily
 			// accessed via keyboard navigation.
-			focusNode( this.contentNode.current );
-
-			return;
+			this.contentNode.current.focus();
 		}
-
-		window.console.warn( `<Popover> component: focusOnMount argument "${ focusOnMount }" not recognized.` );
 	}
 
-	getAnchorRect() {
-		const anchor = this.anchorNode.current;
+	getAnchorRect( anchor ) {
 		if ( ! anchor || ! anchor.parentNode ) {
 			return;
 		}
@@ -158,16 +175,15 @@ class Popover extends Component {
 	}
 
 	updatePopoverSize() {
-		const rect = this.contentNode.current.getBoundingClientRect();
+		const popoverSize = {
+			width: this.contentNode.current.scrollWidth,
+			height: this.contentNode.current.scrollHeight,
+		};
 		if (
 			! this.state.popoverSize ||
-			rect.width !== this.state.popoverSize.width ||
-			rect.height !== this.state.popoverSize.height
+			popoverSize.width !== this.state.popoverSize.width ||
+			popoverSize.height !== this.state.popoverSize.height
 		) {
-			const popoverSize = {
-				height: rect.height,
-				width: rect.width,
-			};
 			this.setState( { popoverSize } );
 			return popoverSize;
 		}
@@ -177,7 +193,10 @@ class Popover extends Component {
 	computePopoverPosition( popoverSize ) {
 		const { getAnchorRect = this.getAnchorRect, position = 'top', expandOnMobile } = this.props;
 		const newPopoverPosition = computePopoverPosition(
-			getAnchorRect(), popoverSize || this.state.popoverSize, position, expandOnMobile
+			getAnchorRect( this.anchorNode.current ),
+			popoverSize || this.state.popoverSize,
+			position,
+			expandOnMobile
 		);
 
 		if (
@@ -245,7 +264,7 @@ class Popover extends Component {
 			'is-' + xAxis,
 			{
 				'is-mobile': isMobile,
-				'no-arrow': noArrow || ( xAxis === 'center' && yAxis === 'middle' ),
+				'is-without-arrow': noArrow || ( xAxis === 'center' && yAxis === 'middle' ),
 			}
 		);
 
@@ -295,17 +314,24 @@ class Popover extends Component {
 			content = <FocusManaged>{ content }</FocusManaged>;
 		}
 
-		// In case there is no slot context in which to render, default to an
-		// in-place rendering.
-		const { getSlot } = this.context;
-		if ( getSlot && getSlot( SLOT_NAME ) ) {
-			content = <Fill name={ SLOT_NAME }>{ content }</Fill>;
-		}
+		return (
+			<Consumer>
+				{ ( { getSlot } ) => {
+					// In case there is no slot context in which to render,
+					// default to an in-place rendering.
+					if ( getSlot && getSlot( SLOT_NAME ) ) {
+						content = <Fill name={ SLOT_NAME }>{ content }</Fill>;
+					}
 
-		return <span ref={ this.anchorNode }>
-			{ content }
-			{ isMobile && expandOnMobile && <ScrollLock /> }
-		</span>;
+					return (
+						<span ref={ this.anchorNode }>
+							{ content }
+							{ isMobile && expandOnMobile && <ScrollLock /> }
+						</span>
+					);
+				} }
+			</Consumer>
+		);
 	}
 }
 
@@ -315,10 +341,6 @@ Popover.defaultProps = {
 };
 
 const PopoverContainer = Popover;
-
-PopoverContainer.contextTypes = {
-	getSlot: noop,
-};
 
 PopoverContainer.Slot = () => <Slot bubblesVirtually name={ SLOT_NAME } />;
 

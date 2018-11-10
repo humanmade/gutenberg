@@ -1,60 +1,61 @@
-import "core-js/modules/es6.function.name";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import { createElement } from "@wordpress/element";
 
 /**
  * External dependencies
  */
-import { noop, map, isString, isFunction } from 'lodash';
+import { isFunction, isString, map, negate } from 'lodash';
 /**
  * WordPress dependencies
  */
 
-import { Component, Children, cloneElement } from '@wordpress/element';
+import { Children, Component, cloneElement, Fragment, isEmptyElement } from '@wordpress/element';
+/**
+ * Internal dependencies
+ */
 
-var Slot =
+import { Consumer } from './context';
+
+var SlotComponent =
 /*#__PURE__*/
 function (_Component) {
-  _inherits(Slot, _Component);
+  _inherits(SlotComponent, _Component);
 
-  function Slot() {
+  function SlotComponent() {
     var _this;
 
-    _classCallCheck(this, Slot);
+    _classCallCheck(this, SlotComponent);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Slot).apply(this, arguments));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(SlotComponent).apply(this, arguments));
     _this.bindNode = _this.bindNode.bind(_assertThisInitialized(_assertThisInitialized(_this)));
     return _this;
   }
 
-  _createClass(Slot, [{
+  _createClass(SlotComponent, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      var _this$context$registe = this.context.registerSlot,
-          registerSlot = _this$context$registe === void 0 ? noop : _this$context$registe;
+      var registerSlot = this.props.registerSlot;
       registerSlot(this.props.name, this);
     }
   }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
-      var _this$context$unregis = this.context.unregisterSlot,
-          unregisterSlot = _this$context$unregis === void 0 ? noop : _this$context$unregis;
+      var unregisterSlot = this.props.unregisterSlot;
       unregisterSlot(this.props.name, this);
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps) {
-      var name = this.props.name;
-      var _this$context = this.context,
-          _this$context$unregis2 = _this$context.unregisterSlot,
-          unregisterSlot = _this$context$unregis2 === void 0 ? noop : _this$context$unregis2,
-          _this$context$registe2 = _this$context.registerSlot,
-          registerSlot = _this$context$registe2 === void 0 ? noop : _this$context$registe2;
+      var _this$props = this.props,
+          name = _this$props.name,
+          unregisterSlot = _this$props.unregisterSlot,
+          registerSlot = _this$props.registerSlot;
 
       if (prevProps.name !== name) {
         unregisterSlot(prevProps.name);
@@ -69,15 +70,14 @@ function (_Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this$props = this.props,
-          children = _this$props.children,
-          name = _this$props.name,
-          _this$props$bubblesVi = _this$props.bubblesVirtually,
-          bubblesVirtually = _this$props$bubblesVi === void 0 ? false : _this$props$bubblesVi,
-          _this$props$fillProps = _this$props.fillProps,
-          fillProps = _this$props$fillProps === void 0 ? {} : _this$props$fillProps;
-      var _this$context$getFill = this.context.getFills,
-          getFills = _this$context$getFill === void 0 ? noop : _this$context$getFill;
+      var _this$props2 = this.props,
+          children = _this$props2.children,
+          name = _this$props2.name,
+          _this$props2$bubblesV = _this$props2.bubblesVirtually,
+          bubblesVirtually = _this$props2$bubblesV === void 0 ? false : _this$props2$bubblesV,
+          _this$props2$fillProp = _this$props2.fillProps,
+          fillProps = _this$props2$fillProp === void 0 ? {} : _this$props2$fillProp,
+          getFills = _this$props2.getFills;
 
       if (bubblesVirtually) {
         return createElement("div", {
@@ -98,20 +98,29 @@ function (_Component) {
             key: childKey
           });
         });
-      });
-      return createElement("div", {
-        ref: this.bindNode,
-        role: "presentation"
-      }, isFunction(children) ? children(fills.filter(Boolean)) : fills);
+      }).filter( // In some cases fills are rendered only when some conditions apply.
+      // This ensures that we only use non-empty fills when rendering, i.e.,
+      // it allows us to render wrappers only when the fills are actually present.
+      negate(isEmptyElement));
+      return createElement(Fragment, null, isFunction(children) ? children(fills) : fills);
     }
   }]);
 
-  return Slot;
+  return SlotComponent;
 }(Component);
 
-Slot.contextTypes = {
-  registerSlot: noop,
-  unregisterSlot: noop,
-  getFills: noop
+var Slot = function Slot(props) {
+  return createElement(Consumer, null, function (_ref) {
+    var registerSlot = _ref.registerSlot,
+        unregisterSlot = _ref.unregisterSlot,
+        getFills = _ref.getFills;
+    return createElement(SlotComponent, _extends({}, props, {
+      registerSlot: registerSlot,
+      unregisterSlot: unregisterSlot,
+      getFills: getFills
+    }));
+  });
 };
+
 export default Slot;
+//# sourceMappingURL=slot.js.map

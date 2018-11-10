@@ -13,8 +13,6 @@ var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends")
 
 var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
 
-require("core-js/modules/es6.array.find");
-
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -28,10 +26,6 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
 
 var _classnames = _interopRequireDefault(require("classnames"));
-
-var _lodash = require("lodash");
-
-var _deprecated = _interopRequireDefault(require("@wordpress/deprecated"));
 
 var _dom = require("@wordpress/dom");
 
@@ -85,11 +79,12 @@ function (_Component) {
     (0, _classCallCheck2.default)(this, Popover);
     _this = (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(Popover).apply(this, arguments));
     _this.focus = _this.focus.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.refresh = _this.refresh.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.getAnchorRect = _this.getAnchorRect.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.updatePopoverSize = _this.updatePopoverSize.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.computePopoverPosition = _this.computePopoverPosition.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
-    _this.throttledComputePopoverPosition = _this.throttledComputePopoverPosition.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.maybeClose = _this.maybeClose.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
+    _this.throttledRefresh = _this.throttledRefresh.bind((0, _assertThisInitialized2.default)((0, _assertThisInitialized2.default)(_this)));
     _this.contentNode = (0, _element.createRef)();
     _this.anchorNode = (0, _element.createRef)();
     _this.state = {
@@ -108,9 +103,20 @@ function (_Component) {
   (0, _createClass2.default)(Popover, [{
     key: "componentDidMount",
     value: function componentDidMount() {
-      this.toggleWindowEvents(true);
+      var _this2 = this;
+
+      this.toggleAutoRefresh(true);
       this.refresh();
-      this.focus();
+      /*
+       * Without the setTimeout, the dom node is not being focused. Related:
+       * https://stackoverflow.com/questions/35522220/react-ref-with-focus-doesnt-work-without-settimeout-my-example
+       *
+       * TODO: Treat the cause, not the symptom.
+       */
+
+      this.focusTimeout = setTimeout(function () {
+        _this2.focus();
+      }, 0);
     }
   }, {
     key: "componentDidUpdate",
@@ -122,29 +128,50 @@ function (_Component) {
   }, {
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
-      this.toggleWindowEvents(false);
+      clearTimeout(this.focusTimeout);
+      this.toggleAutoRefresh(false);
     }
   }, {
-    key: "toggleWindowEvents",
-    value: function toggleWindowEvents(isListening) {
-      var handler = isListening ? 'addEventListener' : 'removeEventListener';
-      window.cancelAnimationFrame(this.rafHandle);
-      window[handler]('resize', this.throttledComputePopoverPosition);
-      window[handler]('scroll', this.throttledComputePopoverPosition, true);
-    }
-  }, {
-    key: "throttledComputePopoverPosition",
-    value: function throttledComputePopoverPosition(event) {
-      var _this2 = this;
+    key: "toggleAutoRefresh",
+    value: function toggleAutoRefresh(isActive) {
+      window.cancelAnimationFrame(this.rafHandle); // Refresh the popover every time the window is resized or scrolled
 
-      if (event.type === 'scroll' && this.contentNode.current.contains(event.target)) {
+      var handler = isActive ? 'addEventListener' : 'removeEventListener';
+      window[handler]('resize', this.throttledRefresh);
+      window[handler]('scroll', this.throttledRefresh, true);
+      /*
+       * There are sometimes we need to reposition or resize the popover that are not
+       * handled by the resize/scroll window events (i.e. CSS changes in the layout
+       * that changes the position of the anchor).
+       *
+       * For these situations, we refresh the popover every 0.5s
+       */
+
+      if (isActive) {
+        this.autoRefresh = setInterval(this.throttledRefresh, 500);
+      } else {
+        clearInterval(this.autoRefresh);
+      }
+    }
+  }, {
+    key: "throttledRefresh",
+    value: function throttledRefresh(event) {
+      window.cancelAnimationFrame(this.rafHandle);
+
+      if (event && event.type === 'scroll' && this.contentNode.current.contains(event.target)) {
         return;
       }
 
-      this.rafHandle = window.requestAnimationFrame(function () {
-        return _this2.computePopoverPosition();
-      });
+      this.rafHandle = window.requestAnimationFrame(this.refresh);
     }
+    /**
+     * Calling `refresh()` will force the Popover to recalculate its size and
+     * position. This is useful when a DOM change causes the anchor node to change
+     * position.
+     *
+     * @return {void}
+     */
+
   }, {
     key: "refresh",
     value: function refresh() {
@@ -156,51 +183,33 @@ function (_Component) {
     value: function focus() {
       var focusOnMount = this.props.focusOnMount;
 
-      if (focusOnMount === true) {
-        (0, _deprecated.default)('focusOnMount={ true }', {
-          version: '3.4',
-          alternative: 'focusOnMount="firstElement"',
-          plugin: 'Gutenberg'
-        });
-      }
-
       if (!focusOnMount || !this.contentNode.current) {
         return;
-      } // Without the setTimeout, the dom node is not being focused
-      // Related https://stackoverflow.com/questions/35522220/react-ref-with-focus-doesnt-work-without-settimeout-my-example
+      }
 
-
-      var focusNode = function focusNode(domNode) {
-        return setTimeout(function () {
-          return domNode.focus();
-        });
-      }; // Boolean values for focusOnMount deprecated in 3.2–remove
-      // `focusOnMount === true` check in 3.4.
-
-
-      if (focusOnMount === 'firstElement' || focusOnMount === true) {
+      if (focusOnMount === 'firstElement') {
         // Find first tabbable node within content and shift focus, falling
         // back to the popover panel itself.
         var firstTabbable = _dom.focus.tabbable.find(this.contentNode.current)[0];
 
-        focusNode(firstTabbable ? firstTabbable : this.contentNode.current);
+        if (firstTabbable) {
+          firstTabbable.focus();
+        } else {
+          this.contentNode.current.focus();
+        }
+
         return;
       }
 
       if (focusOnMount === 'container') {
         // Focus the popover panel itself so items in the popover are easily
         // accessed via keyboard navigation.
-        focusNode(this.contentNode.current);
-        return;
+        this.contentNode.current.focus();
       }
-
-      window.console.warn("<Popover> component: focusOnMount argument \"".concat(focusOnMount, "\" not recognized."));
     }
   }, {
     key: "getAnchorRect",
-    value: function getAnchorRect() {
-      var anchor = this.anchorNode.current;
-
+    value: function getAnchorRect(anchor) {
       if (!anchor || !anchor.parentNode) {
         return;
       }
@@ -227,13 +236,12 @@ function (_Component) {
   }, {
     key: "updatePopoverSize",
     value: function updatePopoverSize() {
-      var rect = this.contentNode.current.getBoundingClientRect();
+      var popoverSize = {
+        width: this.contentNode.current.scrollWidth,
+        height: this.contentNode.current.scrollHeight
+      };
 
-      if (!this.state.popoverSize || rect.width !== this.state.popoverSize.width || rect.height !== this.state.popoverSize.height) {
-        var popoverSize = {
-          height: rect.height,
-          width: rect.width
-        };
+      if (!this.state.popoverSize || popoverSize.width !== this.state.popoverSize.width || popoverSize.height !== this.state.popoverSize.height) {
         this.setState({
           popoverSize: popoverSize
         });
@@ -251,7 +259,7 @@ function (_Component) {
           _this$props$position = _this$props.position,
           position = _this$props$position === void 0 ? 'top' : _this$props$position,
           expandOnMobile = _this$props.expandOnMobile;
-      var newPopoverPosition = (0, _utils.computePopoverPosition)(getAnchorRect(), popoverSize || this.state.popoverSize, position, expandOnMobile);
+      var newPopoverPosition = (0, _utils.computePopoverPosition)(getAnchorRect(this.anchorNode.current), popoverSize || this.state.popoverSize, position, expandOnMobile);
 
       if (this.state.yAxis !== newPopoverPosition.yAxis || this.state.xAxis !== newPopoverPosition.xAxis || this.state.popoverLeft !== newPopoverPosition.popoverLeft || this.state.popoverTop !== newPopoverPosition.popoverTop || this.state.contentHeight !== newPopoverPosition.contentHeight || this.state.contentWidth !== newPopoverPosition.contentWidth || this.state.isMobile !== newPopoverPosition.isMobile) {
         this.setState(newPopoverPosition);
@@ -277,6 +285,8 @@ function (_Component) {
   }, {
     key: "render",
     value: function render() {
+      var _this3 = this;
+
       var _this$props3 = this.props,
           headerTitle = _this$props3.headerTitle,
           onClose = _this$props3.onClose,
@@ -302,7 +312,7 @@ function (_Component) {
           isMobile = _this$state.isMobile;
       var classes = (0, _classnames.default)('components-popover', className, 'is-' + yAxis, 'is-' + xAxis, {
         'is-mobile': isMobile,
-        'no-arrow': noArrow || xAxis === 'center' && yAxis === 'middle'
+        'is-without-arrow': noArrow || xAxis === 'center' && yAxis === 'middle'
       }); // Disable reason: We care to capture the _bubbled_ events from inputs
       // within popover as inferring close intent.
 
@@ -342,21 +352,23 @@ function (_Component) {
 
       if (focusOnMount) {
         content = (0, _element.createElement)(FocusManaged, null, content);
-      } // In case there is no slot context in which to render, default to an
-      // in-place rendering.
-
-
-      var getSlot = this.context.getSlot;
-
-      if (getSlot && getSlot(SLOT_NAME)) {
-        content = (0, _element.createElement)(_slotFill.Fill, {
-          name: SLOT_NAME
-        }, content);
       }
 
-      return (0, _element.createElement)("span", {
-        ref: this.anchorNode
-      }, content, isMobile && expandOnMobile && (0, _element.createElement)(_scrollLock.default, null));
+      return (0, _element.createElement)(_slotFill.Consumer, null, function (_ref2) {
+        var getSlot = _ref2.getSlot;
+
+        // In case there is no slot context in which to render,
+        // default to an in-place rendering.
+        if (getSlot && getSlot(SLOT_NAME)) {
+          content = (0, _element.createElement)(_slotFill.Fill, {
+            name: SLOT_NAME
+          }, content);
+        }
+
+        return (0, _element.createElement)("span", {
+          ref: _this3.anchorNode
+        }, content, isMobile && expandOnMobile && (0, _element.createElement)(_scrollLock.default, null));
+      });
     }
   }]);
   return Popover;
@@ -367,9 +379,6 @@ Popover.defaultProps = {
   noArrow: false
 };
 var PopoverContainer = Popover;
-PopoverContainer.contextTypes = {
-  getSlot: _lodash.noop
-};
 
 PopoverContainer.Slot = function () {
   return (0, _element.createElement)(_slotFill.Slot, {
@@ -380,3 +389,4 @@ PopoverContainer.Slot = function () {
 
 var _default = PopoverContainer;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

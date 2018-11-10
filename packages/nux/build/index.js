@@ -15,3 +15,4 @@ Object.defineProperty(exports, "DotTip", {
 require("./store");
 
 var _dotTip = _interopRequireDefault(require("./components/dot-tip"));
+//# sourceMappingURL=index.js.map

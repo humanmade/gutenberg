@@ -17,3 +17,4 @@ function PanelHeader(_ref) {
 
 var _default = PanelHeader;
 exports.default = _default;
+//# sourceMappingURL=header.js.map

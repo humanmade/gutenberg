@@ -1,11 +1,3 @@
-import _Object$keys from "@babel/runtime/core-js/object/keys";
-import "core-js/modules/es6.array.sort";
-import _Array$from from "@babel/runtime/core-js/array/from";
-import "core-js/modules/es6.function.name";
-import "core-js/modules/es6.regexp.split";
-import "core-js/modules/es6.regexp.match";
-import "core-js/modules/web.dom.iterable";
-
 /**
  * Credits:
  *
@@ -278,7 +270,7 @@ module.exports = function () {
 
 
         if (translation.msgid_plural) {
-          translation.msgstr = _Array$from(Array(nplurals)).map(function () {
+          translation.msgstr = Array.from(Array(nplurals)).map(function () {
             return '';
           });
         } else {
@@ -323,8 +315,7 @@ module.exports = function () {
           } // Sort translations by filename for deterministic output
 
 
-          var files = _Object$keys(strings).sort(); // Combine translations from each file grouped by context
-
+          var files = Object.keys(strings).sort(); // Combine translations from each file grouped by context
 
           var translations = reduce(files, function (memo, file) {
             for (var context in strings[file]) {
@@ -371,3 +362,4 @@ module.exports.getNodeAsString = getNodeAsString;
 module.exports.getTranslatorComment = getTranslatorComment;
 module.exports.isValidTranslationKey = isValidTranslationKey;
 module.exports.isSameTranslation = isSameTranslation;
+//# sourceMappingURL=index.js.map

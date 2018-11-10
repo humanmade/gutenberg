@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = _default;
 
-require("core-js/modules/es6.regexp.replace");
-
 /**
  * Removes items matched in the regex.
  *
@@ -22,3 +20,4 @@ function _default(settings, text) {
 
   return text;
 }
+//# sourceMappingURL=stripHTMLEntities.js.map

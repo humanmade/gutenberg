@@ -31,3 +31,4 @@ var _default = (0, _data.registerStore)('core/viewport', {
 });
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

@@ -1,9 +1,5 @@
 "use strict";
 
-require("core-js/modules/es7.array.includes");
-
-require("core-js/modules/es6.string.includes");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -23,8 +19,7 @@ exports.remove = remove;
 exports.insertAfter = insertAfter;
 exports.unwrap = unwrap;
 exports.replaceTag = replaceTag;
-
-require("core-js/modules/es6.regexp.to-string");
+exports.wrap = wrap;
 
 var _lodash = require("lodash");
 
@@ -119,15 +114,57 @@ function isHorizontalEdge(container, isReverse) {
     range.collapse(!isSelectionForward(selection));
   }
 
-  var endContainer = range.endContainer,
-      endOffset = range.endOffset;
-  range.selectNodeContents(container);
-  range.setEnd(endContainer, endOffset); // Check if the caret position is at the expected start/end position based
-  // on the value of `isReverse`. If so, consider the horizontal edge to be
-  // reached.
+  var node = range.startContainer;
+  var extentOffset;
 
-  var caretOffset = range.toString().length;
-  return caretOffset === (isReverse ? 0 : container.textContent.length);
+  if (isReverse) {
+    // When in reverse, range node should be first.
+    extentOffset = 0;
+  } else if (node.nodeValue) {
+    // Otherwise, vary by node type. A text node has no children. Its range
+    // offset reflects its position in nodeValue.
+    //
+    // "If the startContainer is a Node of type Text, Comment, or
+    // CDATASection, then the offset is the number of characters from the
+    // start of the startContainer to the boundary point of the Range."
+    //
+    // See: https://developer.mozilla.org/en-US/docs/Web/API/Range/startOffset
+    // See: https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue
+    extentOffset = node.nodeValue.length;
+  } else {
+    // "For other Node types, the startOffset is the number of child nodes
+    // between the start of the startContainer and the boundary point of
+    // the Range."
+    //
+    // See: https://developer.mozilla.org/en-US/docs/Web/API/Range/startOffset
+    extentOffset = node.childNodes.length;
+  } // Offset of range should be at expected extent.
+
+
+  var position = isReverse ? 'start' : 'end';
+  var offset = range["".concat(position, "Offset")];
+
+  if (offset !== extentOffset) {
+    return false;
+  } // If confirmed to be at extent, traverse up through DOM, verifying that
+  // the node is at first or last child for reverse or forward respectively.
+  // Continue until container is reached.
+
+
+  var order = isReverse ? 'first' : 'last';
+
+  while (node !== container) {
+    var parentNode = node.parentNode;
+
+    if (parentNode["".concat(order, "Child")] !== node) {
+      return false;
+    }
+
+    node = parentNode;
+  } // If reached, range is assumed to be at edge.
+
+
+  return true;
 }
 /**
  * Check whether the selection is vertically at the edge of the container.
@@ -257,22 +294,28 @@ function placeCaretAtHorizontalEdge(container, isReverse) {
     return;
   }
 
+  container.focus();
+
   if (!container.isContentEditable) {
-    container.focus();
     return;
   } // Select on extent child of the container, not the container itself. This
   // avoids the selection always being `endOffset` of 1 when placed at end,
   // where `startContainer`, `endContainer` would always be container itself.
 
 
-  var rangeTarget = container[isReverse ? 'lastChild' : 'firstChild'];
+  var rangeTarget = container[isReverse ? 'lastChild' : 'firstChild']; // If no range target, it implies that the container is empty. Focusing is
+  // sufficient for caret to be placed correctly.
+
+  if (!rangeTarget) {
+    return;
+  }
+
   var selection = window.getSelection();
   var range = document.createRange();
   range.selectNodeContents(rangeTarget);
   range.collapse(!isReverse);
   selection.removeAllRanges();
   selection.addRange(range);
-  container.focus();
 }
 /**
  * Polyfill.
@@ -412,10 +455,22 @@ function placeCaretAtVerticalEdge(container, isReverse, rect) {
 
 
 function isTextField(element) {
-  var nodeName = element.nodeName,
-      selectionStart = element.selectionStart,
-      contentEditable = element.contentEditable;
-  return nodeName === 'INPUT' && selectionStart !== null || nodeName === 'TEXTAREA' || contentEditable === 'true';
+  try {
+    var nodeName = element.nodeName,
+        selectionStart = element.selectionStart,
+        contentEditable = element.contentEditable;
+    return nodeName === 'INPUT' && selectionStart !== null || nodeName === 'TEXTAREA' || contentEditable === 'true';
+  } catch (error) {
+    // Safari throws an exception when trying to get `selectionStart`
+    // on non-text <input> elements (which, understandably, don't
+    // have the text selection API). We catch this via a try/catch
+    // block, as opposed to a more explicit check of the element's
+    // input types, because of Safari's non-standard behavior. This
+    // also means we don't have to worry about the list of input
+    // types that support `selectionStart` changing as the HTML spec
+    // evolves over time.
+    return false;
+  }
 }
 /**
  * Check wether the current document has a selection.
@@ -590,14 +645,13 @@ function unwrap(node) {
  *
  * @param {Element}  node    The node to replace
  * @param {string}   tagName The new tag name.
- * @param {Document} doc     The document of the node.
  *
  * @return {Element} The new node.
  */
 
 
-function replaceTag(node, tagName, doc) {
-  var newNode = doc.createElement(tagName);
+function replaceTag(node, tagName) {
+  var newNode = node.ownerDocument.createElement(tagName);
 
   while (node.firstChild) {
     newNode.appendChild(node.firstChild);
@@ -606,3 +660,16 @@ function replaceTag(node, tagName, doc) {
   node.parentNode.replaceChild(newNode, node);
   return newNode;
 }
+/**
+ * Wraps the given node with a new node with the given tag name.
+ *
+ * @param {Element} newNode       The node to insert.
+ * @param {Element} referenceNode The node to wrap.
+ */
+
+
+function wrap(newNode, referenceNode) {
+  referenceNode.parentNode.insertBefore(newNode, referenceNode);
+  newNode.appendChild(referenceNode);
+}
+//# sourceMappingURL=dom.js.map

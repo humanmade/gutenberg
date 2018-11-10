@@ -1,4 +1,3 @@
-import "core-js/modules/es6.regexp.constructor";
 export var defaultSettings = {
   HTMLRegExp: /<\/?[a-z][^>]*?>/gi,
   HTMLcommentRegExp: /<!--[\s\S]*?-->/g,
@@ -60,3 +59,4 @@ export var defaultSettings = {
     type: 'words'
   }
 };
+//# sourceMappingURL=defaultSettings.js.map

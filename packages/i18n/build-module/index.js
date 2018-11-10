@@ -1,6 +1,3 @@
-import "core-js/modules/es6.regexp.to-string";
-import _Object$assign from "@babel/runtime/core-js/object/assign";
-
 /**
  * External dependencies
  */
@@ -37,12 +34,14 @@ export function setLocaleData() {
     i18n = new Jed({
       domain: 'default',
       locale_data: {
-        default: {}
+        default: {
+          '': {}
+        }
       }
     });
   }
 
-  i18n.options.locale_data[domain] = _Object$assign({}, i18n.options.locale_data[domain], localeData);
+  i18n.options.locale_data[domain] = Object.assign({}, i18n.options.locale_data[domain], localeData);
 }
 /**
  * Returns the current Jed instance, initializing with a default configuration
@@ -51,7 +50,7 @@ export function setLocaleData() {
  * @return {Jed} Jed instance.
  */
 
-export function getI18n() {
+function getI18n() {
   if (!i18n) {
     setLocaleData();
   }
@@ -73,7 +72,8 @@ export function getI18n() {
  * @return {string} The translated string.
  */
 
-export var dcnpgettext = memoize(function () {
+
+var dcnpgettext = memoize(function () {
   var domain = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'default';
   var context = arguments.length > 1 ? arguments[1] : undefined;
   var single = arguments.length > 2 ? arguments[2] : undefined;
@@ -177,3 +177,4 @@ export function sprintf(format) {
     return format;
   }
 }
+//# sourceMappingURL=index.js.map

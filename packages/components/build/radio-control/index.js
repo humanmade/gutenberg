@@ -70,3 +70,4 @@ function RadioControl(_ref) {
 var _default = (0, _compose.withInstanceId)(RadioControl);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

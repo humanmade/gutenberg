@@ -1,24 +1,21 @@
-import _Array$from from "@babel/runtime/core-js/array/from";
-import "core-js/modules/es6.regexp.replace";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 /**
  * External dependencies
  */
-import { flatMap, filter, compact } from 'lodash'; // Also polyfills Element#matches.
-
-import 'element-closest';
+import { flatMap, filter, compact } from 'lodash';
 /**
  * Internal dependencies
  */
 
 import { createBlock, getBlockTransforms, findTransform } from '../factory';
-import { getBlockType } from '../registration';
+import { getBlockContent } from '../serializer';
 import { getBlockAttributes, parseWithGrammar } from '../parser';
 import normaliseBlocks from './normalise-blocks';
 import specialCommentConverter from './special-comment-converter';
 import isInlineContent from './is-inline-content';
 import phrasingContentReducer from './phrasing-content-reducer';
+import headRemover from './head-remover';
 import msListConverter from './ms-list-converter';
 import listReducer from './list-reducer';
 import imageCorrector from './image-corrector';
@@ -27,14 +24,14 @@ import figureContentReducer from './figure-content-reducer';
 import shortcodeConverter from './shortcode-converter';
 import markdownConverter from './markdown-converter';
 import iframeRemover from './iframe-remover';
-import { deepFilterHTML, isPlain, removeInvalidHTML, getPhrasingContentSchema, getBlockContentSchema } from './utils';
+import { getPhrasingContentSchema } from './phrasing-content';
+import { deepFilterHTML, isPlain, removeInvalidHTML, getBlockContentSchema } from './utils';
 /**
  * Browser dependencies
  */
 
-var _window$console = window.console,
-    log = _window$console.log,
-    warn = _window$console.warn;
+var _window = window,
+    console = _window.console;
 export { getPhrasingContentSchema };
 /**
  * Filters HTML to only contain phrasing content.
@@ -50,7 +47,7 @@ function filterInlineHTML(HTML) {
     inline: true
   }); // Allows us to ask for this information when we get a report.
 
-  log('Processed inline HTML:\n\n', HTML);
+  console.log('Processed inline HTML:\n\n', HTML);
   return HTML;
 }
 
@@ -63,6 +60,45 @@ function getRawTransformations() {
         return transform.selector && node.matches(transform.selector);
       }
     });
+  });
+}
+/**
+ * Converts HTML directly to blocks. Looks for a matching transform for each
+ * top-level tag. The HTML should be filtered to not have any text between
+ * top-level tags and formatted in a way that blocks can handle the HTML.
+ *
+ * @param  {Object} $1               Named parameters.
+ * @param  {string} $1.html          HTML to convert.
+ * @param  {Array}  $1.rawTransforms Transforms that can be used.
+ *
+ * @return {Array} An array of blocks.
+ */
+
+
+function htmlToBlocks(_ref) {
+  var html = _ref.html,
+      rawTransforms = _ref.rawTransforms;
+  var doc = document.implementation.createHTMLDocument('');
+  doc.body.innerHTML = html;
+  return Array.from(doc.body.children).map(function (node) {
+    var rawTransform = findTransform(rawTransforms, function (_ref2) {
+      var isMatch = _ref2.isMatch;
+      return isMatch(node);
+    });
+
+    if (!rawTransform) {
+      console.warn('A block registered a raw transformation schema for `' + node.nodeName + '` but did not match it. ' + 'Make sure there is a `selector` or `isMatch` property that can match the schema.\n' + 'Sanitized HTML: `' + node.outerHTML + '`');
+      return;
+    }
+
+    var transform = rawTransform.transform,
+        blockName = rawTransform.blockName;
+
+    if (transform) {
+      return transform(node);
+    }
+
+    return createBlock(blockName, getBlockAttributes(blockName, node.outerHTML));
   });
 }
 /**
@@ -81,16 +117,16 @@ function getRawTransformations() {
  */
 
 
-export default function rawHandler(_ref) {
-  var _ref$HTML = _ref.HTML,
-      HTML = _ref$HTML === void 0 ? '' : _ref$HTML,
-      _ref$plainText = _ref.plainText,
-      plainText = _ref$plainText === void 0 ? '' : _ref$plainText,
-      _ref$mode = _ref.mode,
-      mode = _ref$mode === void 0 ? 'AUTO' : _ref$mode,
-      tagName = _ref.tagName,
-      _ref$canUserUseUnfilt = _ref.canUserUseUnfilteredHTML,
-      canUserUseUnfilteredHTML = _ref$canUserUseUnfilt === void 0 ? false : _ref$canUserUseUnfilt;
+export function pasteHandler(_ref3) {
+  var _ref3$HTML = _ref3.HTML,
+      HTML = _ref3$HTML === void 0 ? '' : _ref3$HTML,
+      _ref3$plainText = _ref3.plainText,
+      plainText = _ref3$plainText === void 0 ? '' : _ref3$plainText,
+      _ref3$mode = _ref3.mode,
+      mode = _ref3$mode === void 0 ? 'AUTO' : _ref3$mode,
+      tagName = _ref3.tagName,
+      _ref3$canUserUseUnfil = _ref3.canUserUseUnfilteredHTML,
+      canUserUseUnfilteredHTML = _ref3$canUserUseUnfil === void 0 ? false : _ref3$canUserUseUnfil;
   // First of all, strip any meta tags.
   HTML = HTML.replace(/<meta[^>]+>/, ''); // If we detect block delimiters, parse entirely as blocks.
 
@@ -140,16 +176,16 @@ export default function rawHandler(_ref) {
     return filterInlineHTML(HTML);
   }
 
-  var rawTransformations = getRawTransformations();
+  var rawTransforms = getRawTransformations();
   var phrasingContentSchema = getPhrasingContentSchema();
-  var blockContentSchema = getBlockContentSchema(rawTransformations);
-  return compact(flatMap(pieces, function (piece) {
+  var blockContentSchema = getBlockContentSchema(rawTransforms);
+  var blocks = compact(flatMap(pieces, function (piece) {
     // Already a block from shortcode.
     if (typeof piece !== 'string') {
       return piece;
     }
 
-    var filters = [msListConverter, listReducer, imageCorrector, phrasingContentReducer, specialCommentConverter, figureContentReducer, blockquoteNormaliser];
+    var filters = [msListConverter, headRemover, listReducer, imageCorrector, phrasingContentReducer, specialCommentConverter, figureContentReducer, blockquoteNormaliser];
 
     if (!canUserUseUnfilteredHTML) {
       // Should run before `figureContentReducer`.
@@ -162,28 +198,67 @@ export default function rawHandler(_ref) {
     piece = removeInvalidHTML(piece, schema);
     piece = normaliseBlocks(piece); // Allows us to ask for this information when we get a report.
 
-    log('Processed HTML piece:\n\n', piece);
-    var doc = document.implementation.createHTMLDocument('');
-    doc.body.innerHTML = piece;
-    return _Array$from(doc.body.children).map(function (node) {
-      var rawTransformation = findTransform(rawTransformations, function (_ref2) {
-        var isMatch = _ref2.isMatch;
-        return isMatch(node);
-      });
+    console.log('Processed HTML piece:\n\n', piece);
+    return htmlToBlocks({
+      html: piece,
+      rawTransforms: rawTransforms
+    });
+  })); // If we're allowed to return inline content and there is only one block
+  // and the original plain text content does not have any line breaks, then
+  // treat it as inline paste.
 
-      if (!rawTransformation) {
-        warn('A block registered a raw transformation schema for `' + node.nodeName + '` but did not match it. ' + 'Make sure there is a `selector` or `isMatch` property that can match the schema.\n' + 'Sanitized HTML: `' + node.outerHTML + '`');
-        return;
-      }
+  if (mode === 'AUTO' && blocks.length === 1) {
+    var trimmedPlainText = plainText.trim();
 
-      var transform = rawTransformation.transform,
-          blockName = rawTransformation.blockName;
+    if (trimmedPlainText !== '' && trimmedPlainText.indexOf('\n') === -1) {
+      return removeInvalidHTML(getBlockContent(blocks[0]), phrasingContentSchema);
+    }
+  }
 
-      if (transform) {
-        return transform(node);
-      }
+  return blocks;
+}
+/**
+ * Converts an HTML string to known blocks.
+ *
+ * @param {string} $1.HTML The HTML to convert.
+ *
+ * @return {Array} A list of blocks.
+ */
 
-      return createBlock(blockName, getBlockAttributes(getBlockType(blockName), node.outerHTML));
+export function rawHandler(_ref4) {
+  var _ref4$HTML = _ref4.HTML,
+      HTML = _ref4$HTML === void 0 ? '' : _ref4$HTML;
+
+  // If we detect block delimiters, parse entirely as blocks.
+  if (HTML.indexOf('<!-- wp:') !== -1) {
+    return parseWithGrammar(HTML);
+  } // An array of HTML strings and block objects. The blocks replace matched
+  // shortcodes.
+
+
+  var pieces = shortcodeConverter(HTML);
+  var rawTransforms = getRawTransformations();
+  var blockContentSchema = getBlockContentSchema(rawTransforms);
+  return compact(flatMap(pieces, function (piece) {
+    // Already a block from shortcode.
+    if (typeof piece !== 'string') {
+      return piece;
+    } // These filters are essential for some blocks to be able to transform
+    // from raw HTML. These filters move around some content or add
+    // additional tags, they do not remove any content.
+
+
+    var filters = [// Needed to create more and nextpage blocks.
+    specialCommentConverter, // Needed to create media blocks.
+    figureContentReducer, // Needed to create the quote block, which cannot handle text
+    // without wrapper paragraphs.
+    blockquoteNormaliser];
+    piece = deepFilterHTML(piece, filters, blockContentSchema);
+    piece = normaliseBlocks(piece);
+    return htmlToBlocks({
+      html: piece,
+      rawTransforms: rawTransforms
     });
   }));
 }
+//# sourceMappingURL=index.js.map

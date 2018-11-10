@@ -18,3 +18,4 @@ var clear = function clear() {
 
 var _default = clear;
 exports.default = _default;
+//# sourceMappingURL=clear.js.map

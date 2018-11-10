@@ -61,3 +61,4 @@ function CheckboxControl(_ref) {
 var _default = (0, _compose.withInstanceId)(CheckboxControl);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

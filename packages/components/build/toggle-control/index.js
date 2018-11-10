@@ -27,7 +27,7 @@ var _compose = require("@wordpress/compose");
 
 var _formToggle = _interopRequireDefault(require("../form-toggle"));
 
-var _baseControl = _interopRequireDefault(require("./../base-control"));
+var _baseControl = _interopRequireDefault(require("../base-control"));
 
 /**
  * External dependencies
@@ -78,7 +78,6 @@ function (_Component) {
       }
 
       return (0, _element.createElement)(_baseControl.default, {
-        label: label,
         id: id,
         help: helpLabel,
         className: "components-toggle-control"
@@ -87,7 +86,10 @@ function (_Component) {
         checked: checked,
         onChange: this.onChange,
         "aria-describedby": describedBy
-      }));
+      }), (0, _element.createElement)("label", {
+        htmlFor: id,
+        className: "components-toggle-control__label"
+      }, label));
     }
   }]);
   return ToggleControl;
@@ -96,3 +98,4 @@ function (_Component) {
 var _default = (0, _compose.withInstanceId)(ToggleControl);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

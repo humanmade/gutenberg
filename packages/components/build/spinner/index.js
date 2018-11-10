@@ -3,16 +3,13 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.default = Spinner;
 
 var _element = require("@wordpress/element");
 
-var spinner = (0, _element.createElement)("span", {
-  className: "spinner is-active"
-});
-
-var _default = function _default() {
-  return spinner;
-};
-
-exports.default = _default;
+function Spinner() {
+  return (0, _element.createElement)("span", {
+    className: "components-spinner"
+  });
+}
+//# sourceMappingURL=index.js.map

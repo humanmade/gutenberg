@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.createBlobURL = createBlobURL;
 exports.getBlobByURL = getBlobByURL;
 exports.revokeBlobURL = revokeBlobURL;
+exports.isBlobURL = isBlobURL;
 
 /**
  * Browser dependencies
@@ -55,3 +56,20 @@ function revokeBlobURL(url) {
 
   delete cache[url];
 }
+/**
+ * Check whether a url is a blob url.
+ *
+ * @param {string} url The URL.
+ *
+ * @return {boolean} Is the url a blob url?
+ */
+
+
+function isBlobURL(url) {
+  if (!url || !url.indexOf) {
+    return false;
+  }
+
+  return url.indexOf('blob:') === 0;
+}
+//# sourceMappingURL=index.js.map

@@ -7,8 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = _default;
 
-require("core-js/modules/es6.regexp.replace");
-
 var _showdown = _interopRequireDefault(require("showdown"));
 
 /**
@@ -52,3 +50,4 @@ function slackMarkdownVariantCorrector(text) {
 function _default(text) {
   return converter.makeHtml(slackMarkdownVariantCorrector(text));
 }
+//# sourceMappingURL=markdown-converter.js.map

@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.rendererPathWithAttributes = rendererPathWithAttributes;
+exports.rendererPath = rendererPath;
 exports.default = exports.ServerSideRender = void 0;
 
 var _element = require("@wordpress/element");
@@ -20,13 +20,15 @@ var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/ge
 
 var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
 
+var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
+
 var _lodash = require("lodash");
 
 var _i18n = require("@wordpress/i18n");
 
 var _apiFetch = _interopRequireDefault(require("@wordpress/api-fetch"));
 
-var _httpBuildQuery = _interopRequireDefault(require("http-build-query"));
+var _url = require("@wordpress/url");
 
 var _placeholder = _interopRequireDefault(require("../placeholder"));
 
@@ -43,11 +45,14 @@ var _spinner = _interopRequireDefault(require("../spinner"));
 /**
  * Internal dependencies.
  */
-function rendererPathWithAttributes(block) {
+function rendererPath(block) {
   var attributes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-  return "/gutenberg/v1/block-renderer/".concat(block, "?context=edit") + (null !== attributes ? '&' + (0, _httpBuildQuery.default)({
+  var urlQueryArgs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  return (0, _url.addQueryArgs)("/wp/v2/block-renderer/".concat(block), (0, _objectSpread2.default)({
+    context: 'edit'
+  }, null !== attributes ? {
     attributes: attributes
-  }) : '');
+  } : {}, urlQueryArgs));
 }
 
 var ServerSideRender =
@@ -97,8 +102,10 @@ function (_Component) {
 
       var block = props.block,
           _props$attributes = props.attributes,
-          attributes = _props$attributes === void 0 ? null : _props$attributes;
-      var path = rendererPathWithAttributes(block, attributes);
+          attributes = _props$attributes === void 0 ? null : _props$attributes,
+          _props$urlQueryArgs = props.urlQueryArgs,
+          urlQueryArgs = _props$urlQueryArgs === void 0 ? {} : _props$urlQueryArgs;
+      var path = rendererPath(block, attributes, urlQueryArgs);
       return (0, _apiFetch.default)({
         path: path
       }).then(function (response) {
@@ -144,3 +151,4 @@ function (_Component) {
 exports.ServerSideRender = ServerSideRender;
 var _default = ServerSideRender;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

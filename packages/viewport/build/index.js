@@ -2,8 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/web.dom.iterable");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -73,7 +71,9 @@ var OPERATORS = {
  */
 
 var setIsMatching = (0, _lodash.debounce)(function () {
-  var values = (0, _lodash.mapValues)(queries, (0, _lodash.property)('matches'));
+  var values = (0, _lodash.mapValues)(queries, function (query) {
+    return query.matches;
+  });
   (0, _data.dispatch)('core/viewport').setIsMatching(values);
 }, {
   leading: true
@@ -100,3 +100,4 @@ var queries = (0, _lodash.reduce)(BREAKPOINTS, function (result, width, name) {
 window.addEventListener('orientationchange', setIsMatching); // Set initial values
 
 setIsMatching();
+//# sourceMappingURL=index.js.map

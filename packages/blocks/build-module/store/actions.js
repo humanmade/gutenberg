@@ -31,6 +31,38 @@ export function removeBlockTypes(names) {
   };
 }
 /**
+ * Returns an action object used in signalling that new block styles have been added.
+ *
+ * @param {string}       blockName  Block name.
+ * @param {Array|Object} styles     Block styles.
+ *
+ * @return {Object} Action object.
+ */
+
+export function addBlockStyles(blockName, styles) {
+  return {
+    type: 'ADD_BLOCK_STYLES',
+    styles: castArray(styles),
+    blockName: blockName
+  };
+}
+/**
+ * Returns an action object used in signalling that block styles have been removed.
+ *
+ * @param {string}       blockName  Block name.
+ * @param {Array|string} styleNames Block style names.
+ *
+ * @return {Object} Action object.
+ */
+
+export function removeBlockStyles(blockName, styleNames) {
+  return {
+    type: 'REMOVE_BLOCK_STYLES',
+    styleNames: castArray(styleNames),
+    blockName: blockName
+  };
+}
+/**
  * Returns an action object used to set the default block name.
  *
  * @param {string} name Block name.
@@ -45,16 +77,32 @@ export function setDefaultBlockName(name) {
   };
 }
 /**
- * Returns an action object used to set the fallback block name.
+ * Returns an action object used to set the name of the block used as a fallback
+ * for non-block content.
  *
  * @param {string} name Block name.
  *
  * @return {Object} Action object.
  */
 
-export function setFallbackBlockName(name) {
+export function setFreeformFallbackBlockName(name) {
   return {
-    type: 'SET_FALLBACK_BLOCK_NAME',
+    type: 'SET_FREEFORM_FALLBACK_BLOCK_NAME',
+    name: name
+  };
+}
+/**
+ * Returns an action object used to set the name of the block used as a fallback
+ * for unregistered blocks.
+ *
+ * @param {string} name Block name.
+ *
+ * @return {Object} Action object.
+ */
+
+export function setUnregisteredFallbackBlockName(name) {
+  return {
+    type: 'SET_UNREGISTERED_FALLBACK_BLOCK_NAME',
     name: name
   };
 }
@@ -72,3 +120,4 @@ export function setCategories(categories) {
     categories: categories
   };
 }
+//# sourceMappingURL=actions.js.map

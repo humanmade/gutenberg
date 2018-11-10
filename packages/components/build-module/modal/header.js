@@ -15,7 +15,8 @@ var ModalHeader = function ModalHeader(_ref) {
       title = _ref.title,
       onClose = _ref.onClose,
       closeLabel = _ref.closeLabel,
-      headingId = _ref.headingId;
+      headingId = _ref.headingId,
+      isDismissable = _ref.isDismissable;
   var label = closeLabel ? closeLabel : __('Close dialog');
   return createElement("div", {
     className: "components-modal__header"
@@ -27,7 +28,7 @@ var ModalHeader = function ModalHeader(_ref) {
   }, icon), title && createElement("h1", {
     id: headingId,
     className: "components-modal__header-heading"
-  }, title)), createElement(IconButton, {
+  }, title)), isDismissable && createElement(IconButton, {
     onClick: onClose,
     icon: "no-alt",
     label: label
@@ -35,3 +36,4 @@ var ModalHeader = function ModalHeader(_ref) {
 };
 
 export default ModalHeader;
+//# sourceMappingURL=header.js.map

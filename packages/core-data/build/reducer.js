@@ -10,23 +10,24 @@ exports.users = users;
 exports.taxonomies = taxonomies;
 exports.themeSupports = themeSupports;
 exports.entitiesConfig = entitiesConfig;
+exports.embedPreviews = embedPreviews;
 exports.default = exports.entities = void 0;
 
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
-var _entries = _interopRequireDefault(require("@babel/runtime/core-js/object/entries"));
-
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
-
-require("core-js/modules/es6.function.name");
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
-var _objectSpread5 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
+var _objectSpread6 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 var _lodash = require("lodash");
 
 var _data = require("@wordpress/data");
+
+var _utils = require("./utils");
+
+var _queriedData = require("./queried-data");
 
 var _entities = require("./entities");
 
@@ -59,7 +60,7 @@ function terms() {
 
   switch (action.type) {
     case 'RECEIVE_TERMS':
-      return (0, _objectSpread5.default)({}, state, (0, _defineProperty2.default)({}, action.taxonomy, action.terms));
+      return (0, _objectSpread6.default)({}, state, (0, _defineProperty2.default)({}, action.taxonomy, action.terms));
   }
 
   return state;
@@ -84,8 +85,8 @@ function users() {
   switch (action.type) {
     case 'RECEIVE_USER_QUERY':
       return {
-        byId: (0, _objectSpread5.default)({}, state.byId, (0, _lodash.keyBy)(action.users, 'id')),
-        queries: (0, _objectSpread5.default)({}, state.queries, (0, _defineProperty2.default)({}, action.queryID, (0, _lodash.map)(action.users, function (user) {
+        byId: (0, _objectSpread6.default)({}, state.byId, (0, _lodash.keyBy)(action.users, 'id')),
+        queries: (0, _objectSpread6.default)({}, state.queries, (0, _defineProperty2.default)({}, action.queryID, (0, _lodash.map)(action.users, function (user) {
           return user.id;
         })))
       };
@@ -130,7 +131,7 @@ function themeSupports() {
 
   switch (action.type) {
     case 'RECEIVE_THEME_SUPPORTS':
-      return (0, _objectSpread5.default)({}, state, action.themeSupports);
+      return (0, _objectSpread6.default)({}, state, action.themeSupports);
   }
 
   return state;
@@ -147,27 +148,16 @@ function themeSupports() {
 
 
 function entity(entityConfig) {
-  var key = entityConfig.key || 'id';
-  return function () {
-    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
-      byKey: {}
-    };
-    var action = arguments.length > 1 ? arguments[1] : undefined;
-
-    if (!action.name || !action.kind || action.name !== entityConfig.name || action.kind !== entityConfig.kind) {
-      return state;
-    }
-
-    switch (action.type) {
-      case 'RECEIVE_ENTITY_RECORDS':
-        return {
-          byKey: (0, _objectSpread5.default)({}, state.byKey, (0, _lodash.keyBy)(action.records, key))
-        };
-
-      default:
-        return state;
-    }
-  };
+  return (0, _lodash.flowRight)([// Limit to matching action type so we don't attempt to replace action on
+  // an unhandled action.
+  (0, _utils.ifMatchingAction)(function (action) {
+    return action.name && action.kind && action.name === entityConfig.name && action.kind === entityConfig.kind;
+  }), // Inject the entity config into the action.
+  (0, _utils.replaceAction)(function (action) {
+    return (0, _objectSpread6.default)({}, action, {
+      key: entityConfig.key || _entities.DEFAULT_ENTITY_KEY
+    });
+  })])(_queriedData.reducer);
 }
 /**
  * Reducer keeping track of the registered entities.
@@ -209,13 +199,13 @@ var entities = function entities() {
 
   if (!entitiesDataReducer || newConfig !== state.config) {
     var entitiesByKind = (0, _lodash.groupBy)(newConfig, 'kind');
-    entitiesDataReducer = (0, _data.combineReducers)((0, _entries.default)(entitiesByKind).reduce(function (memo, _ref) {
+    entitiesDataReducer = (0, _data.combineReducers)(Object.entries(entitiesByKind).reduce(function (memo, _ref) {
       var _ref2 = (0, _slicedToArray2.default)(_ref, 2),
           kind = _ref2[0],
           subEntities = _ref2[1];
 
       var kindReducer = (0, _data.combineReducers)(subEntities.reduce(function (kindMemo, entityConfig) {
-        return (0, _objectSpread5.default)({}, kindMemo, (0, _defineProperty2.default)({}, entityConfig.name, entity(entityConfig)));
+        return (0, _objectSpread6.default)({}, kindMemo, (0, _defineProperty2.default)({}, entityConfig.name, entity(entityConfig)));
       }, {}));
       memo[kind] = kindReducer;
       return memo;
@@ -234,15 +224,40 @@ var entities = function entities() {
     config: newConfig
   };
 };
+/**
+ * Reducer managing embed preview data.
+ *
+ * @param {Object} state  Current state.
+ * @param {Object} action Dispatched action.
+ *
+ * @return {Object} Updated state.
+ */
+
 
 exports.entities = entities;
+
+function embedPreviews() {
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var action = arguments.length > 1 ? arguments[1] : undefined;
+
+  switch (action.type) {
+    case 'RECEIVE_EMBED_PREVIEW':
+      var url = action.url,
+          preview = action.preview;
+      return (0, _objectSpread6.default)({}, state, (0, _defineProperty2.default)({}, url, preview));
+  }
+
+  return state;
+}
 
 var _default = (0, _data.combineReducers)({
   terms: terms,
   users: users,
   taxonomies: taxonomies,
   themeSupports: themeSupports,
-  entities: entities
+  entities: entities,
+  embedPreviews: embedPreviews
 });
 
 exports.default = _default;
+//# sourceMappingURL=reducer.js.map

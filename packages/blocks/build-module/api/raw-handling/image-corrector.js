@@ -1,7 +1,4 @@
-import "core-js/modules/es6.regexp.replace";
-import "core-js/modules/es6.typed.uint8-array";
-import "core-js/modules/es6.regexp.split";
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
 
 /**
  * WordPress dependencies
@@ -66,3 +63,4 @@ export default function (node) {
     node.parentNode.removeChild(node);
   }
 }
+//# sourceMappingURL=image-corrector.js.map

@@ -11,8 +11,6 @@ var _element = require("@wordpress/element");
 
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 
-require("core-js/modules/web.dom.iterable");
-
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -42,12 +40,6 @@ var _createHigherOrderComponent = _interopRequireDefault(require("../create-high
  */
 
 /**
- * Browser dependencies
- */
-var _window = window,
-    _clearTimeout = _window.clearTimeout,
-    _setTimeout = _window.setTimeout;
-/**
  * A higher-order component used to provide and manage delayed function calls
  * that ought to be bound to a component's lifecycle.
  *
@@ -55,7 +47,6 @@ var _window = window,
  *
  * @return {Component}                  Wrapped component.
  */
-
 var withSafeTimeout = (0, _createHigherOrderComponent.default)(function (OriginalComponent) {
   return (
     /*#__PURE__*/
@@ -76,29 +67,47 @@ var withSafeTimeout = (0, _createHigherOrderComponent.default)(function (Origina
       (0, _createClass2.default)(WrappedComponent, [{
         key: "componentWillUnmount",
         value: function componentWillUnmount() {
-          this.timeouts.forEach(_clearTimeout);
+          this.timeouts.forEach(clearTimeout);
         }
       }, {
         key: "setTimeout",
-        value: function setTimeout(fn, delay) {
+        value: function (_setTimeout) {
+          function setTimeout(_x, _x2) {
+            return _setTimeout.apply(this, arguments);
+          }
+
+          setTimeout.toString = function () {
+            return _setTimeout.toString();
+          };
+
+          return setTimeout;
+        }(function (fn, delay) {
           var _this2 = this;
 
-          var id = _setTimeout(function () {
+          var id = setTimeout(function () {
             fn();
 
             _this2.clearTimeout(id);
           }, delay);
-
           this.timeouts.push(id);
           return id;
-        }
+        })
       }, {
         key: "clearTimeout",
-        value: function clearTimeout(id) {
-          _clearTimeout(id);
+        value: function (_clearTimeout) {
+          function clearTimeout(_x3) {
+            return _clearTimeout.apply(this, arguments);
+          }
 
+          clearTimeout.toString = function () {
+            return _clearTimeout.toString();
+          };
+
+          return clearTimeout;
+        }(function (id) {
+          clearTimeout(id);
           this.timeouts = (0, _lodash.without)(this.timeouts, id);
-        }
+        })
       }, {
         key: "render",
         value: function render() {
@@ -114,3 +123,4 @@ var withSafeTimeout = (0, _createHigherOrderComponent.default)(function (Origina
 }, 'withSafeTimeout');
 var _default = withSafeTimeout;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

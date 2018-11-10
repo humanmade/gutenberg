@@ -13,6 +13,7 @@ export default function MenuItemsChoice(_ref) {
     var isSelected = value === item.value;
     return createElement(MenuItem, {
       key: item.value,
+      role: "menuitemradio",
       icon: isSelected && 'yes',
       isSelected: isSelected,
       shortcut: item.shortcut,
@@ -24,3 +25,4 @@ export default function MenuItemsChoice(_ref) {
     }, item.label);
   });
 }
+//# sourceMappingURL=index.js.map

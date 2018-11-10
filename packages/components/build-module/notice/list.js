@@ -1,5 +1,5 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -47,3 +47,4 @@ function NoticeList(_ref) {
 }
 
 export default NoticeList;
+//# sourceMappingURL=list.js.map

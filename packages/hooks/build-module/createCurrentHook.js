@@ -1,5 +1,3 @@
-import "core-js/modules/es6.function.name";
-
 /**
  * Returns a function which, when invoked, will return the name of the
  * currently running hook, or `null` if no hook of the given type is currently
@@ -27,3 +25,4 @@ function createCurrentHook(hooks) {
 }
 
 export default createCurrentHook;
+//# sourceMappingURL=createCurrentHook.js.map

@@ -1,10 +1,10 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _classCallCheck from "@babel/runtime/helpers/esm/classCallCheck";
+import _createClass from "@babel/runtime/helpers/esm/createClass";
+import _possibleConstructorReturn from "@babel/runtime/helpers/esm/possibleConstructorReturn";
+import _getPrototypeOf from "@babel/runtime/helpers/esm/getPrototypeOf";
+import _inherits from "@babel/runtime/helpers/esm/inherits";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -89,7 +89,7 @@ function withGlobalEvents(eventTypesToHandlers) {
       }, {
         key: "render",
         value: function render() {
-          return createElement(WrappedComponent, _extends({}, this.props, {
+          return createElement(WrappedComponent, _extends({}, this.props.ownProps, {
             ref: this.handleRef
           }));
         }
@@ -99,11 +99,13 @@ function withGlobalEvents(eventTypesToHandlers) {
     }(Component);
 
     return forwardRef(function (props, ref) {
-      return createElement(Wrapper, _extends({}, props, {
+      return createElement(Wrapper, {
+        ownProps: props,
         forwardedRef: ref
-      }));
+      });
     });
   }, 'withGlobalEvents');
 }
 
 export default withGlobalEvents;
+//# sourceMappingURL=index.js.map

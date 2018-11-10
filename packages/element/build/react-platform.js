@@ -29,3 +29,4 @@ Object.defineProperty(exports, "unmountComponentAtNode", {
 });
 
 var _reactDom = require("react-dom");
+//# sourceMappingURL=react-platform.js.map

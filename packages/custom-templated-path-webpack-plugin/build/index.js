@@ -2,13 +2,7 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es6.regexp.replace");
-
-require("core-js/modules/es6.regexp.constructor");
-
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
-
-var _entries = _interopRequireDefault(require("@babel/runtime/core-js/object/entries"));
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
@@ -42,7 +36,7 @@ function () {
     (0, _classCallCheck2.default)(this, CustomTemplatedPathPlugin);
     this.handlers = [];
 
-    var _arr = (0, _entries.default)(handlers);
+    var _arr = Object.entries(handlers);
 
     for (var _i = 0; _i < _arr.length; _i++) {
       var _arr$_i = (0, _slicedToArray2.default)(_arr[_i], 2),
@@ -86,3 +80,4 @@ function () {
 }();
 
 module.exports = CustomTemplatedPathPlugin;
+//# sourceMappingURL=index.js.map

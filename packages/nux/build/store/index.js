@@ -24,12 +24,12 @@ var selectors = _interopRequireWildcard(require("./selectors"));
 /**
  * Internal dependencies
  */
-var REDUCER_KEY = 'preferences';
 var store = (0, _data.registerStore)('core/nux', {
-  reducer: (0, _data.restrictPersistence)(_reducer.default, REDUCER_KEY),
+  reducer: _reducer.default,
   actions: actions,
   selectors: selectors,
-  persist: true
+  persist: ['preferences']
 });
 var _default = store;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

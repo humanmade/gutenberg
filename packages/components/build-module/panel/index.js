@@ -23,3 +23,4 @@ function Panel(_ref) {
 }
 
 export default Panel;
+//# sourceMappingURL=index.js.map

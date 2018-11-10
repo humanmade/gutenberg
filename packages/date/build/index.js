@@ -6,16 +6,15 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.setSettings = setSettings;
+exports.__experimentalGetSettings = __experimentalGetSettings;
 exports.getSettings = getSettings;
 exports.format = format;
 exports.date = date;
 exports.gmdate = gmdate;
 exports.dateI18n = dateI18n;
+exports.isInTheFuture = isInTheFuture;
+exports.getDate = getDate;
 exports.moment = void 0;
-
-require("core-js/modules/es6.regexp.split");
-
-require("core-js/modules/es6.regexp.replace");
 
 var _moment = _interopRequireDefault(require("moment"));
 
@@ -23,9 +22,17 @@ require("moment-timezone");
 
 require("moment-timezone/moment-timezone-utils");
 
+var _deprecated = _interopRequireDefault(require("@wordpress/deprecated"));
+
 /**
  * External dependencies
  */
+
+/**
+ * WordPress dependencies
+ */
+// Changes made here will likely need to be made in `lib/client-assets.php` as
+// well because it uses the `setSettings()` function to change these settings.
 var settings = {
   l10n: {
     locale: 'en_US',
@@ -47,7 +54,8 @@ var settings = {
   formats: {
     time: 'g: i a',
     date: 'F j, Y',
-    datetime: 'F j, Y g: i a'
+    datetime: 'F j, Y g: i a',
+    datetimeAbbreviated: 'M j, Y g: i a'
   },
   timezone: {
     offset: '0',
@@ -117,7 +125,18 @@ function setSettings(dateSettings) {
  */
 
 
+function __experimentalGetSettings() {
+  return settings;
+} // deprecations
+
+
 function getSettings() {
+  (0, _deprecated.default)('wp.date.getSettings', {
+    version: '4.4',
+    alternative: 'wp.date.__experimentalGetSettings',
+    plugin: 'Gutenberg',
+    hint: 'Unstable APIs are strongly discouraged to be used, and are subject to removal without notice.'
+  });
   return settings;
 }
 
@@ -135,6 +154,12 @@ function setupWPTimezone() {
 
 
 var moment = function moment() {
+  (0, _deprecated.default)('wp.date.moment', {
+    version: '4.4',
+    alternative: 'the moment script as a dependency',
+    plugin: 'Gutenberg'
+  });
+
   for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
     args[_key] = arguments[_key];
   }
@@ -414,5 +439,38 @@ function dateI18n(dateFormat) {
 
   return format(dateFormat, dateMoment);
 }
+/**
+ * Check whether a date is considered in the future according to the WordPress settings.
+ *
+ * @param {string} dateValue Date String or Date object in the Defined WP Timezone.
+ *
+ * @return {boolean} Is in the future.
+ */
+
+
+function isInTheFuture(dateValue) {
+  var now = _moment.default.tz('WP');
+
+  var momentObject = _moment.default.tz(dateValue, 'WP');
+
+  return momentObject.isAfter(now);
+}
+/**
+ * Create and return a JavaScript Date Object from a date string in the WP timezone.
+ *
+ * @param {string?} dateString Date formatted in the WP timezone.
+ *
+ * @return {Date} Date
+ */
+
+
+function getDate(dateString) {
+  if (!dateString) {
+    return _moment.default.tz('WP').toDate();
+  }
+
+  return _moment.default.tz(dateString, 'WP').toDate();
+}
 
 setupWPTimezone();
+//# sourceMappingURL=index.js.map

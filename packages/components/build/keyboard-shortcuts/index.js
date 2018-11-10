@@ -2,8 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/web.dom.iterable");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -105,3 +103,4 @@ function (_Component) {
 
 var _default = KeyboardShortcuts;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

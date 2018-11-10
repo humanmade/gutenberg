@@ -2,22 +2,17 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es7.array.includes");
-
-require("core-js/modules/es6.string.includes");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getBlockType = getBlockType;
+exports.getBlockStyles = getBlockStyles;
 exports.getCategories = getCategories;
 exports.getDefaultBlockName = getDefaultBlockName;
-exports.getFallbackBlockName = getFallbackBlockName;
-exports.hasChildBlocks = exports.getChildBlockNames = exports.getBlockTypes = void 0;
-
-require("core-js/modules/es6.function.name");
-
-var _values = _interopRequireDefault(require("@babel/runtime/core-js/object/values"));
+exports.getFreeformFallbackBlockName = getFreeformFallbackBlockName;
+exports.getUnregisteredFallbackBlockName = getUnregisteredFallbackBlockName;
+exports.hasBlockSupport = hasBlockSupport;
+exports.hasChildBlocksWithInserterSupport = exports.hasChildBlocks = exports.getBlockSupport = exports.getChildBlockNames = exports.getBlockTypes = void 0;
 
 var _rememo = _interopRequireDefault(require("rememo"));
 
@@ -35,7 +30,7 @@ var _lodash = require("lodash");
  * @return {Array} Block Types.
  */
 var getBlockTypes = (0, _rememo.default)(function (state) {
-  return (0, _values.default)(state.blockTypes);
+  return Object.values(state.blockTypes);
 }, function (state) {
   return [state.blockTypes];
 });
@@ -52,6 +47,19 @@ exports.getBlockTypes = getBlockTypes;
 
 function getBlockType(state, name) {
   return state.blockTypes[name];
+}
+/**
+ * Returns block styles by block name.
+ *
+ * @param {Object} state Data state.
+ * @param {string} name  Block type name.
+ *
+ * @return {Array?} Block Styles.
+ */
+
+
+function getBlockStyles(state, name) {
+  return state.blockStyles[name];
 }
 /**
  * Returns all the available categories.
@@ -78,16 +86,28 @@ function getDefaultBlockName(state) {
   return state.defaultBlockName;
 }
 /**
- * Returns the name of the fallback block name.
+ * Returns the name of the block for handling non-block content.
  *
  * @param {Object} state Data state.
  *
- * @return {string?} Fallback block name.
+ * @return {string?} Name of the block for handling non-block content.
  */
 
 
-function getFallbackBlockName(state) {
-  return state.fallbackBlockName;
+function getFreeformFallbackBlockName(state) {
+  return state.freeformFallbackBlockName;
+}
+/**
+ * Returns the name of the block for handling unregistered blocks.
+ *
+ * @param {Object} state Data state.
+ *
+ * @return {string?} Name of the block for handling unregistered blocks.
+ */
+
+
+function getUnregisteredFallbackBlockName(state) {
+  return state.unregisteredFallbackBlockName;
 }
 /**
  * Returns an array with the child blocks of a given block.
@@ -110,6 +130,42 @@ var getChildBlockNames = (0, _rememo.default)(function (state, blockName) {
   return [state.blockTypes];
 });
 /**
+ * Returns the block support value for a feature, if defined.
+ *
+ * @param  {Object}          state           Data state.
+ * @param  {(string|Object)} nameOrType      Block name or type object
+ * @param  {string}          feature         Feature to retrieve
+ * @param  {*}               defaultSupports Default value to return if not
+ *                                           explicitly defined
+ *
+ * @return {?*} Block support value
+ */
+
+exports.getChildBlockNames = getChildBlockNames;
+
+var getBlockSupport = function getBlockSupport(state, nameOrType, feature, defaultSupports) {
+  var blockType = 'string' === typeof nameOrType ? getBlockType(state, nameOrType) : nameOrType;
+  return (0, _lodash.get)(blockType, ['supports', feature], defaultSupports);
+};
+/**
+ * Returns true if the block defines support for a feature, or false otherwise.
+ *
+ * @param  {Object}         state           Data state.
+ * @param {(string|Object)} nameOrType      Block name or type object.
+ * @param {string}          feature         Feature to test.
+ * @param {boolean}         defaultSupports Whether feature is supported by
+ *                                          default if not explicitly defined.
+ *
+ * @return {boolean} Whether block supports feature.
+ */
+
+
+exports.getBlockSupport = getBlockSupport;
+
+function hasBlockSupport(state, nameOrType, feature, defaultSupports) {
+  return !!getBlockSupport(state, nameOrType, feature, defaultSupports);
+}
+/**
  * Returns a boolean indicating if a block has child blocks or not.
  *
  * @param {Object} state     Data state.
@@ -118,10 +174,28 @@ var getChildBlockNames = (0, _rememo.default)(function (state, blockName) {
  * @return {boolean} True if a block contains child blocks and false otherwise.
  */
 
-exports.getChildBlockNames = getChildBlockNames;
 
 var hasChildBlocks = function hasChildBlocks(state, blockName) {
   return getChildBlockNames(state, blockName).length > 0;
 };
+/**
+ * Returns a boolean indicating if a block has at least one child block with inserter support.
+ *
+ * @param {Object} state     Data state.
+ * @param {string} blockName Block type name.
+ *
+ * @return {boolean} True if a block contains at least one child blocks with inserter support
+ *                   and false otherwise.
+ */
+
 
 exports.hasChildBlocks = hasChildBlocks;
+
+var hasChildBlocksWithInserterSupport = function hasChildBlocksWithInserterSupport(state, blockName) {
+  return (0, _lodash.some)(getChildBlockNames(state, blockName), function (childBlockName) {
+    return hasBlockSupport(state, childBlockName, 'inserter', true);
+  });
+};
+
+exports.hasChildBlocksWithInserterSupport = hasChildBlocksWithInserterSupport;
+//# sourceMappingURL=selectors.js.map

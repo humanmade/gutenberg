@@ -2,8 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/web.dom.iterable");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -108,7 +106,7 @@ function withGlobalEvents(eventTypesToHandlers) {
       }, {
         key: "render",
         value: function render() {
-          return (0, _element.createElement)(WrappedComponent, (0, _extends2.default)({}, this.props, {
+          return (0, _element.createElement)(WrappedComponent, (0, _extends2.default)({}, this.props.ownProps, {
             ref: this.handleRef
           }));
         }
@@ -117,12 +115,14 @@ function withGlobalEvents(eventTypesToHandlers) {
     }(_element.Component);
 
     return (0, _element.forwardRef)(function (props, ref) {
-      return (0, _element.createElement)(Wrapper, (0, _extends2.default)({}, props, {
+      return (0, _element.createElement)(Wrapper, {
+        ownProps: props,
         forwardedRef: ref
-      }));
+      });
     });
   }, 'withGlobalEvents');
 }
 
 var _default = withGlobalEvents;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

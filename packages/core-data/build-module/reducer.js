@@ -1,14 +1,12 @@
-import _slicedToArray from "@babel/runtime/helpers/slicedToArray";
-import _Object$entries from "@babel/runtime/core-js/object/entries";
-import _toConsumableArray from "@babel/runtime/helpers/toConsumableArray";
-import "core-js/modules/es6.function.name";
-import _defineProperty from "@babel/runtime/helpers/defineProperty";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
+import _slicedToArray from "@babel/runtime/helpers/esm/slicedToArray";
+import _toConsumableArray from "@babel/runtime/helpers/esm/toConsumableArray";
+import _defineProperty from "@babel/runtime/helpers/esm/defineProperty";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 /**
  * External dependencies
  */
-import { keyBy, map, groupBy } from 'lodash';
+import { keyBy, map, groupBy, flowRight } from 'lodash';
 /**
  * WordPress dependencies
  */
@@ -18,7 +16,9 @@ import { combineReducers } from '@wordpress/data';
  * Internal dependencies
  */
 
-import { defaultEntities } from './entities';
+import { ifMatchingAction, replaceAction } from './utils';
+import { reducer as queriedDataReducer } from './queried-data';
+import { defaultEntities, DEFAULT_ENTITY_KEY } from './entities';
 /**
  * Reducer managing terms state. Keyed by taxonomy slug, the value is either
  * undefined (if no request has been made for given taxonomy), null (if a
@@ -121,27 +121,16 @@ export function themeSupports() {
  */
 
 function entity(entityConfig) {
-  var key = entityConfig.key || 'id';
-  return function () {
-    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
-      byKey: {}
-    };
-    var action = arguments.length > 1 ? arguments[1] : undefined;
-
-    if (!action.name || !action.kind || action.name !== entityConfig.name || action.kind !== entityConfig.kind) {
-      return state;
-    }
-
-    switch (action.type) {
-      case 'RECEIVE_ENTITY_RECORDS':
-        return {
-          byKey: _objectSpread({}, state.byKey, keyBy(action.records, key))
-        };
-
-      default:
-        return state;
-    }
-  };
+  return flowRight([// Limit to matching action type so we don't attempt to replace action on
+  // an unhandled action.
+  ifMatchingAction(function (action) {
+    return action.name && action.kind && action.name === entityConfig.name && action.kind === entityConfig.kind;
+  }), // Inject the entity config into the action.
+  replaceAction(function (action) {
+    return _objectSpread({}, action, {
+      key: entityConfig.key || DEFAULT_ENTITY_KEY
+    });
+  })])(queriedDataReducer);
 }
 /**
  * Reducer keeping track of the registered entities.
@@ -182,7 +171,7 @@ export var entities = function entities() {
 
   if (!entitiesDataReducer || newConfig !== state.config) {
     var entitiesByKind = groupBy(newConfig, 'kind');
-    entitiesDataReducer = combineReducers(_Object$entries(entitiesByKind).reduce(function (memo, _ref) {
+    entitiesDataReducer = combineReducers(Object.entries(entitiesByKind).reduce(function (memo, _ref) {
       var _ref2 = _slicedToArray(_ref, 2),
           kind = _ref2[0],
           subEntities = _ref2[1];
@@ -207,10 +196,34 @@ export var entities = function entities() {
     config: newConfig
   };
 };
+/**
+ * Reducer managing embed preview data.
+ *
+ * @param {Object} state  Current state.
+ * @param {Object} action Dispatched action.
+ *
+ * @return {Object} Updated state.
+ */
+
+export function embedPreviews() {
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var action = arguments.length > 1 ? arguments[1] : undefined;
+
+  switch (action.type) {
+    case 'RECEIVE_EMBED_PREVIEW':
+      var url = action.url,
+          preview = action.preview;
+      return _objectSpread({}, state, _defineProperty({}, url, preview));
+  }
+
+  return state;
+}
 export default combineReducers({
   terms: terms,
   users: users,
   taxonomies: taxonomies,
   themeSupports: themeSupports,
-  entities: entities
+  entities: entities,
+  embedPreviews: embedPreviews
 });
+//# sourceMappingURL=reducer.js.map

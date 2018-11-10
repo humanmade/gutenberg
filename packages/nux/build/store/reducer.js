@@ -103,3 +103,4 @@ var _default = (0, _data.combineReducers)({
 });
 
 exports.default = _default;
+//# sourceMappingURL=reducer.js.map

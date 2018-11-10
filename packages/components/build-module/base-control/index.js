@@ -15,9 +15,11 @@ function BaseControl(_ref) {
     className: classnames('components-base-control', className)
   }, createElement("div", {
     className: "components-base-control__field"
-  }, label && createElement("label", {
+  }, label && id && createElement("label", {
     className: "components-base-control__label",
     htmlFor: id
+  }, label), label && !id && createElement("span", {
+    className: "components-base-control__label"
   }, label), children), !!help && createElement("p", {
     id: id + '__help',
     className: "components-base-control__help"
@@ -25,3 +27,4 @@ function BaseControl(_ref) {
 }
 
 export default BaseControl;
+//# sourceMappingURL=index.js.map

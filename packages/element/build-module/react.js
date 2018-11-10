@@ -1,6 +1,5 @@
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
-import "core-js/modules/web.dom.iterable";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 
 /**
  * External dependencies
@@ -135,3 +134,4 @@ export function switchChildrenNodeName(children, nodeName) {
     }, props), childrenProp);
   });
 }
+//# sourceMappingURL=react.js.map

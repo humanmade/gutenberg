@@ -7,8 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _create = _interopRequireDefault(require("@babel/runtime/core-js/object/create"));
-
 var _createAddHook = _interopRequireDefault(require("./createAddHook"));
 
 var _createRemoveHook = _interopRequireDefault(require("./createRemoveHook"));
@@ -29,8 +27,8 @@ var _createDidHook = _interopRequireDefault(require("./createDidHook"));
  * @return {Object} Object that contains all hooks.
  */
 function createHooks() {
-  var actions = (0, _create.default)(null);
-  var filters = (0, _create.default)(null);
+  var actions = Object.create(null);
+  var filters = Object.create(null);
   actions.__current = [];
   filters.__current = [];
   return {
@@ -57,3 +55,4 @@ function createHooks() {
 
 var _default = createHooks;
 exports.default = _default;
+//# sourceMappingURL=createHooks.js.map

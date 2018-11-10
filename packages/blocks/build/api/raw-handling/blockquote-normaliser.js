@@ -19,3 +19,4 @@ function _default(node) {
 
   node.innerHTML = (0, _normaliseBlocks.default)(node.innerHTML);
 }
+//# sourceMappingURL=blockquote-normaliser.js.map

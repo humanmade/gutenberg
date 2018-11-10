@@ -5,19 +5,13 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.default = exports.withBlockContentContext = void 0;
 
 var _element = require("@wordpress/element");
 
-var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 
-var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-
-var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
-
-var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
-
-var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
+var _compose = require("@wordpress/compose");
 
 var _api = require("../api");
 
@@ -28,7 +22,9 @@ var _api = require("../api");
 /**
  * Internal dependencies
  */
-
+var _createContext = (0, _element.createContext)(function () {}),
+    Consumer = _createContext.Consumer,
+    Provider = _createContext.Provider;
 /**
  * An internal block component used in block content serialization to inject
  * nested block content within the `save` implementation of the ancestor
@@ -43,41 +39,44 @@ var _api = require("../api");
  * 	{ blockSaveElement }
  * </BlockContentProvider>
  * ```
+ *
+ * @return {WPElement} Element with BlockContent injected via context.
  */
-var BlockContentProvider =
-/*#__PURE__*/
-function (_Component) {
-  (0, _inherits2.default)(BlockContentProvider, _Component);
 
-  function BlockContentProvider() {
-    (0, _classCallCheck2.default)(this, BlockContentProvider);
-    return (0, _possibleConstructorReturn2.default)(this, (0, _getPrototypeOf2.default)(BlockContentProvider).apply(this, arguments));
-  }
 
-  (0, _createClass2.default)(BlockContentProvider, [{
-    key: "getChildContext",
-    value: function getChildContext() {
-      var innerBlocks = this.props.innerBlocks;
-      return {
-        BlockContent: function BlockContent() {
-          // Value is an array of blocks, so defer to block serializer
-          var html = (0, _api.serialize)(innerBlocks); // Use special-cased raw HTML tag to avoid default escaping
+var BlockContentProvider = function BlockContentProvider(_ref) {
+  var children = _ref.children,
+      innerBlocks = _ref.innerBlocks;
 
-          return (0, _element.createElement)(_element.RawHTML, null, html);
-        }
-      };
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return this.props.children;
-    }
-  }]);
-  return BlockContentProvider;
-}(_element.Component);
+  var BlockContent = function BlockContent() {
+    // Value is an array of blocks, so defer to block serializer
+    var html = (0, _api.serialize)(innerBlocks); // Use special-cased raw HTML tag to avoid default escaping
 
-BlockContentProvider.childContextTypes = {
-  BlockContent: function BlockContent() {}
+    return (0, _element.createElement)(_element.RawHTML, null, html);
+  };
+
+  return (0, _element.createElement)(Provider, {
+    value: BlockContent
+  }, children);
 };
+/**
+ * A Higher Order Component used to inject BlockContent using context to the
+ * wrapped component.
+ *
+ * @return {Component} Enhanced component with injected BlockContent as prop.
+ */
+
+
+var withBlockContentContext = (0, _compose.createHigherOrderComponent)(function (OriginalComponent) {
+  return function (props) {
+    return (0, _element.createElement)(Consumer, null, function (context) {
+      return (0, _element.createElement)(OriginalComponent, (0, _extends2.default)({}, props, {
+        BlockContent: context
+      }));
+    });
+  };
+}, 'withBlockContentContext');
+exports.withBlockContentContext = withBlockContentContext;
 var _default = BlockContentProvider;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

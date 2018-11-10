@@ -2,8 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/web.dom.iterable");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -68,3 +66,4 @@ function () {
 
 var _default = Listener;
 exports.default = _default;
+//# sourceMappingURL=listener.js.map

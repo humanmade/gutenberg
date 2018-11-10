@@ -1,5 +1,3 @@
-import "core-js/modules/es6.function.name";
-
 /**
  * External dependencies
  */
@@ -27,3 +25,4 @@ function createHigherOrderComponent(mapComponentToEnhancedComponent, modifierNam
 }
 
 export default createHigherOrderComponent;
+//# sourceMappingURL=index.js.map

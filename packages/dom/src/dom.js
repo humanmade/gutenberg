@@ -94,15 +94,54 @@ export function isHorizontalEdge( container, isReverse ) {
 		range.collapse( ! isSelectionForward( selection ) );
 	}
 
-	const { endContainer, endOffset } = range;
-	range.selectNodeContents( container );
-	range.setEnd( endContainer, endOffset );
+	let node = range.startContainer;
 
-	// Check if the caret position is at the expected start/end position based
-	// on the value of `isReverse`. If so, consider the horizontal edge to be
-	// reached.
-	const caretOffset = range.toString().length;
-	return caretOffset === ( isReverse ? 0 : container.textContent.length );
+	let extentOffset;
+	if ( isReverse ) {
+		// When in reverse, range node should be first.
+		extentOffset = 0;
+	} else if ( node.nodeValue ) {
+		// Otherwise, vary by node type. A text node has no children. Its range
+		// offset reflects its position in nodeValue.
+		//
+		// "If the startContainer is a Node of type Text, Comment, or
+		// CDATASection, then the offset is the number of characters from the
+		// start of the startContainer to the boundary point of the Range."
+		//
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/Range/startOffset
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeValue
+		extentOffset = node.nodeValue.length;
+	} else {
+		// "For other Node types, the startOffset is the number of child nodes
+		// between the start of the startContainer and the boundary point of
+		// the Range."
+		//
+		// See: https://developer.mozilla.org/en-US/docs/Web/API/Range/startOffset
+		extentOffset = node.childNodes.length;
+	}
+
+	// Offset of range should be at expected extent.
+	const position = isReverse ? 'start' : 'end';
+	const offset = range[ `${ position }Offset` ];
+	if ( offset !== extentOffset ) {
+		return false;
+	}
+
+	// If confirmed to be at extent, traverse up through DOM, verifying that
+	// the node is at first or last child for reverse or forward respectively.
+	// Continue until container is reached.
+	const order = isReverse ? 'first' : 'last';
+	while ( node !== container ) {
+		const parentNode = node.parentNode;
+		if ( parentNode[ `${ order }Child` ] !== node ) {
+			return false;
+		}
+
+		node = parentNode;
+	}
+
+	// If reached, range is assumed to be at edge.
+	return true;
 }
 
 /**
@@ -227,8 +266,9 @@ export function placeCaretAtHorizontalEdge( container, isReverse ) {
 		return;
 	}
 
+	container.focus();
+
 	if ( ! container.isContentEditable ) {
-		container.focus();
 		return;
 	}
 
@@ -236,6 +276,12 @@ export function placeCaretAtHorizontalEdge( container, isReverse ) {
 	// avoids the selection always being `endOffset` of 1 when placed at end,
 	// where `startContainer`, `endContainer` would always be container itself.
 	const rangeTarget = container[ isReverse ? 'lastChild' : 'firstChild' ];
+
+	// If no range target, it implies that the container is empty. Focusing is
+	// sufficient for caret to be placed correctly.
+	if ( ! rangeTarget ) {
+		return;
+	}
 
 	const selection = window.getSelection();
 	const range = document.createRange();
@@ -245,8 +291,6 @@ export function placeCaretAtHorizontalEdge( container, isReverse ) {
 
 	selection.removeAllRanges();
 	selection.addRange( range );
-
-	container.focus();
 }
 
 /**
@@ -389,13 +433,25 @@ export function placeCaretAtVerticalEdge( container, isReverse, rect, mayUseScro
  * @return {boolean} True if the element is an text field, false if not.
  */
 export function isTextField( element ) {
-	const { nodeName, selectionStart, contentEditable } = element;
+	try {
+		const { nodeName, selectionStart, contentEditable } = element;
 
-	return (
-		( nodeName === 'INPUT' && selectionStart !== null ) ||
-		( nodeName === 'TEXTAREA' ) ||
-		contentEditable === 'true'
-	);
+		return (
+			( nodeName === 'INPUT' && selectionStart !== null ) ||
+			( nodeName === 'TEXTAREA' ) ||
+			contentEditable === 'true'
+		);
+	} catch ( error ) {
+		// Safari throws an exception when trying to get `selectionStart`
+		// on non-text <input> elements (which, understandably, don't
+		// have the text selection API). We catch this via a try/catch
+		// block, as opposed to a more explicit check of the element's
+		// input types, because of Safari's non-standard behavior. This
+		// also means we don't have to worry about the list of input
+		// types that support `selectionStart` changing as the HTML spec
+		// evolves over time.
+		return false;
+	}
 }
 
 /**
@@ -564,12 +620,11 @@ export function unwrap( node ) {
  *
  * @param {Element}  node    The node to replace
  * @param {string}   tagName The new tag name.
- * @param {Document} doc     The document of the node.
  *
  * @return {Element} The new node.
  */
-export function replaceTag( node, tagName, doc ) {
-	const newNode = doc.createElement( tagName );
+export function replaceTag( node, tagName ) {
+	const newNode = node.ownerDocument.createElement( tagName );
 
 	while ( node.firstChild ) {
 		newNode.appendChild( node.firstChild );
@@ -578,4 +633,15 @@ export function replaceTag( node, tagName, doc ) {
 	node.parentNode.replaceChild( newNode, node );
 
 	return newNode;
+}
+
+/**
+ * Wraps the given node with a new node with the given tag name.
+ *
+ * @param {Element} newNode       The node to insert.
+ * @param {Element} referenceNode The node to wrap.
+ */
+export function wrap( newNode, referenceNode ) {
+	referenceNode.parentNode.insertBefore( newNode, referenceNode );
+	newNode.appendChild( referenceNode );
 }

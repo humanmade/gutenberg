@@ -2,8 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es6.array.find-index");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -14,11 +12,7 @@ exports.findTransform = findTransform;
 exports.getBlockTransforms = getBlockTransforms;
 exports.switchToBlockType = switchToBlockType;
 
-require("core-js/modules/es6.regexp.to-string");
-
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
-
-require("core-js/modules/es6.function.name");
 
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
@@ -29,6 +23,8 @@ var _lodash = require("lodash");
 var _hooks = require("@wordpress/hooks");
 
 var _registration = require("./registration");
+
+var _utils = require("./utils");
 
 /**
  * External dependencies
@@ -45,26 +41,36 @@ var _registration = require("./registration");
 /**
  * Returns a block object given its type and attributes.
  *
- * @param {string} name            Block name.
- * @param {Object} blockAttributes Block attributes.
- * @param {?Array} innerBlocks     Nested blocks.
+ * @param {string} name        Block name.
+ * @param {Object} attributes  Block attributes.
+ * @param {?Array} innerBlocks Nested blocks.
  *
  * @return {Object} Block object.
  */
 function createBlock(name) {
-  var blockAttributes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var attributes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var innerBlocks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
   // Get the type definition associated with a registered block.
   var blockType = (0, _registration.getBlockType)(name); // Ensure attributes contains only values defined by block type, and merge
   // default values for missing attributes.
 
-  var attributes = (0, _lodash.reduce)(blockType.attributes, function (result, source, key) {
-    var value = blockAttributes[key];
+  var sanitizedAttributes = (0, _lodash.reduce)(blockType.attributes, function (result, schema, key) {
+    var value = attributes[key];
 
     if (undefined !== value) {
       result[key] = value;
-    } else if (source.hasOwnProperty('default')) {
-      result[key] = source.default;
+    } else if (schema.hasOwnProperty('default')) {
+      result[key] = schema.default;
+    }
+
+    if (['node', 'children'].indexOf(schema.source) !== -1) {
+      // Ensure value passed is always an array, which we're expecting in
+      // the RichText component to handle the deprecated value.
+      if (typeof result[key] === 'string') {
+        result[key] = [result[key]];
+      } else if (!Array.isArray(result[key])) {
+        result[key] = [];
+      }
     }
 
     return result;
@@ -74,11 +80,9 @@ function createBlock(name) {
 
   return {
     clientId: clientId,
-    // TODO: Remove from block interface in 3.5 "UID" deprecation.
-    uid: clientId,
     name: name,
     isValid: true,
-    attributes: attributes,
+    attributes: sanitizedAttributes,
     innerBlocks: innerBlocks
   };
 }
@@ -86,7 +90,7 @@ function createBlock(name) {
  * Given a block object, returns a copy of the block object, optionally merging
  * new attributes and/or replacing its inner blocks.
  *
- * @param {Object} block              Block object.
+ * @param {Object} block              Block instance.
  * @param {Object} mergeAttributes    Block attributes.
  * @param {?Array} newInnerBlocks     Nested blocks.
  *
@@ -100,8 +104,6 @@ function cloneBlock(block) {
   var clientId = (0, _v.default)();
   return (0, _objectSpread2.default)({}, block, {
     clientId: clientId,
-    // TODO: Remove from block interface in 3.5 "UID" deprecation.
-    uid: (0, _v.default)(),
     attributes: (0, _objectSpread2.default)({}, block.attributes, mergeAttributes),
     innerBlocks: newInnerBlocks || block.innerBlocks.map(function (innerBlock) {
       return cloneBlock(innerBlock);
@@ -115,7 +117,6 @@ function cloneBlock(block) {
  * @param {Object} transform The transform object to validate.
  * @param {string} direction Is this a 'from' or 'to' transform.
  * @param {Array} blocks The blocks to transform from.
- * @param {boolean} isMultiBlock Have multiple blocks been selected?
  *
  * @return {boolean} Is the transform possible?
  */
@@ -167,7 +168,6 @@ var isPossibleTransformForSource = function isPossibleTransformForSource(transfo
  * 'from' transforms on other blocks.
  *
  * @param {Array}  blocks  The blocks to transform from.
- * @param {boolean} isMultiBlock Have multiple blocks been selected?
  *
  * @return {Array} Block types that the blocks can be transformed into.
  */
@@ -193,7 +193,6 @@ var getBlockTypesForPossibleFromTransforms = function getBlockTypesForPossibleFr
  * the source block's own 'to' transforms.
  *
  * @param {Array} blocks The blocks to transform from.
- * @param {boolean} isMultiBlock Have multiple blocks been selected?
  *
  * @return {Array} Block types that the source can be transformed into.
  */
@@ -291,15 +290,15 @@ function findTransform(transforms, predicate) {
  * transform object includes `blockName` as a property.
  *
  * @param {string}  direction Transform direction ("to", "from").
- * @param {?string} blockName Optional block name.
+ * @param {string|Object} blockTypeOrName  Block type or name.
  *
  * @return {Array} Block transforms for direction.
  */
 
 
-function getBlockTransforms(direction, blockName) {
+function getBlockTransforms(direction, blockTypeOrName) {
   // When retrieving transforms for all block types, recurse into self.
-  if (blockName === undefined) {
+  if (blockTypeOrName === undefined) {
     return (0, _lodash.flatMap)((0, _registration.getBlockTypes)(), function (_ref) {
       var name = _ref.name;
       return getBlockTransforms(direction, name);
@@ -307,7 +306,10 @@ function getBlockTransforms(direction, blockName) {
   } // Validate that block type exists and has array of direction.
 
 
-  var _ref2 = (0, _registration.getBlockType)(blockName) || {},
+  var blockType = (0, _utils.normalizeBlockType)(blockTypeOrName);
+
+  var _ref2 = blockType || {},
+      blockName = _ref2.name,
       transforms = _ref2.transforms;
 
   if (!transforms || !Array.isArray(transforms[direction])) {
@@ -411,3 +413,4 @@ function switchToBlockType(blocks, name) {
     return (0, _hooks.applyFilters)('blocks.switchToBlockType.transformedBlock', transformedBlock, blocks);
   });
 }
+//# sourceMappingURL=factory.js.map

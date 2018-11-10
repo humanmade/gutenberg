@@ -9,7 +9,6 @@ import classnames from 'classnames';
  */
 
 import { Children } from '@wordpress/element';
-import { applyFilters } from '@wordpress/hooks';
 import { withInstanceId } from '@wordpress/compose';
 /**
  * Internal dependencies
@@ -20,13 +19,10 @@ export function MenuGroup(_ref) {
   var children = _ref.children,
       _ref$className = _ref.className,
       className = _ref$className === void 0 ? '' : _ref$className,
-      filterName = _ref.filterName,
       instanceId = _ref.instanceId,
       label = _ref.label;
-  var childrenArray = Children.toArray(children);
-  var menuItems = filterName ? applyFilters(filterName, childrenArray) : childrenArray;
 
-  if (!Array.isArray(menuItems) || !menuItems.length) {
+  if (!Children.count(children)) {
     return null;
   }
 
@@ -40,6 +36,7 @@ export function MenuGroup(_ref) {
   }, label), createElement(NavigableMenu, {
     orientation: "vertical",
     "aria-labelledby": labelId
-  }, menuItems));
+  }, children));
 }
 export default withInstanceId(MenuGroup);
+//# sourceMappingURL=index.js.map

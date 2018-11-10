@@ -12,8 +12,6 @@ var _element = require("@wordpress/element");
 
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 
-require("core-js/modules/es6.regexp.split");
-
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
 var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
@@ -56,7 +54,7 @@ function ExternalLink(_ref, ref) {
     className: "screen-reader-text"
   },
   /* translators: accessibility text */
-  (0, _i18n.__)('(opens in a new window)')), (0, _element.createElement)(_dashicon.default, {
+  (0, _i18n.__)('(opens in a new tab)')), (0, _element.createElement)(_dashicon.default, {
     icon: "external",
     className: "components-external-link__icon"
   }));
@@ -65,3 +63,4 @@ function ExternalLink(_ref, ref) {
 var _default = (0, _element.forwardRef)(ExternalLink);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

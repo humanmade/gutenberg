@@ -7,7 +7,7 @@ exports.default = _default;
 
 var _lodash = require("lodash");
 
-var _utils = require("./utils");
+var _phrasingContent = require("./phrasing-content");
 
 /**
  * External dependencies
@@ -29,7 +29,7 @@ function isFigureContent(node, schema) {
   var tag = node.nodeName.toLowerCase(); // We are looking for tags that can be a child of the figure tag, excluding
   // `figcaption` and any phrasing content.
 
-  if (tag === 'figcaption' || (0, _utils.isPhrasingContent)(node)) {
+  if (tag === 'figcaption' || (0, _phrasingContent.isPhrasingContent)(node)) {
     return false;
   }
 
@@ -90,3 +90,4 @@ function _default(node, doc, schema) {
 
   figure.appendChild(nodeToInsert);
 }
+//# sourceMappingURL=figure-content-reducer.js.map

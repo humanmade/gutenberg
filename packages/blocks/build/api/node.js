@@ -15,8 +15,6 @@ exports.default = void 0;
 
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
-require("core-js/modules/es6.function.name");
-
 var children = _interopRequireWildcard(require("./children"));
 
 /**
@@ -41,6 +39,19 @@ var _window$Node = window.Node,
  */
 
 /**
+ * Given a single node and a node type (e.g. `'br'`), returns true if the node
+ * corresponds to that type, false otherwise.
+ *
+ * @param {WPBlockNode} node Block node to test
+ * @param {string} type      Node to type to test against.
+ *
+ * @return {boolean} Whether node is of intended type.
+ */
+
+function isNodeOfType(node, type) {
+  return node && node.type === type;
+}
+/**
  * Given an object implementing the NamedNodeMap interface, returns a plain
  * object equivalent value of name, value key-value pairs.
  *
@@ -50,6 +61,7 @@ var _window$Node = window.Node,
  *
  * @return {Object} Object equivalent value of NamedNodeMap.
  */
+
 
 function getNamedNodeMapAsObject(nodeMap) {
   var result = {};
@@ -130,8 +142,10 @@ function matcher(selector) {
 }
 
 var _default = {
+  isNodeOfType: isNodeOfType,
   fromDOM: fromDOM,
   toHTML: toHTML,
   matcher: matcher
 };
 exports.default = _default;
+//# sourceMappingURL=node.js.map

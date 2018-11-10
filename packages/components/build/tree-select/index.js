@@ -2,8 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es6.string.repeat");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -14,8 +12,6 @@ var _element = require("@wordpress/element");
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/extends"));
 
 var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
-
-require("core-js/modules/es6.function.name");
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
@@ -59,3 +55,4 @@ function TreeSelect(_ref) {
     value: selectedId
   }, props));
 }
+//# sourceMappingURL=index.js.map

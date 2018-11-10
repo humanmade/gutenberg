@@ -2,12 +2,6 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _Object$defineProperty = require("@babel/runtime/core-js/object/define-property");
-
-var _Object$keys = require("@babel/runtime/core-js/object/keys");
-
-require("core-js/modules/web.dom.iterable");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -30,11 +24,10 @@ Object.defineProperty(exports, "RawHTML", {
 
 var _react = require("./react");
 
-_Object$keys(_react).forEach(function (key) {
+Object.keys(_react).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-
-  _Object$defineProperty(exports, key, {
+  Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
       return _react[key];
@@ -44,11 +37,10 @@ _Object$keys(_react).forEach(function (key) {
 
 var _reactPlatform = require("./react-platform");
 
-_Object$keys(_reactPlatform).forEach(function (key) {
+Object.keys(_reactPlatform).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-
-  _Object$defineProperty(exports, key, {
+  Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
       return _reactPlatform[key];
@@ -56,20 +48,20 @@ _Object$keys(_reactPlatform).forEach(function (key) {
   });
 });
 
-var _serialize = _interopRequireDefault(require("./serialize"));
+var _utils = require("./utils");
 
-var _rawHtml = _interopRequireDefault(require("./raw-html"));
-
-var _deprecated = require("./deprecated");
-
-_Object$keys(_deprecated).forEach(function (key) {
+Object.keys(_utils).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-
-  _Object$defineProperty(exports, key, {
+  Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
-      return _deprecated[key];
+      return _utils[key];
     }
   });
 });
+
+var _serialize = _interopRequireDefault(require("./serialize"));
+
+var _rawHtml = _interopRequireDefault(require("./raw-html"));
+//# sourceMappingURL=index.js.map

@@ -12,8 +12,6 @@ var _element = require("@wordpress/element");
 
 var _classnames = _interopRequireDefault(require("classnames"));
 
-var _hooks = require("@wordpress/hooks");
-
 var _compose = require("@wordpress/compose");
 
 var _navigableContainer = require("../navigable-container");
@@ -33,15 +31,10 @@ function MenuGroup(_ref) {
   var children = _ref.children,
       _ref$className = _ref.className,
       className = _ref$className === void 0 ? '' : _ref$className,
-      filterName = _ref.filterName,
       instanceId = _ref.instanceId,
       label = _ref.label;
 
-  var childrenArray = _element.Children.toArray(children);
-
-  var menuItems = filterName ? (0, _hooks.applyFilters)(filterName, childrenArray) : childrenArray;
-
-  if (!Array.isArray(menuItems) || !menuItems.length) {
+  if (!_element.Children.count(children)) {
     return null;
   }
 
@@ -55,9 +48,10 @@ function MenuGroup(_ref) {
   }, label), (0, _element.createElement)(_navigableContainer.NavigableMenu, {
     orientation: "vertical",
     "aria-labelledby": labelId
-  }, menuItems));
+  }, children));
 }
 
 var _default = (0, _compose.withInstanceId)(MenuGroup);
 
 exports.default = _default;
+//# sourceMappingURL=index.js.map

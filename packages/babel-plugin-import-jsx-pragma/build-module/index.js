@@ -1,5 +1,4 @@
-import "core-js/modules/es6.function.name";
-import _objectSpread from "@babel/runtime/helpers/objectSpread";
+import _objectSpread from "@babel/runtime/helpers/esm/objectSpread";
 
 /**
  * Default options for the plugin.
@@ -94,3 +93,4 @@ export default function (babel) {
     }
   };
 }
+//# sourceMappingURL=index.js.map

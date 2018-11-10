@@ -1,5 +1,3 @@
-import _Object$values from "@babel/runtime/core-js/object/values";
-
 /**
  * External dependencies
  */
@@ -15,6 +13,7 @@ import { select } from '@wordpress/data';
  */
 
 import { REDUCER_KEY } from './name';
+import { getQueriedItems } from './queried-data';
 /**
  * Returns true if resolution is in progress for the core selector of the given
  * name and arguments.
@@ -26,62 +25,25 @@ import { REDUCER_KEY } from './name';
  */
 
 function isResolving(selectorName) {
-  var _select;
-
   for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
     args[_key - 1] = arguments[_key];
   }
 
-  return (_select = select('core/data')).isResolving.apply(_select, [REDUCER_KEY, selectorName].concat(args));
+  return select('core/data').isResolving(REDUCER_KEY, selectorName, args);
 }
 /**
- * Returns all the available terms for the given taxonomy.
- *
- * @param {Object} state    Data state.
- * @param {string} taxonomy Taxonomy name.
- *
- * @return {Array} Categories list.
- */
-
-
-export function getTerms(state, taxonomy) {
-  return state.terms[taxonomy];
-}
-/**
- * Returns all the available categories.
- *
- * @param {Object} state Data state.
- *
- * @return {Array} Categories list.
- */
-
-export function getCategories(state) {
-  return getTerms(state, 'categories');
-}
-/**
- * Returns true if a request is in progress for terms data of a given taxonomy,
- * or false otherwise.
- *
- * @param {Object} state    Data state.
- * @param {string} taxonomy Taxonomy name.
- *
- * @return {boolean} Whether a request is in progress for taxonomy's terms.
- */
-
-export function isRequestingTerms(state, taxonomy) {
-  return isResolving('getTerms', taxonomy);
-}
-/**
- * Returns true if a request is in progress for categories data, or false
+ * Returns true if a request is in progress for embed preview data, or false
  * otherwise.
  *
  * @param {Object} state Data state.
+ * @param {string} url   URL the preview would be for.
  *
- * @return {boolean} Whether a request is in progress for categories.
+ * @return {boolean} Whether a request is in progress for an embed preview.
  */
 
-export function isRequestingCategories() {
-  return isResolving('getCategories');
+
+export function isRequestingEmbedPreview(state, url) {
+  return isResolving('getEmbedPreview', url);
 }
 /**
  * Returns all available authors.
@@ -153,23 +115,28 @@ export function getEntity(state, kind, name) {
  */
 
 export function getEntityRecord(state, kind, name, key) {
-  return get(state.entities.data, [kind, name, 'byKey', key]);
+  return get(state.entities.data, [kind, name, 'items', key]);
 }
 /**
  * Returns the Entity's records.
  *
- * @param {Object} state  State tree
- * @param {string} kind   Entity kind.
- * @param {string} name   Entity name.
+ * @param {Object}  state  State tree
+ * @param {string}  kind   Entity kind.
+ * @param {string}  name   Entity name.
+ * @param {?Object} query  Optional terms query.
  *
  * @return {Array} Records.
  */
 
-export var getEntityRecords = createSelector(function (state, kind, name) {
-  return _Object$values(get(state.entities.data, [kind, name, 'byKey']));
-}, function (state, kind, name) {
-  return [get(state.entities.data, [kind, name, 'byKey'])];
-});
+export function getEntityRecords(state, kind, name, query) {
+  var queriedState = get(state.entities.data, [kind, name]);
+
+  if (!queriedState) {
+    return [];
+  }
+
+  return getQueriedItems(queriedState, query);
+}
 /**
  * Return theme supports data in the index.
  *
@@ -181,3 +148,39 @@ export var getEntityRecords = createSelector(function (state, kind, name) {
 export function getThemeSupports(state) {
   return state.themeSupports;
 }
+/**
+ * Returns the embed preview for the given URL.
+ *
+ * @param {Object} state    Data state.
+ * @param {string} url      Embedded URL.
+ *
+ * @return {*} Undefined if the preview has not been fetched, otherwise, the preview fetched from the embed preview API.
+ */
+
+export function getEmbedPreview(state, url) {
+  return state.embedPreviews[url];
+}
+/**
+ * Determines if the returned preview is an oEmbed link fallback.
+ *
+ * WordPress can be configured to return a simple link to a URL if it is not embeddable.
+ * We need to be able to determine if a URL is embeddable or not, based on what we
+ * get back from the oEmbed preview API.
+ *
+ * @param {Object} state    Data state.
+ * @param {string} url      Embedded URL.
+ *
+ * @return {booleans} Is the preview for the URL an oEmbed link fallback.
+ */
+
+export function isPreviewEmbedFallback(state, url) {
+  var preview = state.embedPreviews[url];
+  var oEmbedLinkCheck = '<a href="' + url + '">' + url + '</a>';
+
+  if (!preview) {
+    return false;
+  }
+
+  return preview.html === oEmbedLinkCheck;
+}
+//# sourceMappingURL=selectors.js.map

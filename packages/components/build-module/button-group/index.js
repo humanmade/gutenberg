@@ -1,5 +1,5 @@
-import _extends from "@babel/runtime/helpers/extends";
-import _objectWithoutProperties from "@babel/runtime/helpers/objectWithoutProperties";
+import _extends from "@babel/runtime/helpers/esm/extends";
+import _objectWithoutProperties from "@babel/runtime/helpers/esm/objectWithoutProperties";
 import { createElement } from "@wordpress/element";
 
 /**
@@ -19,3 +19,4 @@ function ButtonGroup(_ref) {
 }
 
 export default ButtonGroup;
+//# sourceMappingURL=index.js.map

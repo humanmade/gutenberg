@@ -7,8 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.isViewportMatch = isViewportMatch;
 
-require("core-js/modules/es6.regexp.split");
-
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
 var _lodash = require("lodash");
@@ -39,3 +37,4 @@ function isViewportMatch(state, query) {
   var key = (0, _lodash.takeRight)(['>='].concat((0, _toConsumableArray2.default)(query.split(' '))), 2).join(' ');
   return !!state[key];
 }
+//# sourceMappingURL=selectors.js.map

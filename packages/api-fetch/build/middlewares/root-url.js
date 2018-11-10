@@ -9,8 +9,6 @@ exports.default = void 0;
 
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
-require("core-js/modules/es6.regexp.replace");
-
 var _namespaceEndpoint = _interopRequireDefault(require("./namespace-endpoint"));
 
 /**
@@ -49,3 +47,4 @@ var createRootURLMiddleware = function createRootURLMiddleware(rootURL) {
 
 var _default = createRootURLMiddleware;
 exports.default = _default;
+//# sourceMappingURL=root-url.js.map

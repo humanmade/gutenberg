@@ -26,3 +26,4 @@ var RegistryConsumer = Consumer;
 exports.RegistryConsumer = RegistryConsumer;
 var _default = Provider;
 exports.default = _default;
+//# sourceMappingURL=index.js.map

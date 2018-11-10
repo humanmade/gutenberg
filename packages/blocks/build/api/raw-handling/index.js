@@ -5,27 +5,22 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = rawHandler;
+exports.pasteHandler = pasteHandler;
+exports.rawHandler = rawHandler;
 Object.defineProperty(exports, "getPhrasingContentSchema", {
   enumerable: true,
   get: function get() {
-    return _utils.getPhrasingContentSchema;
+    return _phrasingContent.getPhrasingContentSchema;
   }
 });
-
-var _from = _interopRequireDefault(require("@babel/runtime/core-js/array/from"));
-
-require("core-js/modules/es6.regexp.replace");
 
 var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
 
 var _lodash = require("lodash");
 
-require("element-closest");
-
 var _factory = require("../factory");
 
-var _registration = require("../registration");
+var _serializer = require("../serializer");
 
 var _parser = require("../parser");
 
@@ -36,6 +31,8 @@ var _specialCommentConverter = _interopRequireDefault(require("./special-comment
 var _isInlineContent = _interopRequireDefault(require("./is-inline-content"));
 
 var _phrasingContentReducer = _interopRequireDefault(require("./phrasing-content-reducer"));
+
+var _headRemover = _interopRequireDefault(require("./head-remover"));
 
 var _msListConverter = _interopRequireDefault(require("./ms-list-converter"));
 
@@ -53,12 +50,13 @@ var _markdownConverter = _interopRequireDefault(require("./markdown-converter"))
 
 var _iframeRemover = _interopRequireDefault(require("./iframe-remover"));
 
+var _phrasingContent = require("./phrasing-content");
+
 var _utils = require("./utils");
 
 /**
  * External dependencies
  */
-// Also polyfills Element#matches.
 
 /**
  * Internal dependencies
@@ -67,9 +65,8 @@ var _utils = require("./utils");
 /**
  * Browser dependencies
  */
-var _window$console = window.console,
-    log = _window$console.log,
-    warn = _window$console.warn;
+var _window = window,
+    console = _window.console;
 
 /**
  * Filters HTML to only contain phrasing content.
@@ -80,11 +77,11 @@ var _window$console = window.console,
  */
 function filterInlineHTML(HTML) {
   HTML = (0, _utils.deepFilterHTML)(HTML, [_phrasingContentReducer.default]);
-  HTML = (0, _utils.removeInvalidHTML)(HTML, (0, _utils.getPhrasingContentSchema)(), {
+  HTML = (0, _utils.removeInvalidHTML)(HTML, (0, _phrasingContent.getPhrasingContentSchema)(), {
     inline: true
   }); // Allows us to ask for this information when we get a report.
 
-  log('Processed inline HTML:\n\n', HTML);
+  console.log('Processed inline HTML:\n\n', HTML);
   return HTML;
 }
 
@@ -97,6 +94,45 @@ function getRawTransformations() {
         return transform.selector && node.matches(transform.selector);
       }
     });
+  });
+}
+/**
+ * Converts HTML directly to blocks. Looks for a matching transform for each
+ * top-level tag. The HTML should be filtered to not have any text between
+ * top-level tags and formatted in a way that blocks can handle the HTML.
+ *
+ * @param  {Object} $1               Named parameters.
+ * @param  {string} $1.html          HTML to convert.
+ * @param  {Array}  $1.rawTransforms Transforms that can be used.
+ *
+ * @return {Array} An array of blocks.
+ */
+
+
+function htmlToBlocks(_ref) {
+  var html = _ref.html,
+      rawTransforms = _ref.rawTransforms;
+  var doc = document.implementation.createHTMLDocument('');
+  doc.body.innerHTML = html;
+  return Array.from(doc.body.children).map(function (node) {
+    var rawTransform = (0, _factory.findTransform)(rawTransforms, function (_ref2) {
+      var isMatch = _ref2.isMatch;
+      return isMatch(node);
+    });
+
+    if (!rawTransform) {
+      console.warn('A block registered a raw transformation schema for `' + node.nodeName + '` but did not match it. ' + 'Make sure there is a `selector` or `isMatch` property that can match the schema.\n' + 'Sanitized HTML: `' + node.outerHTML + '`');
+      return;
+    }
+
+    var transform = rawTransform.transform,
+        blockName = rawTransform.blockName;
+
+    if (transform) {
+      return transform(node);
+    }
+
+    return (0, _factory.createBlock)(blockName, (0, _parser.getBlockAttributes)(blockName, node.outerHTML));
   });
 }
 /**
@@ -115,16 +151,16 @@ function getRawTransformations() {
  */
 
 
-function rawHandler(_ref) {
-  var _ref$HTML = _ref.HTML,
-      HTML = _ref$HTML === void 0 ? '' : _ref$HTML,
-      _ref$plainText = _ref.plainText,
-      plainText = _ref$plainText === void 0 ? '' : _ref$plainText,
-      _ref$mode = _ref.mode,
-      mode = _ref$mode === void 0 ? 'AUTO' : _ref$mode,
-      tagName = _ref.tagName,
-      _ref$canUserUseUnfilt = _ref.canUserUseUnfilteredHTML,
-      canUserUseUnfilteredHTML = _ref$canUserUseUnfilt === void 0 ? false : _ref$canUserUseUnfilt;
+function pasteHandler(_ref3) {
+  var _ref3$HTML = _ref3.HTML,
+      HTML = _ref3$HTML === void 0 ? '' : _ref3$HTML,
+      _ref3$plainText = _ref3.plainText,
+      plainText = _ref3$plainText === void 0 ? '' : _ref3$plainText,
+      _ref3$mode = _ref3.mode,
+      mode = _ref3$mode === void 0 ? 'AUTO' : _ref3$mode,
+      tagName = _ref3.tagName,
+      _ref3$canUserUseUnfil = _ref3.canUserUseUnfilteredHTML,
+      canUserUseUnfilteredHTML = _ref3$canUserUseUnfil === void 0 ? false : _ref3$canUserUseUnfil;
   // First of all, strip any meta tags.
   HTML = HTML.replace(/<meta[^>]+>/, ''); // If we detect block delimiters, parse entirely as blocks.
 
@@ -174,16 +210,16 @@ function rawHandler(_ref) {
     return filterInlineHTML(HTML);
   }
 
-  var rawTransformations = getRawTransformations();
-  var phrasingContentSchema = (0, _utils.getPhrasingContentSchema)();
-  var blockContentSchema = (0, _utils.getBlockContentSchema)(rawTransformations);
-  return (0, _lodash.compact)((0, _lodash.flatMap)(pieces, function (piece) {
+  var rawTransforms = getRawTransformations();
+  var phrasingContentSchema = (0, _phrasingContent.getPhrasingContentSchema)();
+  var blockContentSchema = (0, _utils.getBlockContentSchema)(rawTransforms);
+  var blocks = (0, _lodash.compact)((0, _lodash.flatMap)(pieces, function (piece) {
     // Already a block from shortcode.
     if (typeof piece !== 'string') {
       return piece;
     }
 
-    var filters = [_msListConverter.default, _listReducer.default, _imageCorrector.default, _phrasingContentReducer.default, _specialCommentConverter.default, _figureContentReducer.default, _blockquoteNormaliser.default];
+    var filters = [_msListConverter.default, _headRemover.default, _listReducer.default, _imageCorrector.default, _phrasingContentReducer.default, _specialCommentConverter.default, _figureContentReducer.default, _blockquoteNormaliser.default];
 
     if (!canUserUseUnfilteredHTML) {
       // Should run before `figureContentReducer`.
@@ -195,28 +231,68 @@ function rawHandler(_ref) {
     piece = (0, _utils.removeInvalidHTML)(piece, schema);
     piece = (0, _normaliseBlocks.default)(piece); // Allows us to ask for this information when we get a report.
 
-    log('Processed HTML piece:\n\n', piece);
-    var doc = document.implementation.createHTMLDocument('');
-    doc.body.innerHTML = piece;
-    return (0, _from.default)(doc.body.children).map(function (node) {
-      var rawTransformation = (0, _factory.findTransform)(rawTransformations, function (_ref2) {
-        var isMatch = _ref2.isMatch;
-        return isMatch(node);
-      });
+    console.log('Processed HTML piece:\n\n', piece);
+    return htmlToBlocks({
+      html: piece,
+      rawTransforms: rawTransforms
+    });
+  })); // If we're allowed to return inline content and there is only one block
+  // and the original plain text content does not have any line breaks, then
+  // treat it as inline paste.
 
-      if (!rawTransformation) {
-        warn('A block registered a raw transformation schema for `' + node.nodeName + '` but did not match it. ' + 'Make sure there is a `selector` or `isMatch` property that can match the schema.\n' + 'Sanitized HTML: `' + node.outerHTML + '`');
-        return;
-      }
+  if (mode === 'AUTO' && blocks.length === 1) {
+    var trimmedPlainText = plainText.trim();
 
-      var transform = rawTransformation.transform,
-          blockName = rawTransformation.blockName;
+    if (trimmedPlainText !== '' && trimmedPlainText.indexOf('\n') === -1) {
+      return (0, _utils.removeInvalidHTML)((0, _serializer.getBlockContent)(blocks[0]), phrasingContentSchema);
+    }
+  }
 
-      if (transform) {
-        return transform(node);
-      }
+  return blocks;
+}
+/**
+ * Converts an HTML string to known blocks.
+ *
+ * @param {string} $1.HTML The HTML to convert.
+ *
+ * @return {Array} A list of blocks.
+ */
 
-      return (0, _factory.createBlock)(blockName, (0, _parser.getBlockAttributes)((0, _registration.getBlockType)(blockName), node.outerHTML));
+
+function rawHandler(_ref4) {
+  var _ref4$HTML = _ref4.HTML,
+      HTML = _ref4$HTML === void 0 ? '' : _ref4$HTML;
+
+  // If we detect block delimiters, parse entirely as blocks.
+  if (HTML.indexOf('<!-- wp:') !== -1) {
+    return (0, _parser.parseWithGrammar)(HTML);
+  } // An array of HTML strings and block objects. The blocks replace matched
+  // shortcodes.
+
+
+  var pieces = (0, _shortcodeConverter.default)(HTML);
+  var rawTransforms = getRawTransformations();
+  var blockContentSchema = (0, _utils.getBlockContentSchema)(rawTransforms);
+  return (0, _lodash.compact)((0, _lodash.flatMap)(pieces, function (piece) {
+    // Already a block from shortcode.
+    if (typeof piece !== 'string') {
+      return piece;
+    } // These filters are essential for some blocks to be able to transform
+    // from raw HTML. These filters move around some content or add
+    // additional tags, they do not remove any content.
+
+
+    var filters = [// Needed to create more and nextpage blocks.
+    _specialCommentConverter.default, // Needed to create media blocks.
+    _figureContentReducer.default, // Needed to create the quote block, which cannot handle text
+    // without wrapper paragraphs.
+    _blockquoteNormaliser.default];
+    piece = (0, _utils.deepFilterHTML)(piece, filters, blockContentSchema);
+    piece = (0, _normaliseBlocks.default)(piece);
+    return htmlToBlocks({
+      html: piece,
+      rawTransforms: rawTransforms
     });
   }));
 }
+//# sourceMappingURL=index.js.map

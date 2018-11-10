@@ -2,23 +2,20 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-require("core-js/modules/es7.array.includes");
-
-require("core-js/modules/es6.string.includes");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.isMacOS = isMacOS;
-exports.isKeyboardEvent = exports.displayShortcut = exports.rawShortcut = exports.SHIFT = exports.COMMAND = exports.CTRL = exports.ALT = exports.F10 = exports.DELETE = exports.DOWN = exports.RIGHT = exports.UP = exports.LEFT = exports.SPACE = exports.ESCAPE = exports.ENTER = exports.TAB = exports.BACKSPACE = void 0;
-
-require("core-js/modules/es6.regexp.replace");
+exports.isKeyboardEvent = exports.shortcutAriaLabel = exports.displayShortcut = exports.displayShortcutList = exports.rawShortcut = exports.SHIFT = exports.COMMAND = exports.CTRL = exports.ALT = exports.F10 = exports.DELETE = exports.DOWN = exports.RIGHT = exports.UP = exports.LEFT = exports.SPACE = exports.ESCAPE = exports.ENTER = exports.TAB = exports.BACKSPACE = void 0;
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
 var _lodash = require("lodash");
+
+var _i18n = require("@wordpress/i18n");
+
+var _platform = require("./platform");
 
 /**
  * Note: The order of the modifier keys in many of the [foo]Shortcut()
@@ -33,6 +30,14 @@ var _lodash = require("lodash");
 
 /**
  * External dependencies
+ */
+
+/**
+ * WordPress dependencies
+ */
+
+/**
+ * Internal dependencies
  */
 var BACKSPACE = 8;
 exports.BACKSPACE = BACKSPACE;
@@ -64,34 +69,37 @@ exports.CTRL = CTRL;
 var COMMAND = 'meta';
 exports.COMMAND = COMMAND;
 var SHIFT = 'shift';
-/**
- * Return true if platform is MacOS.
- *
- * @param {Object} _window   window object by default; used for DI testing.
- *
- * @return {boolean}         True if MacOS; false otherwise.
- */
-
 exports.SHIFT = SHIFT;
-
-function isMacOS() {
-  var _window = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
-
-  return _window.navigator.platform.indexOf('Mac') !== -1;
-}
-
 var modifiers = {
-  primary: function primary(_isMac) {
-    return _isMac() ? [COMMAND] : [CTRL];
+  primary: function primary(_isApple) {
+    return _isApple() ? [COMMAND] : [CTRL];
   },
-  primaryShift: function primaryShift(_isMac) {
-    return _isMac() ? [SHIFT, COMMAND] : [CTRL, SHIFT];
+  primaryShift: function primaryShift(_isApple) {
+    return _isApple() ? [SHIFT, COMMAND] : [CTRL, SHIFT];
   },
-  secondary: function secondary(_isMac) {
-    return _isMac() ? [SHIFT, ALT, COMMAND] : [CTRL, SHIFT, ALT];
+  primaryAlt: function primaryAlt(_isApple) {
+    return _isApple() ? [ALT, COMMAND] : [CTRL, ALT];
   },
-  access: function access(_isMac) {
-    return _isMac() ? [CTRL, ALT] : [SHIFT, ALT];
+  secondary: function secondary(_isApple) {
+    return _isApple() ? [SHIFT, ALT, COMMAND] : [CTRL, SHIFT, ALT];
+  },
+  access: function access(_isApple) {
+    return _isApple() ? [CTRL, ALT] : [SHIFT, ALT];
+  },
+  ctrl: function ctrl() {
+    return [CTRL];
+  },
+  alt: function alt() {
+    return [ALT];
+  },
+  ctrlShift: function ctrlShift() {
+    return [CTRL, SHIFT];
+  },
+  shift: function shift() {
+    return [SHIFT];
+  },
+  shiftAlt: function shiftAlt() {
+    return [SHIFT, ALT];
   }
 };
 /**
@@ -104,9 +112,39 @@ var modifiers = {
 
 var rawShortcut = (0, _lodash.mapValues)(modifiers, function (modifier) {
   return function (character) {
-    var _isMac = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : isMacOS;
+    var _isApple = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _platform.isAppleOS;
 
-    return (0, _toConsumableArray2.default)(modifier(_isMac)).concat([character.toLowerCase()]).join('+');
+    return (0, _toConsumableArray2.default)(modifier(_isApple)).concat([character.toLowerCase()]).join('+');
+  };
+});
+/**
+ * Return an array of the parts of a keyboard shortcut chord for display
+ * E.g displayShortcutList.primary( 'm' ) will return [ '⌘', 'M' ] on Mac.
+ *
+ * @type {Object} keyed map of functions to shortcut sequences
+ */
+
+exports.rawShortcut = rawShortcut;
+var displayShortcutList = (0, _lodash.mapValues)(modifiers, function (modifier) {
+  return function (character) {
+    var _replacementKeyMap;
+
+    var _isApple = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _platform.isAppleOS;
+
+    var isApple = _isApple();
+
+    var replacementKeyMap = (_replacementKeyMap = {}, (0, _defineProperty2.default)(_replacementKeyMap, ALT, isApple ? '⌥' : 'Alt'), (0, _defineProperty2.default)(_replacementKeyMap, CTRL, isApple ? '^' : 'Ctrl'), (0, _defineProperty2.default)(_replacementKeyMap, COMMAND, '⌘'), (0, _defineProperty2.default)(_replacementKeyMap, SHIFT, isApple ? '⇧' : 'Shift'), _replacementKeyMap);
+    var modifierKeys = modifier(_isApple).reduce(function (accumulator, key) {
+      var replacementKey = (0, _lodash.get)(replacementKeyMap, key, key); // If on the Mac, adhere to platform convention and don't show plus between keys.
+
+      if (isApple) {
+        return (0, _toConsumableArray2.default)(accumulator).concat([replacementKey]);
+      }
+
+      return (0, _toConsumableArray2.default)(accumulator).concat([replacementKey, '+']);
+    }, []);
+    var capitalizedCharacter = (0, _lodash.capitalize)(character);
+    return (0, _toConsumableArray2.default)(modifierKeys).concat([capitalizedCharacter]);
   };
 });
 /**
@@ -116,23 +154,32 @@ var rawShortcut = (0, _lodash.mapValues)(modifiers, function (modifier) {
  * @type {Object} Keyed map of functions to display shortcuts.
  */
 
-exports.rawShortcut = rawShortcut;
-var displayShortcut = (0, _lodash.mapValues)(modifiers, function (modifier) {
+exports.displayShortcutList = displayShortcutList;
+var displayShortcut = (0, _lodash.mapValues)(displayShortcutList, function (shortcutList) {
   return function (character) {
-    var _replacementKeyMap;
+    var _isApple = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _platform.isAppleOS;
 
-    var _isMac = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : isMacOS;
+    return shortcutList(character, _isApple).join('');
+  };
+});
+/**
+ * An object that contains functions to return an aria label for a keyboard shortcut.
+ * E.g. shortcutAriaLabel.primary( '.' ) will return 'Command + Period' on Mac.
+ */
 
-    var isMac = _isMac();
+exports.displayShortcut = displayShortcut;
+var shortcutAriaLabel = (0, _lodash.mapValues)(modifiers, function (modifier) {
+  return function (character) {
+    var _replacementKeyMap2;
 
-    var replacementKeyMap = (_replacementKeyMap = {}, (0, _defineProperty2.default)(_replacementKeyMap, ALT, isMac ? 'Option' : 'Alt'), (0, _defineProperty2.default)(_replacementKeyMap, CTRL, 'Ctrl'), (0, _defineProperty2.default)(_replacementKeyMap, COMMAND, '⌘'), (0, _defineProperty2.default)(_replacementKeyMap, SHIFT, 'Shift'), _replacementKeyMap);
-    var shortcut = (0, _toConsumableArray2.default)(modifier(_isMac).map(function (key) {
-      return (0, _lodash.get)(replacementKeyMap, key, key);
-    })).concat([character.toUpperCase()]).join('+'); // Because we use just the clover symbol for MacOS's "command" key, remove
-    // the key join character ("+") between it and the final character if that
-    // final character is alphanumeric. ⌘S looks nicer than ⌘+S.
+    var _isApple = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _platform.isAppleOS;
 
-    return shortcut.replace(/⌘\+([A-Z0-9])$/g, '⌘$1');
+    var isApple = _isApple();
+
+    var replacementKeyMap = (_replacementKeyMap2 = {}, (0, _defineProperty2.default)(_replacementKeyMap2, SHIFT, 'Shift'), (0, _defineProperty2.default)(_replacementKeyMap2, COMMAND, isApple ? 'Command' : 'Control'), (0, _defineProperty2.default)(_replacementKeyMap2, CTRL, 'Control'), (0, _defineProperty2.default)(_replacementKeyMap2, ALT, isApple ? 'Option' : 'Alt'), (0, _defineProperty2.default)(_replacementKeyMap2, ',', (0, _i18n.__)('Comma')), (0, _defineProperty2.default)(_replacementKeyMap2, '.', (0, _i18n.__)('Period')), (0, _defineProperty2.default)(_replacementKeyMap2, '`', (0, _i18n.__)('Backtick')), _replacementKeyMap2);
+    return (0, _toConsumableArray2.default)(modifier(_isApple)).concat([character]).map(function (key) {
+      return (0, _lodash.capitalize)((0, _lodash.get)(replacementKeyMap, key, key));
+    }).join(isApple ? ' ' : ' + ');
   };
 });
 /**
@@ -144,12 +191,12 @@ var displayShortcut = (0, _lodash.mapValues)(modifiers, function (modifier) {
  * @type {Object} Keyed map of functions to match events.
  */
 
-exports.displayShortcut = displayShortcut;
+exports.shortcutAriaLabel = shortcutAriaLabel;
 var isKeyboardEvent = (0, _lodash.mapValues)(modifiers, function (getModifiers) {
   return function (event, character) {
-    var _isMac = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : isMacOS;
+    var _isApple = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _platform.isAppleOS;
 
-    var mods = getModifiers(_isMac);
+    var mods = getModifiers(_isApple);
 
     if (!mods.every(function (key) {
       return event["".concat(key, "Key")];
@@ -165,3 +212,4 @@ var isKeyboardEvent = (0, _lodash.mapValues)(modifiers, function (getModifiers) 
   };
 });
 exports.isKeyboardEvent = isKeyboardEvent;
+//# sourceMappingURL=index.js.map

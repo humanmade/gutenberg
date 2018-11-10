@@ -1,19 +1,20 @@
-import _classCallCheck from "@babel/runtime/helpers/classCallCheck";
-import _createClass from "@babel/runtime/helpers/createClass";
-import _possibleConstructorReturn from "@babel/runtime/helpers/possibleConstructorReturn";
-import _getPrototypeOf from "@babel/runtime/helpers/getPrototypeOf";
-import _inherits from "@babel/runtime/helpers/inherits";
+import _extends from "@babel/runtime/helpers/esm/extends";
 import { createElement } from "@wordpress/element";
 
 /**
  * WordPress dependencies
  */
-import { Component, RawHTML } from '@wordpress/element';
+import { createHigherOrderComponent } from '@wordpress/compose';
+import { createContext, RawHTML } from '@wordpress/element';
 /**
  * Internal dependencies
  */
 
 import { serialize } from '../api';
+
+var _createContext = createContext(function () {}),
+    Consumer = _createContext.Consumer,
+    Provider = _createContext.Provider;
 /**
  * An internal block component used in block content serialization to inject
  * nested block content within the `save` implementation of the ancestor
@@ -28,43 +29,42 @@ import { serialize } from '../api';
  * 	{ blockSaveElement }
  * </BlockContentProvider>
  * ```
+ *
+ * @return {WPElement} Element with BlockContent injected via context.
  */
 
-var BlockContentProvider =
-/*#__PURE__*/
-function (_Component) {
-  _inherits(BlockContentProvider, _Component);
 
-  function BlockContentProvider() {
-    _classCallCheck(this, BlockContentProvider);
+var BlockContentProvider = function BlockContentProvider(_ref) {
+  var children = _ref.children,
+      innerBlocks = _ref.innerBlocks;
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(BlockContentProvider).apply(this, arguments));
-  }
+  var BlockContent = function BlockContent() {
+    // Value is an array of blocks, so defer to block serializer
+    var html = serialize(innerBlocks); // Use special-cased raw HTML tag to avoid default escaping
 
-  _createClass(BlockContentProvider, [{
-    key: "getChildContext",
-    value: function getChildContext() {
-      var innerBlocks = this.props.innerBlocks;
-      return {
-        BlockContent: function BlockContent() {
-          // Value is an array of blocks, so defer to block serializer
-          var html = serialize(innerBlocks); // Use special-cased raw HTML tag to avoid default escaping
+    return createElement(RawHTML, null, html);
+  };
 
-          return createElement(RawHTML, null, html);
-        }
-      };
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      return this.props.children;
-    }
-  }]);
-
-  return BlockContentProvider;
-}(Component);
-
-BlockContentProvider.childContextTypes = {
-  BlockContent: function BlockContent() {}
+  return createElement(Provider, {
+    value: BlockContent
+  }, children);
 };
+/**
+ * A Higher Order Component used to inject BlockContent using context to the
+ * wrapped component.
+ *
+ * @return {Component} Enhanced component with injected BlockContent as prop.
+ */
+
+
+export var withBlockContentContext = createHigherOrderComponent(function (OriginalComponent) {
+  return function (props) {
+    return createElement(Consumer, null, function (context) {
+      return createElement(OriginalComponent, _extends({}, props, {
+        BlockContent: context
+      }));
+    });
+  };
+}, 'withBlockContentContext');
 export default BlockContentProvider;
+//# sourceMappingURL=index.js.map

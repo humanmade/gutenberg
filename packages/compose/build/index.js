@@ -77,3 +77,4 @@ var _withInstanceId = _interopRequireDefault(require("./with-instance-id"));
 var _withSafeTimeout = _interopRequireDefault(require("./with-safe-timeout"));
 
 var _withState = _interopRequireDefault(require("./with-state"));
+//# sourceMappingURL=index.js.map
