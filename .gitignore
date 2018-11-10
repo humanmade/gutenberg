@@ -2,7 +2,6 @@
 build
 build-module
 build-style
-coverage
 node_modules
 gutenberg.zip
 languages/gutenberg.pot
@@ -14,3 +13,4 @@ languages/gutenberg.pot
 phpcs.xml
 yarn.lock
 docker-compose.override.yml
+/wordpress

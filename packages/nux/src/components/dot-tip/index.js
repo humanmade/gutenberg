@@ -1,10 +1,24 @@
 /**
  * WordPress dependencies
  */
-import { compose, withSafeTimeout } from '@wordpress/compose';
+import { compose } from '@wordpress/compose';
 import { Popover, Button, IconButton } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { withSelect, withDispatch } from '@wordpress/data';
+import deprecated from '@wordpress/deprecated';
+
+function getAnchorRect( anchor ) {
+	// The default getAnchorRect() excludes an element's top and bottom padding
+	// from its calculation. We want tips to point to the outer margin of an
+	// element, so we override getAnchorRect() to include all padding.
+	return anchor.parentNode.getBoundingClientRect();
+}
+
+function onClick( event ) {
+	// Tips are often nested within buttons. We stop propagation so that clicking
+	// on a tip doesn't result in the button being clicked.
+	event.stopPropagation();
+}
 
 export function DotTip( {
 	children,
@@ -23,9 +37,10 @@ export function DotTip( {
 			position="middle right"
 			noArrow
 			focusOnMount="container"
+			getAnchorRect={ getAnchorRect }
 			role="dialog"
 			aria-label={ __( 'Gutenberg tips' ) }
-			onClick={ ( event ) => event.stopPropagation() }
+			onClick={ onClick }
 		>
 			<p>{ children }</p>
 			<p>
@@ -44,20 +59,27 @@ export function DotTip( {
 }
 
 export default compose(
-	withSafeTimeout,
-	withSelect( ( select, { id } ) => {
+	withSelect( ( select, { tipId, id } ) => {
+		if ( id ) {
+			tipId = id;
+			deprecated( 'The id prop of wp.nux.DotTip', {
+				plugin: 'Gutenberg',
+				version: '4.4',
+				alternative: 'the tipId prop',
+			} );
+		}
 		const { isTipVisible, getAssociatedGuide } = select( 'core/nux' );
-		const associatedGuide = getAssociatedGuide( id );
+		const associatedGuide = getAssociatedGuide( tipId );
 		return {
-			isVisible: isTipVisible( id ),
+			isVisible: isTipVisible( tipId ),
 			hasNextTip: !! ( associatedGuide && associatedGuide.nextTipId ),
 		};
 	} ),
-	withDispatch( ( dispatch, { id } ) => {
+	withDispatch( ( dispatch, { tipId, id } ) => {
 		const { dismissTip, disableTips } = dispatch( 'core/nux' );
 		return {
 			onDismiss() {
-				dismissTip( id );
+				dismissTip( tipId || id );
 			},
 			onDisable() {
 				disableTips();

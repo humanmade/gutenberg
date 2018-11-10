@@ -2,18 +2,26 @@
 
 exports[`Notice should match snapshot 1`] = `
 <div
-  className="notice notice-alt notice-example is-dismissible"
+  className="components-notice is-success is-dismissible"
 >
-  <button
-    className="notice-dismiss"
-    onClick={[Function]}
-    type="button"
+  <div
+    className="components-notice__content"
   >
-    <span
-      className="screen-reader-text"
+    Example
+    <ForwardRef(Button)
+      className="components-notice__action"
+      href="https://example.com"
+      isLink={true}
     >
-      Dismiss this notice
-    </span>
-  </button>
+      View
+    </ForwardRef(Button)>
+  </div>
+  <IconButton
+    className="components-notice__dismiss"
+    icon="no"
+    label="Dismiss this notice"
+    onClick={[Function]}
+    tooltip={false}
+  />
 </div>
 `;

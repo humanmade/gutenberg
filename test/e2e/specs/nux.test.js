@@ -1,12 +1,12 @@
 /**
  * Internal dependencies
  */
-import '../support/bootstrap';
 import {
-	clearLocalStorage,
+	clickBlockAppender,
 	clickOnMoreMenuItem,
-	newDesktopBrowserPage,
 	newPost,
+	saveDraft,
+	toggleOption,
 } from '../support/utils';
 
 describe( 'New User Experience (NUX)', () => {
@@ -35,13 +35,7 @@ describe( 'New User Experience (NUX)', () => {
 	}
 
 	beforeEach( async () => {
-		await newDesktopBrowserPage();
-		await newPost( undefined, false );
-	} );
-
-	afterEach( async () => {
-		// Clear localStorage tips so they aren't persisted for the next test.
-		await clearLocalStorage();
+		await newPost( { enableTips: true } );
 	} );
 
 	it( 'should show tips to a first-time user', async () => {
@@ -93,29 +87,26 @@ describe( 'New User Experience (NUX)', () => {
 		expect( nuxTipElements ).toHaveLength( 0 );
 	} );
 
-	it( 'should toggle tips when the "Show tips" menu item is clicked', async () => {
-		// Tips should be enabled at first.
+	it( 'should enable tips when the "Enable tips" option is toggled on', async () => {
+		// Start by disabling tips.
+		await page.click( '.nux-dot-tip__disable' );
+
+		// Verify no more tips are visible on the page.
 		let nuxTipElements = await page.$$( '.nux-dot-tip' );
-		expect( nuxTipElements ).toHaveLength( 1 );
-
-		// The "Show Tips" button is a checkmark/toggle button and it's enabled
-		// by default. Clicking on it disables the tips.
-		await clickOnMoreMenuItem( 'Show Tips' );
-
-		// Should disable tips from appearing.
-		nuxTipElements = await page.$$( '.nux-dot-tip' );
 		expect( nuxTipElements ).toHaveLength( 0 );
 
 		// Tips should be disabled in localStorage as well.
 		let areTipsEnabled = await getTipsEnabled( page );
 		expect( areTipsEnabled ).toEqual( false );
 
-		// Click again to re-enable tips; they should appear.
-		await clickOnMoreMenuItem( 'Show Tips' );
+		// Toggle the 'Enable Tips' option to enable.
+		await toggleOption( 'Enable Tips' );
 
+		// Tips should once again appear.
 		nuxTipElements = await page.$$( '.nux-dot-tip' );
 		expect( nuxTipElements ).toHaveLength( 1 );
 
+		// Tips should be enabled in localStorage as well.
 		areTipsEnabled = await getTipsEnabled( page );
 		expect( areTipsEnabled ).toEqual( true );
 	} );
@@ -126,7 +117,7 @@ describe( 'New User Experience (NUX)', () => {
 		await clickAllTips( page );
 
 		// Open the "More" menu to check the "Show Tips" element.
-		await page.click( '.edit-post-more-menu [aria-label="More"]' );
+		await page.click( '.edit-post-more-menu [aria-label="Show more tools & options"]' );
 		const showTipsButton = await page.$x( '//button[contains(text(), "Show Tips")][@aria-pressed="false"]' );
 
 		expect( showTipsButton ).toHaveLength( 1 );
@@ -141,7 +132,7 @@ describe( 'New User Experience (NUX)', () => {
 		await clickOnMoreMenuItem( 'Show Tips' );
 
 		// Open the "More" menu to check the "Show Tips" element.
-		await page.click( '.edit-post-more-menu [aria-label="More"]' );
+		await page.click( '.edit-post-more-menu [aria-label="Show more tools & options"]' );
 		const showTipsButton = await page.$x( '//button[contains(text(), "Show Tips")][@aria-pressed="true"]' );
 
 		expect( showTipsButton ).toHaveLength( 1 );
@@ -170,12 +161,9 @@ describe( 'New User Experience (NUX)', () => {
 		// Let's type something so there's content in this post.
 		await page.click( '.editor-post-title__input' );
 		await page.keyboard.type( 'Post title' );
-		await page.click( '.editor-default-block-appender' );
+		await clickBlockAppender();
 		await page.keyboard.type( 'Post content goes here.' );
-		// Save the post as a draft.
-		await page.click( '.editor-post-save-draft' );
-
-		await page.waitForSelector( '.editor-post-saved-state.is-saved' );
+		await saveDraft();
 
 		// Refresh the page; tips should be disabled.
 		await page.reload();

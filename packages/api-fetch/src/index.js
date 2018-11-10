@@ -9,8 +9,34 @@ import { __ } from '@wordpress/i18n';
 import createNonceMiddleware from './middlewares/nonce';
 import createRootURLMiddleware from './middlewares/root-url';
 import createPreloadingMiddleware from './middlewares/preloading';
+import fetchAllMiddleware from './middlewares/fetch-all-middleware';
 import namespaceEndpointMiddleware from './middlewares/namespace-endpoint';
 import httpV1Middleware from './middlewares/http-v1';
+import userLocaleMiddleware from './middlewares/user-locale';
+
+/**
+ * Default set of header values which should be sent with every request unless
+ * explicitly provided through apiFetch options.
+ *
+ * @type {Object}
+ */
+const DEFAULT_HEADERS = {
+	// The backend uses the Accept header as a condition for considering an
+	// incoming request as a REST request.
+	//
+	// See: https://core.trac.wordpress.org/ticket/44534
+	Accept: 'application/json, */*;q=0.1',
+};
+
+/**
+ * Default set of fetch option values which should be sent with every request
+ * unless explicitly provided through apiFetch options.
+ *
+ * @type {Object}
+ */
+const DEFAULT_OPTIONS = {
+	credentials: 'include',
+};
 
 const middlewares = [];
 
@@ -20,18 +46,24 @@ function registerMiddleware( middleware ) {
 
 function apiFetch( options ) {
 	const raw = ( nextOptions ) => {
-		const { url, path, body, data, parse = true, ...remainingOptions } = nextOptions;
-		const headers = remainingOptions.headers || {};
-		if ( ! headers[ 'Content-Type' ] && data ) {
+		const { url, path, data, parse = true, ...remainingOptions } = nextOptions;
+		let { body, headers } = nextOptions;
+
+		// Merge explicitly-provided headers with default values.
+		headers = { ...DEFAULT_HEADERS, ...headers };
+
+		// The `data` property is a shorthand for sending a JSON body.
+		if ( data ) {
+			body = JSON.stringify( data );
 			headers[ 'Content-Type' ] = 'application/json';
 		}
 
 		const responsePromise = window.fetch(
 			url || path,
 			{
+				...DEFAULT_OPTIONS,
 				...remainingOptions,
-				credentials: 'include',
-				body: body || JSON.stringify( data ),
+				body,
 				headers,
 			}
 		);
@@ -45,6 +77,10 @@ function apiFetch( options ) {
 
 		const parseResponse = ( response ) => {
 			if ( parse ) {
+				if ( response.status === 204 ) {
+					return null;
+				}
+
 				return response.json ? response.json() : Promise.reject( response );
 			}
 
@@ -85,16 +121,20 @@ function apiFetch( options ) {
 
 	const steps = [
 		raw,
+		fetchAllMiddleware,
 		httpV1Middleware,
 		namespaceEndpointMiddleware,
+		userLocaleMiddleware,
 		...middlewares,
-	];
-	const next = ( nextOptions ) => {
-		const nextMiddleware = steps.pop();
+	].reverse();
+
+	const runMiddleware = ( index ) => ( nextOptions ) => {
+		const nextMiddleware = steps[ index ];
+		const next = runMiddleware( index + 1 );
 		return nextMiddleware( nextOptions, next );
 	};
 
-	return next( options );
+	return runMiddleware( 0 )( options );
 }
 
 apiFetch.use = registerMiddleware;
@@ -102,5 +142,6 @@ apiFetch.use = registerMiddleware;
 apiFetch.createNonceMiddleware = createNonceMiddleware;
 apiFetch.createPreloadingMiddleware = createPreloadingMiddleware;
 apiFetch.createRootURLMiddleware = createRootURLMiddleware;
+apiFetch.fetchAllMiddleware = fetchAllMiddleware;
 
 export default apiFetch;

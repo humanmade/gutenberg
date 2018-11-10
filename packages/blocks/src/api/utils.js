@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { every, keys, isEqual, isFunction, isString } from 'lodash';
+import { every, has, keys, isEqual, isFunction, isString } from 'lodash';
 import { default as tinycolor, mostReadable } from 'tinycolor2';
 
 /**
@@ -13,7 +13,7 @@ import { Component, isValidElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { getDefaultBlockName } from './registration';
+import { getBlockType, getDefaultBlockName } from './registration';
 import { createBlock } from './factory';
 
 /**
@@ -69,23 +69,6 @@ export function isValidIcon( icon ) {
 }
 
 /**
- * Function that returns true if the background and foreground colors of the icon are unreadable.
- *
- * @param {*} icon  Parameter to be checked.
- *
- * @return {boolean} True if the background and foreground colors of the icon are unreadable.
- */
-
-export function isIconUnreadable( icon ) {
-	return !! ( icon && icon.background && icon.foreground ) &&
-		! tinycolor.isReadable(
-			tinycolor( icon.background ),
-			tinycolor( icon.foreground ),
-			{ level: 'AA', size: 'large' }
-		);
-}
-
-/**
  * Function that receives an icon as set by the blocks during the registration
  * and returns a new icon object that is normalized so we can rely on just on possible icon structure
  * in the codebase.
@@ -98,23 +81,43 @@ export function isIconUnreadable( icon ) {
  */
 export function normalizeIconObject( icon ) {
 	if ( ! icon ) {
-		return { src: 'block-default' };
+		icon = 'block-default';
 	}
+
 	if ( isValidIcon( icon ) ) {
 		return { src: icon };
 	}
 
-	if ( icon.background ) {
+	if ( has( icon, [ 'background' ] ) ) {
 		const tinyBgColor = tinycolor( icon.background );
-		if ( ! icon.foreground ) {
-			const foreground = mostReadable(
+
+		return {
+			...icon,
+			foreground: icon.foreground ? icon.foreground : mostReadable(
 				tinyBgColor,
 				ICON_COLORS,
 				{ includeFallbackColors: true, level: 'AA', size: 'large' }
-			).toHexString();
-			icon.foreground = foreground;
-		}
-		icon.shadowColor = tinyBgColor.setAlpha( 0.3 ).toRgbString();
+			).toHexString(),
+			shadowColor: tinyBgColor.setAlpha( 0.3 ).toRgbString(),
+		};
 	}
+
 	return icon;
+}
+
+/**
+ * Normalizes block type passed as param. When string is passed then
+ * it converts it to the matching block type object.
+ * It passes the original object otherwise.
+ *
+ * @param {string|Object} blockTypeOrName  Block type or name.
+ *
+ * @return {?Object} Block type.
+ */
+export function normalizeBlockType( blockTypeOrName ) {
+	if ( isString( blockTypeOrName ) ) {
+		return getBlockType( blockTypeOrName );
+	}
+
+	return blockTypeOrName;
 }

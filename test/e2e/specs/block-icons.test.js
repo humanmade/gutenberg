@@ -1,18 +1,19 @@
 /**
  * Internal dependencies
  */
-import '../support/bootstrap';
 import {
+	ACCESS_MODIFIER_KEYS,
+	pressWithModifier,
 	newPost,
-	newDesktopBrowserPage,
 	insertBlock,
 	searchForBlock,
 } from '../support/utils';
 import { activatePlugin, deactivatePlugin } from '../support/plugins';
 
 const INSERTER_BUTTON_SELECTOR = '.components-popover__content .editor-block-types-list__item';
-const INSERTER_ICON_SELECTOR = `${ INSERTER_BUTTON_SELECTOR } .editor-block-types-list__item-icon`;
-const INSPECTOR_ICON_SELECTOR = '.edit-post-sidebar .editor-block-icon__colors';
+const INSERTER_ICON_WRAPPER_SELECTOR = `${ INSERTER_BUTTON_SELECTOR } .editor-block-types-list__item-icon`;
+const INSERTER_ICON_SELECTOR = `${ INSERTER_BUTTON_SELECTOR } .editor-block-icon`;
+const INSPECTOR_ICON_SELECTOR = '.edit-post-sidebar .editor-block-icon';
 
 async function getInnerHTML( selector ) {
 	return await page.$eval( selector, ( element ) => element.innerHTML );
@@ -34,10 +35,16 @@ async function getFirstInserterIcon() {
 	return await getInnerHTML( INSERTER_ICON_SELECTOR );
 }
 
+async function selectFirstBlock() {
+	await pressWithModifier( ACCESS_MODIFIER_KEYS, 'o' );
+	const navButtons = await page.$$( '.editor-block-navigation__item-button' );
+	await navButtons[ 0 ].click();
+}
+
 describe( 'Correctly Renders Block Icons on Inserter and Inspector', () => {
-	const dashIconRegex = /<svg.*class=".*dashicons-cart.*?">.*<\/svg>/;
+	const dashIconRegex = /<svg.*?class=".*?dashicons-cart.*?">.*?<\/svg>/;
 	const circleString = '<circle cx="10" cy="10" r="10" fill="red" stroke="blue" stroke-width="10"></circle>';
-	const svgIcon = `<svg width="20" height="20" viewBox="0 0 20 20">${ circleString }</svg>`;
+	const svgIcon = new RegExp( `<svg.*?viewBox="0 0 20 20".*?>${ circleString }</svg>` );
 
 	const validateSvgIcon = ( iconHtml ) => {
 		expect( iconHtml ).toMatch( svgIcon );
@@ -48,14 +55,7 @@ describe( 'Correctly Renders Block Icons on Inserter and Inspector', () => {
 	};
 
 	beforeAll( async () => {
-		await newDesktopBrowserPage();
 		await activatePlugin( 'gutenberg-test-block-icons' );
-		// accept the prompt if the post is "dirty"
-		await page.on( 'dialog', async ( dialog ) => {
-			if ( dialog ) {
-				await dialog.accept();
-			}
-		} );
 	} );
 
 	beforeEach( async () => {
@@ -81,7 +81,7 @@ describe( 'Correctly Renders Block Icons on Inserter and Inspector', () => {
 
 		it( 'Renders correctly the icon on the inspector', async () => {
 			await insertBlock( blockTitle );
-			await page.focus( `[data-type="${ blockName }"]` );
+			await selectFirstBlock();
 			validateIcon( await getInnerHTML( INSPECTOR_ICON_SELECTOR ) );
 		} );
 	}
@@ -105,18 +105,17 @@ describe( 'Correctly Renders Block Icons on Inserter and Inspector', () => {
 	} );
 
 	describe( 'Block with dash icon and background and foreground colors', () => {
-		const blockName = 'test/test-dash-icon-colors';
 		const blockTitle = 'TestDashIconColors';
 		it( 'Renders the icon in the inserter with the correct colors', async () => {
 			await searchForBlock( blockTitle );
 			validateDashIcon( await getFirstInserterIcon() );
-			expect( await getBackgroundColor( INSERTER_ICON_SELECTOR ) ).toEqual( 'rgb(1, 0, 0)' );
-			expect( await getColor( INSERTER_ICON_SELECTOR ) ).toEqual( 'rgb(254, 0, 0)' );
+			expect( await getBackgroundColor( INSERTER_ICON_WRAPPER_SELECTOR ) ).toEqual( 'rgb(1, 0, 0)' );
+			expect( await getColor( INSERTER_ICON_WRAPPER_SELECTOR ) ).toEqual( 'rgb(254, 0, 0)' );
 		} );
 
 		it( 'Renders the icon in the inspector with the correct colors', async () => {
 			await insertBlock( blockTitle );
-			await page.focus( `[data-type="${ blockName }"]` );
+			await selectFirstBlock();
 			validateDashIcon(
 				await getInnerHTML( INSPECTOR_ICON_SELECTOR )
 			);
@@ -126,18 +125,17 @@ describe( 'Correctly Renders Block Icons on Inserter and Inspector', () => {
 	} );
 
 	describe( 'Block with svg icon and background color', () => {
-		const blockName = 'test/test-svg-icon-background';
 		const blockTitle = 'TestSvgIconBackground';
 		it( 'Renders the icon in the inserter with the correct background color and an automatically compute readable foreground color', async () => {
 			await searchForBlock( blockTitle );
 			validateSvgIcon( await getFirstInserterIcon() );
-			expect( await getBackgroundColor( INSERTER_ICON_SELECTOR ) ).toEqual( 'rgb(1, 0, 0)' );
-			expect( await getColor( INSERTER_ICON_SELECTOR ) ).toEqual( 'rgb(248, 249, 249)' );
+			expect( await getBackgroundColor( INSERTER_ICON_WRAPPER_SELECTOR ) ).toEqual( 'rgb(1, 0, 0)' );
+			expect( await getColor( INSERTER_ICON_WRAPPER_SELECTOR ) ).toEqual( 'rgb(248, 249, 249)' );
 		} );
 
 		it( 'Renders correctly the icon on the inspector', async () => {
 			await insertBlock( blockTitle );
-			await page.focus( `[data-type="${ blockName }"]` );
+			await selectFirstBlock();
 			validateSvgIcon(
 				await getInnerHTML( INSPECTOR_ICON_SELECTOR )
 			);
